@@ -33,9 +33,8 @@ class EwsConnector:
             #but this is to prepare any future auth_type
             #implementation
             if authType == 'NTLM':
-                config = Configuration(server=ews_server,
-                    credentials=credentials,
-                    auth_type=NTLM)
+                #NTLM auth already set
+                pass
             
             elif authType == 'None':
                 #O365 does not use NTLM auth
