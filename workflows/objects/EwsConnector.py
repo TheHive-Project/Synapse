@@ -18,7 +18,7 @@ class EwsConnector:
         try:
             username = self.cfg.get('EWS', 'username')
             password = self.cfg.get('EWS', 'password')
-            auth_type = self.cfg.get('EWS', 'auth_type')
+            authType = self.cfg.get('EWS', 'auth_type')
             credentials = Credentials(username=username, password=password)
             
             ews_server = self.cfg.get('EWS', 'server')
@@ -32,12 +32,12 @@ class EwsConnector:
             #declaring config twice in case it is NTLM
             #but this is to prepare any future auth_type
             #implementation
-            if auth_type == 'NTLM':
+            if authType == 'NTLM':
                 config = Configuration(server=ews_server,
                     credentials=credentials,
                     auth_type=NTLM)
             
-            elif auth_type == 'None':
+            elif authType == 'None':
                 #O365 does not use NTLM auth
                 config = Configuration(server=ews_server,
                     credentials=credentials,
