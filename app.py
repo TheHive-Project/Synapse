@@ -7,6 +7,7 @@ from flask import Flask, request, jsonify
 
 from workflows.common.common import getConf
 from workflows.Ews2Case import connectEws
+from workflows.QRadar2Alert import offense2Alert
 
 app_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -38,6 +39,23 @@ def ews2case():
         return jsonify(workflowReport), 200
     else:
         return jsonify(workflowReport), 500
+
+@app.route('/QRadar2alert',methods=['POST'])
+def QRadar2alert():
+    if request.is_json:
+        content = request.get_json()
+        if 'timerange' in content:
+            workflowReport = offense2Alert(content['timerange'])
+            if workflowReport['success']:
+                return jsonify(workflowReport), 200
+            else:
+                return jsonify(workflowReport), 500
+        else:
+            logger.error('Missing <timerange> key/value')
+            return jsonify({'sucess':False}), 500
+    else:
+        logger.error('Not json request')
+        return jsonify({'sucess':False}), 500
 
 @app.route('/version', methods=['GET'])
 def getSynapseVersion():
