@@ -9,6 +9,8 @@ from workflows.common.common import getConf
 from workflows.Ews2Case import connectEws
 from workflows.QRadar2Alert import offense2Alert
 
+from pprint import pprint
+
 app_dir = os.path.dirname(os.path.abspath(__file__))
 
 #create logger
@@ -32,7 +34,13 @@ if not logger.handlers:
 
 app = Flask(__name__)
 
-@app.route('/ews2case',methods=['GET'])
+@app.route('/webhook', methods=['POST'])
+def listenWebhook():
+    if request.is_json:
+        webhook = request.get_json()
+        pprint(webhook)
+
+@app.route('/ews2case', methods=['GET'])
 def ews2case():
     workflowReport = connectEws()
     if workflowReport['success']:
@@ -40,7 +48,7 @@ def ews2case():
     else:
         return jsonify(workflowReport), 500
 
-@app.route('/QRadar2alert',methods=['POST'])
+@app.route('/QRadar2alert', methods=['POST'])
 def QRadar2alert():
     if request.is_json:
         content = request.get_json()
