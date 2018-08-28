@@ -18,17 +18,31 @@ class EwsConnector:
         try:
             username = self.cfg.get('EWS', 'username')
             password = self.cfg.get('EWS', 'password')
+            auth_type = self.cfg.get('EWS', 'auth_type')
             credentials = Credentials(username=username, password=password)
             
             ews_server = self.cfg.get('EWS', 'server')
             smtp_address = self.cfg.get('EWS', 'smtp_address')
-            
+
+            #using NTLM by default
             config = Configuration(server=ews_server,
                 credentials=credentials,
                 auth_type=NTLM)
-                #auth_type=NTLM,
-                #verify_ssl='/home/dc/exchange.crt')
 
+            #declaring config twice in case it is NTLM
+            #but this is to prepare any future auth_type
+            #implementation
+            if auth_type == 'NTLM':
+                config = Configuration(server=ews_server,
+                    credentials=credentials,
+                    auth_type=NTLM)
+            
+            elif auth_type == 'None':
+                #O365 does not use NTLM auth
+                config = Configuration(server=ews_server,
+                    credentials=credentials,
+                    auth_type=None)
+                
             account = Account(primary_smtp_address=smtp_address,
                 config=config, autodiscover=False, access_type=DELEGATE)
 
