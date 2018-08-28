@@ -9,6 +9,8 @@
 + [Configuration](#configuration)
     + [Exchange server](#exchange-server)
     + [Username](#username)
+    + [Password](#password)
+    + [Auth Type](#auth-type)
     + [Smtp address](#smtp-address)
     + [Folder name](#folder-name)
 + [Additional Set-Up](#additional-set-up)
@@ -170,6 +172,21 @@ The password linked to the username you previously put.
 
 ```
 password:v3ryC0mplxPwd
+```
+
+### Auth Type
+
+Auth type used in the account config when connecting to EWS.   
+By default, the auth type is set to ```NTLM```. In most of the cases, you do not need to edit this value.   
+
+However, for O365, this field needs to be set to None: ```auth_type:None```.
+
+At the moment, only ```NTLM``` and ```None``` auth type are implemented in Synapse.
+
+#### Example
+
+```
+auth_type:NTLM
 ```
 
 ### Smtp address
