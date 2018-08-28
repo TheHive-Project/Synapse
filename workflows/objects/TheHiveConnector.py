@@ -5,7 +5,7 @@ import logging
 import json
 
 from thehive4py.api import TheHiveApi
-from thehive4py.models import Case, CaseTask, CaseTaskLog, CaseObservable
+from thehive4py.models import Case, CaseTask, CaseTaskLog, CaseObservable, Alert
 
 class TheHiveConnector:
     'TheHive connector'
@@ -160,4 +160,34 @@ class TheHiveConnector:
             return esObservableId
         else:
             self.logger.error('File observable upload failed')
+            raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
+
+    def craftAlert(self, title, description, severity, date, tags, tlp, status, type, source,
+        sourceRef, artifacts, caseTemplate):
+        self.logger.info('%s.craftAlert starts', __name__)
+
+        alert = Alert(title=title,
+            description=description,
+            severity=severity,
+            date=date,
+            tags=tags,
+            tlp=tlp,
+            type=type,
+            source=source,
+            sourceRef=sourceRef,
+            artifacts=artifacts,
+            caseTemplate=caseTemplate)
+
+        return alert
+
+    def createAlert(self, alert):
+        self.logger.info('%s.createAlert starts', __name__)
+
+        response = self.theHiveApi.create_alert(alert)
+
+        if response.status_code == 201:
+            esAlertId = response.json()['id']
+            return esAlertId
+        else:
+            self.logger.error('Alert creation failed')
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
