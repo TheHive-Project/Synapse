@@ -191,3 +191,24 @@ class TheHiveConnector:
         else:
             self.logger.error('Alert creation failed')
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
+
+    def findAlert(self, q):
+        """
+            Search for alerts in TheHive for a given query
+
+            :param q: TheHive query
+            :type q: dict
+
+            :return results: list of dict, each dict describes an alert
+            :rtype results: list
+        """
+
+        self.logger.info('%s.findAlert starts', __name__)
+
+        response = self.theHiveApi.find_alerts(query=q)
+        if response.status_code == 200:
+            results = response.json()
+            return results
+        else:
+            self.logger.error('findAlert failed')
+            raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))

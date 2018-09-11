@@ -8,8 +8,7 @@ from flask import Flask, request, jsonify
 from workflows.common.common import getConf
 from workflows.Ews2Case import connectEws
 from workflows.QRadar2Alert import offense2Alert
-
-from pprint import pprint
+from workflows.ManageWebhooks import manageWebhook
 
 app_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -37,8 +36,18 @@ app = Flask(__name__)
 @app.route('/webhook', methods=['POST'])
 def listenWebhook():
     if request.is_json:
-        webhook = request.get_json()
-        pprint(webhook)
+         try:
+            webhook = request.get_json()
+            workflowReport = manageWebhook(webhook)
+            if workflowReport['success']:
+                return jsonify(workflowReport), 200
+            else:
+                return jsonify(workflowReport), 500
+         except Exception as e:
+             logger.error('Failed to listen or action webhook')
+             return jsonify({'success':False}), 500
+    else:
+        return jsonify({'success':False, 'message':'Not JSON'}), 400
 
 @app.route('/ews2case', methods=['GET'])
 def ews2case():
@@ -63,7 +72,7 @@ def QRadar2alert():
             return jsonify({'sucess':False}), 500
     else:
         logger.error('Not json request')
-        return jsonify({'sucess':False}), 500
+        return jsonify({'sucess':False, 'message':'NOT JSON'}), 400
 
 @app.route('/version', methods=['GET'])
 def getSynapseVersion():
