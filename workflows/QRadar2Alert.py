@@ -11,15 +11,55 @@ from common.common import getConf
 from objects.QRadarConnector import QRadarConnector
 from objects.TheHiveConnector import TheHiveConnector
 
-def offense2Alert(timerange):
+def allOffense2Alert(timerange):
     """
        Get all openned offense created within the last 
        <timerange> minutes and creates alerts for them in
        TheHive
     """
     logger = logging.getLogger(__name__)
-    logger.info('%s.offense2Alert starts', __name__)
+    logger.info('%s.allOffense2Alert starts', __name__)
 
+    report = dict()
+    report['success'] = True
+    report['imported'] = list()
+
+    try:
+        cfg = getConf()
+
+        qradarConnector = QRadarConnector(cfg)
+        theHiveConnector = TheHiveConnector(cfg)
+        #pulling open offenses
+        offensesList = qradarConnector.getOffenses(timerange)
+
+        for offense in offensesList:
+            tmpReport = offense2Alert(offense)
+            if tmpReport['success'] == False:
+                #as soon as one importation went wrong
+                #success status of the whole operation goes to False
+                report['success'] = False
+            report['imported'].append(tmpReport)
+
+        return report        
+
+    except Exception as e:
+            logger.error('Failed to create alert from QRadar offense', exc_info=True)
+            report['success'] = False
+            return report
+
+def offense2Alert(offense):
+    """
+        Create an alert from a QRadar offense
+
+        :param offense: a dict fetched from the QRadar API and representing an offense
+        :type offense: dict
+
+        :return: report, a dict with three keys: success, offenseId,
+            TheHive alert reference and TheHive alert ES id
+    """
+    logger = logging.getLogger(__name__)
+    logger.info('%s.offense2Alert starts', __name__)
+    
     report = dict()
     report['success'] = bool()
 
@@ -28,53 +68,53 @@ def offense2Alert(timerange):
 
         qradarConnector = QRadarConnector(cfg)
         theHiveConnector = TheHiveConnector(cfg)
-        offensesList = qradarConnector.getOffenses(timerange)
-        
-        #each offenses in the list is represented as a dict
-        #we enrich this dict with additional details
-        for offense in offensesList:
-            #the offense type is an int (when queried through api)
-            #which has to be mapped with a string
-            offense['offense_type_str'] = \
-                qradarConnector.getOffenseTypeStr(offense['offense_type'])
 
-            #adding the first 3 raw logs
-            offense['logs'] = qradarConnector.getOffenseLogs(offense)
+        #the offense type is an int (when queried through api)
+        #which has to be mapped with a string
+        offense['offense_type_str'] = \
+            qradarConnector.getOffenseTypeStr(offense['offense_type'])
 
-            #crafting a nice description
-            offense['THdescription'] = craftAlertDescription(offense)
+        #adding the first 3 raw logs
+        offense['logs'] = qradarConnector.getOffenseLogs(offense)
 
-            #severity in TheHive is either low, medium or high
-            #while severity in QRadar is from 1 to 10
-            #low will be [1;4] => 1
-            #medium will be [5;6] => 2
-            #high will be [7;10] => 3
-            if offense['severity'] < 5:
-                offense['THSeverity'] = 1
-            elif offense['severity'] < 7:
-                offense['THSeverity'] = 2
-            elif offense['severity'] < 11:
-                offense['THSeverity'] = 3
+        #crafting a nice description
+        offense['THdescription'] = craftAlertDescription(offense)
 
-            #creating the alert
-            alert = theHiveConnector.craftAlert(
-                offense['description'],
-                offense['THdescription'],
-                offense['THSeverity'],
-                offense['start_time'],
-                ['QRadar', 'Offense', 'Synapse'],
-                2,
-                'Imported',
-                'internal',
-                'QRadar_Offenses',
-                str(offense['id']),
-                [],
-                '')
+        #severity in TheHive is either low, medium or high
+        #while severity in QRadar is from 1 to 10
+        #low will be [1;4] => 1
+        #medium will be [5;6] => 2
+        #high will be [7;10] => 3
+        if offense['severity'] < 5:
+            offense['THSeverity'] = 1
+        elif offense['severity'] < 7:
+            offense['THSeverity'] = 2
+        elif offense['severity'] < 11:
+            offense['THSeverity'] = 3
 
-            esAlertId = theHiveConnector.createAlert(alert)
-            logger.info('Alert created under ES id: %s', str(esAlertId))
+        #creating the alert
+        alert = theHiveConnector.craftAlert(
+            offense['description'],
+            offense['THdescription'],
+            offense['THSeverity'],
+            offense['start_time'],
+            ['QRadar', 'Offense', 'Synapse'],
+            2,
+            'Imported',
+            'internal',
+            'QRadar_Offenses',
+            str(offense['id']),
+            [],
+            '')
+
+        response = theHiveConnector.createAlert(alert)
+        esAlertId = response['id']
+        logger.info('Alert created under ES id: %s', str(esAlertId))
 
         report['success'] = True
+        report['alertReference'] = response['sourceRef']
+        report['alertId'] = response['id']
+        report['offenseId'] = str(offense['id'])
         return report
 
     except Exception as e:
