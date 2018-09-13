@@ -95,14 +95,16 @@ def offense2Alert(timerange):
         for offense in offensesList:
             #the offense type is an int (when queried through api)
             #which has to be mapped with a string
-            theHiveAlert = qRadarOffenseToHiveAlert(theHiveConnector, offense)
-            esAlertId = theHiveConnector.createAlert(alert)
+            theHiveAlert = qradarOffenseToHiveAlert(theHiveConnector, offense)
+            esAlertId = theHiveConnector.createAlert(theHiveAlert)
             logger.info('Alert created under ES id: %s', str(esAlertId))
 
         report['success'] = True
         return report
 
     except Exception as e:
+            # FIXME This should return whether or not QRadar reading or TheHive raising
+            # failed.
             logger.error('Failed to create alert from QRadar offense', exc_info=True)
             report['success'] = False
             report['message'] = str(e)
