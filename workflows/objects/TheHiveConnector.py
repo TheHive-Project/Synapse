@@ -186,8 +186,7 @@ class TheHiveConnector:
         response = self.theHiveApi.create_alert(alert)
 
         if response.status_code == 201:
-            esAlertId = response.json()['id']
-            return esAlertId
+            return response.json()
         else:
             self.logger.error('Alert creation failed')
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
