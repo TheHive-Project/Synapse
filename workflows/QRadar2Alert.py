@@ -3,6 +3,8 @@
 
 import os, sys
 import logging
+import copy
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 app_dir = current_dir + '/..'
 sys.path.insert(0, current_dir)
@@ -10,6 +12,63 @@ sys.path.insert(0, current_dir)
 from common.common import getConf
 from objects.QRadarConnector import QRadarConnector
 from objects.TheHiveConnector import TheHiveConnector
+
+def getOffenses(qradarConnector, timerange):
+    return qradarConnector.getOffenses(timerange)
+    
+def getEnrichedOffenses(qradarConnector, timerange):
+    enrichedOffenses = []
+
+    for offense in getOffenses(qradarConnector, timerange):
+        enrichedOffenses.append(enrichOffense(qradarConnector, offense))
+
+    return enrichedOffenses
+
+def enrichOffense(qradarConnector, offense):
+    enriched = copy.deepcopy(offense)
+
+    enriched['offense_type_str'] = \
+                qradarConnector.getOffenseTypeStr(offense['offense_type'])
+
+    #adding the first 3 raw logs
+    enriched['logs'] = qradarConnector.getOffenseLogs(enriched)
+
+    return enriched
+
+def qradarOffenseToHiveAlert(theHiveConnector, offense):
+
+    def getHiveSeverity(offense):
+        #severity in TheHive is either low, medium or high
+        #while severity in QRadar is from 1 to 10
+        #low will be [1;4] => 1
+        #medium will be [5;6] => 2
+        #high will be [7;10] => 3
+        if offense['severity'] < 5:
+            return 1
+        elif offense['severity'] < 7:
+            return 2
+        elif offense['severity'] < 11:
+            return 3
+
+        return 1
+
+    #creating the alert
+    alert = theHiveConnector.craftAlert(
+        offense['description'],
+        craftAlertDescription(offense),
+        getHiveSeverity(offense),
+        offense['start_time'],
+        ['QRadar', 'Offense', 'Synapse'],
+        2,
+        'Imported',
+        'internal',
+        'QRadar_Offenses',
+        str(offense['id']),
+        [],
+        '')
+
+    return alert
+
 
 def offense2Alert(timerange):
     """
@@ -28,49 +87,15 @@ def offense2Alert(timerange):
 
         qradarConnector = QRadarConnector(cfg)
         theHiveConnector = TheHiveConnector(cfg)
-        offensesList = qradarConnector.getOffenses(timerange)
+
+        offensesList = getEnrichedOffenses(qradarConnector, timerange)
         
         #each offenses in the list is represented as a dict
         #we enrich this dict with additional details
         for offense in offensesList:
             #the offense type is an int (when queried through api)
             #which has to be mapped with a string
-            offense['offense_type_str'] = \
-                qradarConnector.getOffenseTypeStr(offense['offense_type'])
-
-            #adding the first 3 raw logs
-            offense['logs'] = qradarConnector.getOffenseLogs(offense)
-
-            #crafting a nice description
-            offense['THdescription'] = craftAlertDescription(offense)
-
-            #severity in TheHive is either low, medium or high
-            #while severity in QRadar is from 1 to 10
-            #low will be [1;4] => 1
-            #medium will be [5;6] => 2
-            #high will be [7;10] => 3
-            if offense['severity'] < 5:
-                offense['THSeverity'] = 1
-            elif offense['severity'] < 7:
-                offense['THSeverity'] = 2
-            elif offense['severity'] < 11:
-                offense['THSeverity'] = 3
-
-            #creating the alert
-            alert = theHiveConnector.craftAlert(
-                offense['description'],
-                offense['THdescription'],
-                offense['THSeverity'],
-                offense['start_time'],
-                ['QRadar', 'Offense', 'Synapse'],
-                2,
-                'Imported',
-                'internal',
-                'QRadar_Offenses',
-                str(offense['id']),
-                [],
-                '')
-
+            theHiveAlert = qRadarOffenseToHiveAlert(theHiveConnector, offense)
             esAlertId = theHiveConnector.createAlert(alert)
             logger.info('Alert created under ES id: %s', str(esAlertId))
 
