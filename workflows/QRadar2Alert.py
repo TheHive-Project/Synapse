@@ -105,6 +105,7 @@ def offense2Alert(timerange):
     except Exception as e:
             logger.error('Failed to create alert from QRadar offense', exc_info=True)
             report['success'] = False
+            report['message'] = str(e)
             return report
             
 def craftAlertDescription(offense):

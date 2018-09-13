@@ -69,10 +69,10 @@ def QRadar2alert():
                 return jsonify(workflowReport), 500
         else:
             logger.error('Missing <timerange> key/value')
-            return jsonify({'sucess':False}), 500
+            return jsonify({'sucess':False, 'message':"timerange key missing in request"}), 500
     else:
         logger.error('Not json request')
-        return jsonify({'sucess':False, 'message':'NOT JSON'}), 400
+        return jsonify({'sucess':False, 'message':"Request didn't contain valid JSON"}), 400
 
 @app.route('/version', methods=['GET'])
 def getSynapseVersion():
