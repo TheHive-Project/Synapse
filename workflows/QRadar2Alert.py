@@ -93,7 +93,7 @@ def allOffense2Alert(timerange):
         for offense in offensesList:
 
             offense_report = dict()
-            offense_report['original'] = offense
+            offense_report['original_offense'] = offense
             
             try:
                 theHiveAlert = qradarOffenseToHiveAlert(theHiveConnector, offense)
@@ -103,16 +103,14 @@ def allOffense2Alert(timerange):
             except Exception as e:
                 offense_report['success'] = False
                 offense_report['message'] = str(e)
-                # Set overall success if any fail
+                # Set overall success if any fails
                 report['success'] = False
 
             report['offenses'].append(offense_report)
 
     except Exception as e:
 
-            # FIXME This should return whether or not QRadar reading or TheHive raising
-            # failed.
-            logger.error('Failed to create alert from QRadar offense', exc_info=True)
+            logger.error('Failed to create alert from QRadar offense (retrieving offenses failed)', exc_info=True)
             report['success'] = False
             report['message'] = str(e)
     
