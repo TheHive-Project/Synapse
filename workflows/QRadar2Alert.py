@@ -13,13 +13,10 @@ from common.common import getConf
 from objects.QRadarConnector import QRadarConnector
 from objects.TheHiveConnector import TheHiveConnector
 
-def getOffenses(qradarConnector, timerange):
-    return qradarConnector.getOffenses(timerange)
-    
 def getEnrichedOffenses(qradarConnector, timerange):
     enrichedOffenses = []
 
-    for offense in getOffenses(qradarConnector, timerange):
+    for offense in qradarConnector.getOffenses(timerange):
         enrichedOffenses.append(enrichOffense(qradarConnector, offense))
 
     return enrichedOffenses
@@ -70,17 +67,18 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
     return alert
 
 
-def offense2Alert(timerange):
+def allOffense2Alert(timerange):
     """
        Get all openned offense created within the last 
        <timerange> minutes and creates alerts for them in
        TheHive
     """
     logger = logging.getLogger(__name__)
-    logger.info('%s.offense2Alert starts', __name__)
+    logger.info('%s.allOffense2Alert starts', __name__)
 
     report = dict()
-    report['success'] = bool()
+    report['success'] = True
+    report['offenses'] = list()
 
     try:
         cfg = getConf()
@@ -93,22 +91,32 @@ def offense2Alert(timerange):
         #each offenses in the list is represented as a dict
         #we enrich this dict with additional details
         for offense in offensesList:
-            #the offense type is an int (when queried through api)
-            #which has to be mapped with a string
-            theHiveAlert = qradarOffenseToHiveAlert(theHiveConnector, offense)
-            esAlertId = theHiveConnector.createAlert(theHiveAlert)
-            logger.info('Alert created under ES id: %s', str(esAlertId))
 
-        report['success'] = True
-        return report
+            offense_report = dict()
+            offense_report['original'] = offense
+            
+            try:
+                theHiveAlert = qradarOffenseToHiveAlert(theHiveConnector, offense)
+                offense_report['raised_alert'] = theHiveAlert.jsonify()
+                offense_report['success'] = True
+
+            except Exception as e:
+                offense_report['success'] = False
+                offense_report['message'] = str(e)
+                # Set overall success if any fail
+                report['success'] = False
+
+            report['offenses'].append(offense_report)
 
     except Exception as e:
+
             # FIXME This should return whether or not QRadar reading or TheHive raising
             # failed.
             logger.error('Failed to create alert from QRadar offense', exc_info=True)
             report['success'] = False
             report['message'] = str(e)
-            return report
+    
+    return report
             
 def craftAlertDescription(offense):
     """
