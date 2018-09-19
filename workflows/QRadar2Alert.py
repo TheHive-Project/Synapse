@@ -4,6 +4,7 @@
 import os, sys
 import logging
 import copy
+import itertools
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 app_dir = current_dir + '/..'
@@ -22,10 +23,36 @@ def getEnrichedOffenses(qradarConnector, timerange):
     return enrichedOffenses
 
 def enrichOffense(qradarConnector, offense):
+
     enriched = copy.deepcopy(offense)
+
+    artifacts = []
 
     enriched['offense_type_str'] = \
                 qradarConnector.getOffenseTypeStr(offense['offense_type'])
+
+    # Add the offense source explicitly 
+    if enriched['offense_type_str'] == "Username":
+        artifacts.append({"data":offense["offense_source"], "dataType":"user", "message":"Offense Source"})
+
+    if enriched['offense_type_str'] == "Destination IP" or enriched['offense_type_str'] == "Source IP":
+        artifacts.append({"data":offense["offense_source"], "dataType":"ip", "message": enriched['offense_type_str']})
+
+    # Add the local and remote sources
+    for ip in qradarConnector.getSourceIPs(enriched):
+        artifacts.append({"data":ip, "dataType":"ip", "message":"Source IP"})
+
+    for ip in qradarConnector.getLocalDestinationIPs(enriched):
+        artifacts.append({"data":ip, "dataType":"ip", "message":"Local destination IP"})
+
+    # Add all the observables
+    enriched["artifacts"] = artifacts
+
+    # Get the Rule details - NYI
+    #enriched["rule_names"] = qradarConnector.getRuleNames(enriched)
+
+    # Try and guess a use case / type - NYI 
+    #enriched["use_case"] = guessUseCase(enriched)
 
     #adding the first 3 raw logs
     enriched['logs'] = qradarConnector.getOffenseLogs(enriched)
@@ -49,19 +76,35 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
 
         return 1
 
-    #creating the alert
+    #
+    # Creating the alert
+    #
+
+    # Setup Tags
+    tags = ['QRadar', 'Offense', 'Synapse']
+    
+    if "categories" in offense:
+        for cat in offense['categories']:
+            tags.append(cat)
+
+    artifacts = []
+    for artifact in offense['artifacts']:
+        hiveArtefact = theHiveConnector.craftAlertArtifact(dataType = artifact["dataType"], data = artifact["data"], message=artifact["message"])
+        artifacts.append(hiveArtefact)
+
+    # Build TheHive alert
     alert = theHiveConnector.craftAlert(
         offense['description'],
         craftAlertDescription(offense),
         getHiveSeverity(offense),
         offense['start_time'],
-        ['QRadar', 'Offense', 'Synapse'],
+        tags,
         2,
         'Imported',
         'internal',
         'QRadar_Offenses',
         str(offense['id']),
-        [],
+        artifacts,
         '')
 
     return alert
@@ -97,12 +140,16 @@ def allOffense2Alert(timerange):
             
             try:
                 theHiveAlert = qradarOffenseToHiveAlert(theHiveConnector, offense)
+                theHiveConnector.createAlert(theHiveAlert)
+
                 offense_report['raised_alert'] = theHiveAlert.jsonify()
                 offense_report['success'] = True
 
             except Exception as e:
                 offense_report['success'] = False
                 offense_report['message'] = str(e)
+                offense_report['message'] = "Couldn't raise alert in the Hive (%s)" % str(e)
+
                 # Set overall success if any fails
                 report['success'] = False
 
@@ -112,7 +159,7 @@ def allOffense2Alert(timerange):
 
             logger.error('Failed to create alert from QRadar offense (retrieving offenses failed)', exc_info=True)
             report['success'] = False
-            report['message'] = str(e)
+            report['message'] = "Couldn't create alert from QRadar offense (couldn't retrieve offenses: %s)" % str(e)
     
     return report
             
