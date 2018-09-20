@@ -6,6 +6,51 @@ import json
 
 from thehive4py.api import TheHiveApi
 from thehive4py.models import Case, CaseTask, CaseTaskLog, CaseObservable, AlertArtifact, Alert
+from thehive4py.query import Eq
+
+# Only required to extend TheHiveApi
+import requests
+from thehive4py.exceptions import *
+
+class TheHiveExtendedApi(TheHiveApi):
+    """ This is a class that adds a few very basic capabilities to 
+    theHive4py. Unfortunately at time of writing the library was
+    going through a rewrite, so hopefully this will not be needed
+    soon. This is not typically a good idea and is only temporary
+    until the upstream library is changed."""
+
+    def promoteAlertToCase(self, alertId):
+
+        req = self.url + "/api/alert/{}/createCase".format(alert_id)
+
+        try:
+            return requests.patch(req, headers={'Content-Type': 'application/json'}, json=data, proxies=self.proxies, auth=self.auth, verify=self.cert)
+
+        except requests.exceptions.RequestException:
+            raise AlertException("Couldn't promote alert to case: {}".format(e))
+
+        return None
+
+    def find_case_templates(self, **attributes):
+        find_url = "/api/case/template/_search"
+
+        req = self.url + find_url
+
+        # Add range and sort parameters
+        params = {
+            "range": attributes.get("range", "all"),
+            "sort": attributes.get("sort", [])
+        }
+
+        # Add body
+        data = {
+            "query": attributes.get("query", {})
+        }
+
+        try:
+            return requests.post(req, params=params, json=data, proxies=self.proxies, auth=self.auth, verify=self.cert)
+        except requests.exceptions.RequestException as e:
+            raise TheHiveException("Error: {}".format(e))
 
 class TheHiveConnector:
     'TheHive connector'
@@ -17,12 +62,27 @@ class TheHiveConnector:
         self.theHiveApi = self.connect()
 
     def connect(self):
+            
+
         self.logger.info('%s.connect starts', __name__)
 
         url = self.cfg.get('TheHive', 'url')
         api_key = self.cfg.get('TheHive', 'api_key')
 
-        return TheHiveApi(url, api_key)
+        return TheHiveExtendedApi(url, api_key)
+
+    def findFirstMatchingTemplate(self, searchstring):
+
+        query = Eq("status", "Ok")
+        allTemplates = self.theHiveApi.find_case_templates(query=query)
+        if allTemplates.status_code != 200:
+            raise ValueError("Couldn't find matching template!")
+
+        for template in allTemplates.json():
+            if searchstring in template['name']:
+                return template
+
+        return None
 
     def searchCaseByDescription(self, string):
         #search case with a specific string in description

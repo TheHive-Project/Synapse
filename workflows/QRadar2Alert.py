@@ -103,7 +103,7 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
         'Imported',
         'internal',
         'QRadar_Offenses',
-        str(offense['id']),
+        'usertest_%s' % str(offense['id']),
         artifacts,
         '')
 

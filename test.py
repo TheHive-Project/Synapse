@@ -118,5 +118,22 @@ class TestQRadarBasicOffenseRetrieval(unittest.TestCase):
                                                )
         self.assertEqual(len(theHiveAlert.artifacts), 1)
 
+class LiveTests(unittest.TestCase):
+    """ Note that these require an active connection to a real
+    Hive instance! """
+
+    def test_promote_alert(self):
+
+    def test_connect_search_template(self):
+        
+        cfg = getConf()
+        qradarConnector = QRadarConnector(cfg)
+        theHiveConnector = TheHiveConnector(cfg)
+
+        test = theHiveConnector.findFirstMatchingTemplate("UC-99")
+
+        # Just test this doesn't crash anything!
+        self.assertEqual(1,1)
+
 if __name__ == '__main__':
     unittest.main()
