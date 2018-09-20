@@ -332,7 +332,7 @@ argument-naming-style=camelCase
 #argument-rgx=
 
 # Naming style matching correct attribute names
-attr-naming-style=snake_case
+attr-naming-style=camelCase
 
 # Regular expression matching correct attribute names. Overrides attr-naming-
 # style

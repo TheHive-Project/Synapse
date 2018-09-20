@@ -123,17 +123,25 @@ class LiveTests(unittest.TestCase):
     Hive instance! """
 
     def test_promote_alert(self):
+        cfg = getConf()
+        theHiveConnector = TheHiveConnector(cfg)
+        class MockAlert(object):
+            id = "1a879c812483da3d902b6fa57fd7462c"
+
+        theMockAlert = MockAlert()
+
+        with self.assertRaises(ValueError) as contextmanager:
+            theHiveConnector.promoteAlertToCase(theMockAlert)
 
     def test_connect_search_template(self):
-        
+
         cfg = getConf()
-        qradarConnector = QRadarConnector(cfg)
         theHiveConnector = TheHiveConnector(cfg)
 
-        test = theHiveConnector.findFirstMatchingTemplate("UC-99")
+        test = theHiveConnector.findFirstMatchingTemplate("doesnotexist")
 
         # Just test this doesn't crash anything!
-        self.assertEqual(1,1)
+        self.assertEqual(test,None)
 
 if __name__ == '__main__':
     unittest.main()

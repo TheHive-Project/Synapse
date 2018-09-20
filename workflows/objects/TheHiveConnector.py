@@ -3,35 +3,42 @@
 
 import logging
 import json
+# Only required to extend TheHiveApi
+import requests
 
 from thehive4py.api import TheHiveApi
 from thehive4py.models import Case, CaseTask, CaseTaskLog, CaseObservable, AlertArtifact, Alert
 from thehive4py.query import Eq
 
 # Only required to extend TheHiveApi
-import requests
-from thehive4py.exceptions import *
+from thehive4py.exceptions import TheHiveException, AlertException
 
 class TheHiveExtendedApi(TheHiveApi):
-    """ This is a class that adds a few very basic capabilities to 
+    """ This is a class that adds a few very basic capabilities to
     theHive4py. Unfortunately at time of writing the library was
     going through a rewrite, so hopefully this will not be needed
     soon. This is not typically a good idea and is only temporary
     until the upstream library is changed."""
 
-    def promoteAlertToCase(self, alertId):
+    def promote_alert_to_case(self, alertId):
+        #pylint:disable=C0103
+        """ This uses the TheHiveAPI to promote an alert to a case """
 
-        req = self.url + "/api/alert/{}/createCase".format(alert_id)
+        req = self.url + "/api/alert/{}/createCase".format(alertId)
 
         try:
-            return requests.patch(req, headers={'Content-Type': 'application/json'}, json=data, proxies=self.proxies, auth=self.auth, verify=self.cert)
+            return requests.post(req, headers={'Content-Type': 'application/json'},
+                                 proxies=self.proxies, auth=self.auth,
+                                 verify=self.cert, data=json.dumps({}))
 
-        except requests.exceptions.RequestException:
-            raise AlertException("Couldn't promote alert to case: {}".format(e))
+        except requests.exceptions.RequestException as theException:
+            raise AlertException("Couldn't promote alert to case: {}".format(theException))
 
         return None
 
     def find_case_templates(self, **attributes):
+        #pylint:disable=C0103
+        """ This uses TheHive API to allow searching for a template """
         find_url = "/api/case/template/_search"
 
         req = self.url + find_url
@@ -48,9 +55,12 @@ class TheHiveExtendedApi(TheHiveApi):
         }
 
         try:
-            return requests.post(req, params=params, json=data, proxies=self.proxies, auth=self.auth, verify=self.cert)
-        except requests.exceptions.RequestException as e:
-            raise TheHiveException("Error: {}".format(e))
+            return requests.post(req, params=params, json=data,
+                                 proxies=self.proxies, auth=self.auth,
+                                 verify=self.cert)
+
+        except requests.exceptions.RequestException as theException:
+            raise TheHiveException("Error: {}".format(theException))
 
 class TheHiveConnector:
     'TheHive connector'
@@ -62,14 +72,14 @@ class TheHiveConnector:
         self.theHiveApi = self.connect()
 
     def connect(self):
-            
+        """ This returns a hive connection """
 
         self.logger.info('%s.connect starts', __name__)
 
         url = self.cfg.get('TheHive', 'url')
-        api_key = self.cfg.get('TheHive', 'api_key')
+        apiKey = self.cfg.get('TheHive', 'api_key')
 
-        return TheHiveExtendedApi(url, api_key)
+        return TheHiveExtendedApi(url, apiKey)
 
     def findFirstMatchingTemplate(self, searchstring):
 
@@ -246,6 +256,25 @@ class TheHiveConnector:
             caseTemplate=caseTemplate)
 
         return alert
+
+    def promoteAlertIdToCase(self, alertId):
+        """ Given an alertid, try and promote the alert to a case """
+
+        self.logger.info('%s.promoteAlertIdToCase starts', __name__)
+
+        response = self.theHiveApi.promote_alert_to_case(alertId)
+
+        if response.status_code == 201:
+            return response.json()
+        else:
+            self.logger.error('Alert promotion failed (%s) %s',
+                              response.status_code, response.text)
+            raise ValueError('Alert promotion failed (%s) %s' %
+                             (response.status_code, response.text))
+
+    def promoteAlertToCase(self, alert):
+        """ Given an Alert model, try and promote to case """
+        return self.promoteAlertIdToCase(alert.id)
 
     def createAlert(self, alert):
         self.logger.info('%s.createAlert starts', __name__)
