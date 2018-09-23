@@ -96,6 +96,9 @@ class Webhook:
     def isClosed(self):
         """
             Check if the webhook describes a closing event
+            if it returns false, it doesn't mean that the case is open
+            if a case is already closed, and a user update something
+            the webhook will not describe a closing event but an update
 
             :return: True if it is a closing event, False if not
             :rtype: boolean
@@ -103,9 +106,15 @@ class Webhook:
 
         self.logger.info('%s.isClosed starts', __name__)
 
-        if self.data['details']['status'] == 'Resolved':
-            return True
-        else:
+        try:
+            if self.data['details']['status'] == 'Resolved':
+                return True
+            else:
+                return False
+        except KeyError:
+            #happens when the case is already closed
+            #and user updates the case with a custom field (for example)
+            # then status key is not included in the webhook
             return False
 
     def isQRadarAlertMarkedAsRead(self):
@@ -163,7 +172,9 @@ class Webhook:
                     #case not opened from an alert
                     return False
             else:
-                #not a case or not closed
+                #not a case or have not been closed when
+                #when the webhook has been issued
+                #(might be open or already closed)
                 return False
     
         except Exception as e:
