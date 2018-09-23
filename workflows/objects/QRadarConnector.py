@@ -47,7 +47,7 @@ class QRadarConnector:
             client = RestApiClient(server,
                 auth_token,
                 cert_filepath,
-                api_version) 
+                api_version)
 
             arielClient = APIClient(server,
                 auth_token,
@@ -81,26 +81,26 @@ class QRadarConnector:
         try:
             #getting current time as epoch in millisecond
             now = int(round(time.time() * 1000))
-        
+
             #filtering by time for offenses
             #timerange is in minute while start_time in QRadar is in millisecond since epoch
             #converting timerange in second then in millisecond
             timerange = timerange * 60 * 1000
-        
+
             #timerange is by default 1 minutes
             #so timeFilter is now minus 1 minute
             #this variable will be use to query QRadar for every offenses since timeFilter
             timeFilter = now - timerange
-        
+
             # %3E <=> >
             # moreover we filter on OPEN offenses only
             response = self.client.call_api(
                 'siem/offenses?filter=start_time%3E' + str(timeFilter) + '%20and%20status%3DOPEN', 'GET')
-        
+
             try:
                 response_text = response.read().decode('utf-8')
                 response_body = json.loads(response_text)
-        
+
                 #response_body would look like
                 #[
                 #  {
@@ -195,6 +195,42 @@ class QRadarConnector:
 
         return address_strings
 
+    def getRuleNames(self, offense):
+
+        ruleNames = []
+
+        if "rules" not in offense:
+            return ruleNames
+
+        for rule in offense['rules']:
+
+            if "id" not in rule:
+                continue
+
+            if "type" not in rule:
+                continue
+
+            if rule["type"] != "CRE_RULE":
+                continue
+
+            rule_id = rule['id']
+
+            try:
+
+                response = self.client.call_api("siem/analytics/rules/%s" % rule_id, "GET")
+                response_text = response.read().decode('utf-8')
+                response_body = json.loads(response_text)
+
+                if response.code == 200:
+                    ruleNames.append(response_body["name"])
+                else:
+                    self.logger.warning("Couldn't get rule name for offense")
+
+            except Exception as e:
+                self.logger.warning("Couldn't get rule name for offense")
+
+        return ruleNames
+
     def getSourceIPs(self, offense):
         if not "source_address_ids" in offense:
             return []
@@ -209,7 +245,7 @@ class QRadarConnector:
 
     def getOffenseTypeStr(self, offenseTypeId):
         """
-            Returns the offense type as string given the offense type id 
+            Returns the offense type as string given the offense type id
 
             :param offenseTypeId: offense type id
             :type timerange: int
@@ -266,7 +302,7 @@ class QRadarConnector:
 
     def getOffenseLogs(self, offense):
         """
-            Returns the first 3 raw logs for a given offense 
+            Returns the first 3 raw logs for a given offense
 
             :param offense: offense in QRadar
             :type offense: dict
@@ -334,7 +370,7 @@ class QRadarConnector:
             :return body_json: the result of the aql query
             :rtype offenseTypeStr: dict
         """
-        
+
         self.logger.info('%s.aqlSearch starts', __name__)
         try:
             response = self.arielClient.create_search(aql_query)
@@ -355,7 +391,7 @@ class QRadarConnector:
 
             response = self.arielClient.get_search_results(
                 search_id, 'application/json')
-    
+
             body = response.read().decode('utf-8')
             body_json = json.loads(body)
 
@@ -407,7 +443,7 @@ class QRadarConnector:
         except Exception as e:
             self.logger.error('Failed to check offense %s status', offenseId, exc_info=True)
             raise
-            
+
 
     def closeOffense(self, offenseId):
         """
@@ -417,7 +453,7 @@ class QRadarConnector:
             :type offenseId: str
 
             :return: nothing
-            :rtype: 
+            :rtype:
         """
 
         self.logger.info('%s.closeOffense starts', __name__)
@@ -431,7 +467,7 @@ class QRadarConnector:
             'siem/offenses/' + str(offenseId) + '?status=CLOSED&closing_reason_id=1', 'POST')
             response_text = response.read().decode('utf-8')
             response_body = json.loads(response_text)
-    
+
             #response_body would look like
             #[
             #  {
@@ -452,4 +488,3 @@ class QRadarConnector:
         except Exception as e:
             self.logger.error('Failed to close offense %s', offenseId, exc_info=True)
             raise
-

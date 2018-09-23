@@ -31,6 +31,11 @@ class MockQRadarAPI:
         """Return mocked source IPs (NYI)"""
         return []
 
+    def getRuleNames(self, offense):
+        #pylint: disable=unused-argument
+        """Return mocked rule names (NYI)"""
+        return ["Rule 1", "Rule 2"]
+
     def getLocalDestinationIPs(self, offense):
         #pylint: disable=unused-argument
         """Return mocked local destination IPs (NYI)"""
@@ -80,11 +85,21 @@ class TestQRadarBasicOffenseRetrieval(unittest.TestCase):
                       "offense_source":"mock", "destination_networks": "foo",
                       "source_network":"bar", "severity":2, "start_time":0}
 
+    sample_offense_uc = {"id":27, "offense_type":3, "description":"[UC-123] test",
+                        "offense_source":"mock", "destination_networks": "foo",
+                        "source_network":"bar", "severity":2, "start_time":0}
+
     def testBasicRetrieval(self):
         """Test basic offense retrieval"""
         mockQRadar = MockQRadarAPI()
         offenses = getEnrichedOffenses(mockQRadar, 1)
         self.assertEqual(len(offenses), 1)
+
+    def testBasicRetrievalUC(self):
+        """Test basic use case extraction"""
+        mockQRadar = MockQRadarAPI()
+        enriched = enrichOffense(mockQRadar, self.sample_offense_uc)
+        self.assertEqual(enriched['use_case'], "UC-123")
 
     def testBasicEnrichment(self):
         """Test basic offense enrichment"""
@@ -127,7 +142,7 @@ class LiveTests(unittest.TestCase):
         cfg = getConf()
         theHiveConnector = TheHiveConnector(cfg)
         class MockAlert(object):
-            id = "1a879c812483da3d902b6fa57fd7462c"
+            id = "NOTFOUND"
 
         theMockAlert = MockAlert()
 

@@ -4,7 +4,7 @@
 import os, sys
 import logging
 import copy
-import itertools
+import re
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 app_dir = current_dir + '/..'
@@ -22,15 +22,34 @@ def getEnrichedOffenses(qradarConnector, timerange):
 
     return enrichedOffenses
 
+
+def extractUseCase(offense):
+    # Should eventually come from the configuration
+    UC_REGEX = re.compile(".*\[([^\]]*)\].*")
+
+    for field in ["title","description"]:
+        if field in offense:
+            if UC_REGEX.match(offense[field]):
+                uc_string = UC_REGEX.match(offense[field]).groups(1)[0]
+                return uc_string
+
+    if "rule_names" in offense:
+        for rule_name in offense['rule_names']:
+            if UC_REGEX.match(rule_name):
+                uc_string = UC_REGEX.match(rule_name).groups(1)[0]
+                return uc_string
+
+    return None
+
 def enrichOffense(qradarConnector, offense):
 
     enriched = copy.deepcopy(offense)
 
-    # Get the Rule details - NYI
-    #enriched["rule_names"] = qradarConnector.getRuleNames(enriched)
+    enriched["rule_names"] = qradarConnector.getRuleNames(enriched)
 
-    # Try and guess a use case / type - NYI
-    #enriched["use_case"] = guessUseCase(enriched)
+    uc = extractUseCase(enriched)
+    if uc:
+        enriched["use_case"] = uc
 
     # Try and extract some use artefacts
     artifacts = []
@@ -95,6 +114,13 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
         for cat in offense['categories']:
             tags.append(cat)
 
+    # Setup type
+    caseType = "internal"
+    if "use_case" in offense:
+        caseType = offense["use_case"]
+        tags.append(offense["use_case"])
+
+    # Setup Artifacts
     artifacts = []
     for artifact in offense['artifacts']:
 
@@ -139,7 +165,7 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
         tags,
         2,
         'Imported',
-        'internal',
+        caseType,
         'QRadar_Offenses',
         'usertest_%s' % str(offense['id']),
         artifacts,
