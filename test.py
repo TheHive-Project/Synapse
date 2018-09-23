@@ -117,6 +117,7 @@ class TestQRadarBasicOffenseRetrieval(unittest.TestCase):
                                                               self.sample_offense)
                                                )
         self.assertEqual(len(theHiveAlert.artifacts), 1)
+        self.assertEqual(theHiveAlert.artifacts[0].dataType, "other")
 
 class LiveTests(unittest.TestCase):
     """ Note that these require an active connection to a real
