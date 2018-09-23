@@ -166,6 +166,47 @@ class QRadarConnector:
             self.logger.error('getOffenses failed', exc_info=True)
             raise
 
+    def getAddressesFromIDs(self, path, field, ids):
+
+        self.logger.debug("Looking up %s with %s IDs..." % (path,ids))
+
+        address_strings = []
+
+        for address_id in ids:
+
+            try:
+                response = self.client.call_api('siem/%s/%s' % (path, address_id), 'GET')
+                response_text = response.read().decode('utf-8')
+                response_body = json.loads(response_text)
+
+                try:
+                    if response.code == 200:
+                        address_strings.append(response_body[field])
+                    else:
+                        self.logger.warning("Couldn't get id %s from path %s (response code %s)" % (address_id, path, response.code))
+
+                except Exception as e:
+                    self.logger.error('%s.getAddressFromIDs failed', __name__, exc_info=True)
+                    raise e
+
+            except Exception as e:
+                self.logger.error('%s.getAddressFromIDs failed', __name__, exc_info=True)
+                raise e
+
+        return address_strings
+
+    def getSourceIPs(self, offense):
+        if not "source_address_ids" in offense:
+            return []
+
+        return self.getAddressesFromIDs("source_addresses", "source_ip", offense["source_address_ids"])
+
+    def getLocalDestinationIPs(self, offense):
+        if not "local_destination_address_ids" in offense:
+            return []
+
+        return self.getAddressesFromIDs("local_destination_addresses", "local_destination_ip", offense["local_destination_address_ids"])
+
     def getOffenseTypeStr(self, offenseTypeId):
         """
             Returns the offense type as string given the offense type id 
