@@ -13,55 +13,6 @@ from thehive4py.query import Eq
 # Only required to extend TheHiveApi
 from thehive4py.exceptions import TheHiveException, AlertException
 
-class TheHiveExtendedApi(TheHiveApi):
-    """ This is a class that adds a few very basic capabilities to
-    theHive4py. Unfortunately at time of writing the library was
-    going through a rewrite, so hopefully this will not be needed
-    soon. This is not typically a good idea and is only temporary
-    until the upstream library is changed."""
-
-    def promote_alert_to_case(self, alertId):
-        #pylint:disable=C0103
-        """ This uses the TheHiveAPI to promote an alert to a case """
-
-        req = self.url + "/api/alert/{}/createCase".format(alertId)
-
-        try:
-            return requests.post(req, headers={'Content-Type': 'application/json'},
-                                 proxies=self.proxies, auth=self.auth,
-                                 verify=self.cert, data=json.dumps({}))
-
-        except requests.exceptions.RequestException as theException:
-            raise AlertException("Couldn't promote alert to case: {}".format(theException))
-
-        return None
-
-    def find_case_templates(self, **attributes):
-        #pylint:disable=C0103
-        """ This uses TheHive API to allow searching for a template """
-        find_url = "/api/case/template/_search"
-
-        req = self.url + find_url
-
-        # Add range and sort parameters
-        params = {
-            "range": attributes.get("range", "all"),
-            "sort": attributes.get("sort", [])
-        }
-
-        # Add body
-        data = {
-            "query": attributes.get("query", {})
-        }
-
-        try:
-            return requests.post(req, params=params, json=data,
-                                 proxies=self.proxies, auth=self.auth,
-                                 verify=self.cert)
-
-        except requests.exceptions.RequestException as theException:
-            raise TheHiveException("Error: {}".format(theException))
-
 class TheHiveConnector:
     'TheHive connector'
 
@@ -79,7 +30,7 @@ class TheHiveConnector:
         url = self.cfg.get('TheHive', 'url')
         apiKey = self.cfg.get('TheHive', 'api_key')
 
-        return TheHiveExtendedApi(url, apiKey)
+        return TheHiveApi(url, apiKey)
 
     def findFirstMatchingTemplate(self, searchstring):
 
