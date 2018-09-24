@@ -75,7 +75,12 @@ def enrichOffense(qradarConnector, offense):
         artifacts.append({"data":ipAddr, "dataType":"ip", "message":"Local destination IP"})
 
     # Extract potential domain names - NYI
-    #enriched[""]
+    # NYI This is a basic proof of concept and will likely change
+    # fields = {"domain":["URL_Domain","Domain"], "uri":["Domain_URL"]}
+    # for type in fields.keys():
+    #    type_artifacts = qradarConnector.getFieldsFromOffenseLogs(fields[type])
+    #    for type_artifact in type_artifacts:
+    #       artifacts.append("data":type_artifact["data"]) 
 
     # Add all the observables
     enriched["artifacts"] = artifacts

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf8 -*-
 
+import time
+import json
 import logging
+
 from .QRadar_Objects.RestApiClient import RestApiClient
 from .QRadar_Objects.arielapiclient import APIClient
-import time, json
 
 class QRadarConnector:
     'QRadar connector'
@@ -45,14 +47,14 @@ class QRadarConnector:
             api_version = self.cfg.get('QRadar', 'api_version')
 
             client = RestApiClient(server,
-                auth_token,
-                cert_filepath,
-                api_version)
+                                   auth_token,
+                                   cert_filepath,
+                                   api_version)
 
             arielClient = APIClient(server,
-                auth_token,
-                cert_filepath,
-                api_version)
+                                    auth_token,
+                                    cert_filepath,
+                                    api_version)
 
             clients = list()
             clients.append(client)
@@ -149,7 +151,7 @@ class QRadarConnector:
                 #  }
                 #]
 
-                if (response.code == 200):
+                if response.code == 200:
                     return response_body
                 else:
                     raise ValueError(json.dumps(
@@ -159,7 +161,7 @@ class QRadarConnector:
 
             except ValueError as e:
                 self.logger.error('%s.getOffenses failed, api call returned http %s',
-                    __name__, str(response.code))
+                                  __name__, str(response.code))
                 raise
 
         except Exception as e:
@@ -167,8 +169,12 @@ class QRadarConnector:
             raise
 
     def getAddressesFromIDs(self, path, field, ids):
+        """
+            Returns the IP addresses as list of strings given the id of the address,
+            the path to the API call and the field name that will be returned
+        """
 
-        self.logger.debug("Looking up %s with %s IDs..." % (path,ids))
+        self.logger.debug("Looking up %s with %s IDs..." % (path, ids))
 
         address_strings = []
 
