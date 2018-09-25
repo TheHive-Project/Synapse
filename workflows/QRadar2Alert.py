@@ -25,19 +25,19 @@ def getEnrichedOffenses(qradarConnector, timerange):
 
 def extractUseCase(offense):
     # Should eventually come from the configuration
-    UC_REGEX = re.compile(".*\[([^\]]*)\].*")
+    UC_REGEX = re.compile(""".*\[([^\]]*)\].*""")
 
-    for field in ["title","description"]:
+    for field in ["title", "description"]:
         if field in offense:
             if UC_REGEX.match(offense[field]):
-                uc_string = UC_REGEX.match(offense[field]).groups(1)[0]
-                return uc_string
+                ucString = UC_REGEX.match(offense[field]).groups(1)[0]
+                return ucString
 
     if "rule_names" in offense:
-        for rule_name in offense['rule_names']:
-            if UC_REGEX.match(rule_name):
-                uc_string = UC_REGEX.match(rule_name).groups(1)[0]
-                return uc_string
+        for ruleName in offense['rule_names']:
+            if UC_REGEX.match(ruleName):
+                ucString = UC_REGEX.match(ruleName).groups(1)[0]
+                return ucString
 
     return None
 
@@ -80,7 +80,7 @@ def enrichOffense(qradarConnector, offense):
     # for type in fields.keys():
     #    type_artifacts = qradarConnector.getFieldsFromOffenseLogs(fields[type])
     #    for type_artifact in type_artifacts:
-    #       artifacts.append("data":type_artifact["data"]) 
+    #       artifacts.append("data":type_artifact["data"])
 
     # Add all the observables
     enriched["artifacts"] = artifacts
