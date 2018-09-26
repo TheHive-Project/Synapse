@@ -86,8 +86,8 @@ class TestQRadarBasicOffenseRetrieval(unittest.TestCase):
                       "source_network":"bar", "severity":2, "start_time":0}
 
     sample_offense_uc = {"id":27, "offense_type":3, "description":"[UC-123] test",
-                        "offense_source":"mock", "destination_networks": "foo",
-                        "source_network":"bar", "severity":2, "start_time":0}
+                         "offense_source":"mock", "destination_networks": "foo",
+                         "source_network":"bar", "severity":2, "start_time":0}
 
     def testBasicRetrieval(self):
         """Test basic offense retrieval"""
@@ -157,7 +157,7 @@ class LiveTests(unittest.TestCase):
         test = theHiveConnector.findFirstMatchingTemplate("doesnotexist")
 
         # Just test this doesn't crash anything!
-        self.assertEqual(test,None)
+        self.assertEqual(test, None)
 
 if __name__ == '__main__':
     unittest.main()

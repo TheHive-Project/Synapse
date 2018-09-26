@@ -157,6 +157,7 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
             theHiveConnector.craftAlertArtifact(dataType=theHiveDataType,
                                                 data=artifact["data"],
                                                 tags=theArtifactTags,
+                                                tlp=2,
                                                 message=artifact["message"])
 
         artifacts.append(hiveArtifact)
@@ -172,7 +173,7 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
         'Imported',
         caseType,
         'QRadar_Offenses',
-        'usertest_%s' % str(offense['id']),
+        '%s' % str(offense['id']),
         artifacts,
         '')
 
