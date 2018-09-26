@@ -90,6 +90,25 @@ def enrichOffense(qradarConnector, offense):
 
     return enriched
 
+def artifactBlacklisted(artifact):
+
+    if artifact["dataType"] == "user":
+        # FIXME - Configurable
+        if artifact["data"] in ["administrator", "admin", "root", "user",
+                                "", "N/A", "unknown"]:
+            return True
+
+    # FIXME - Actually parse IP and call is private or similar. 172 is wrong
+    if artifact["dataType"] == "ip":
+        if artifact["data"].startswith("10.") or \
+           artifact["data"].startswith("192.168.") or \
+           artifact["data"].startswith("172.") or \
+           artifact["data"].startswith("127."):
+
+            return True
+
+    return False
+
 def qradarOffenseToHiveAlert(theHiveConnector, offense):
 
     def getHiveSeverity(offense):
@@ -128,6 +147,9 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
     # Setup Artifacts
     artifacts = []
     for artifact in offense['artifacts']:
+
+        if artifactBlacklisted(artifact):
+            continue
 
         # Anything that's not supported we map with tags
         defaultHiveObservables = ["url",
