@@ -4,7 +4,10 @@
 import os, sys
 import logging
 import copy
-import itertools
+import json
+
+
+from pprint import pprint
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 app_dir = current_dir + '/..'
@@ -32,21 +35,46 @@ def enrichOffense(qradarConnector, offense):
                 qradarConnector.getOffenseTypeStr(offense['offense_type'])
 
     # Add the offense source explicitly 
-    if enriched['offense_type_str'] == "Username":
-        artifacts.append({"data":offense["offense_source"], "dataType":"user", "message":"Offense Source"})
+    if enriched['offense_type_str'] == 'Username':
+        artifacts.append({'data':offense['offense_source'], 'dataType':'other', 'message':'Offense Source', 'tags':['username']})
 
-    if enriched['offense_type_str'] == "Destination IP" or enriched['offense_type_str'] == "Source IP":
-        artifacts.append({"data":offense["offense_source"], "dataType":"ip", "message": enriched['offense_type_str']})
+    if enriched['offense_type_str'] == 'Destination IP' or enriched['offense_type_str'] == 'Source IP':
+        artifacts.append({'data':offense['offense_source'], 'dataType':'ip', 'message': enriched['offense_type_str']})
 
     # Add the local and remote sources
+    #scrIps contains offense source IPs
+    srcIps = list()
+    #dstIps contains offense destination IPs
+    dstIps = list()
+    #srcDstIps contains IPs which are bot source and destination of offense
+    srcDstIps = list()
     for ip in qradarConnector.getSourceIPs(enriched):
-        artifacts.append({"data":ip, "dataType":"ip", "message":"Source IP"})
+        srcIps.append(ip)
 
     for ip in qradarConnector.getLocalDestinationIPs(enriched):
-        artifacts.append({"data":ip, "dataType":"ip", "message":"Local destination IP"})
+        dstIps.append(ip)
 
+    #making copies is needed since we want to
+    #access and delete data from the list at the same time
+    s = copy.deepcopy(srcIps)
+    d = copy.deepcopy(dstIps)
+
+    for srcIp in s:
+        for dstIp in d:
+            if srcIp == dstIp:
+                srcDstIps.append(srcIp)
+                srcIps.remove(srcIp)
+                dstIps.remove(dstIp)
+
+    for ip in srcIps:
+        artifacts.append({'data':ip, 'dataType':'ip', 'message':'Source IP', 'tags':['src']})
+    for ip in dstIps:
+        artifacts.append({'data':ip, 'dataType':'ip', 'message':'Local destination IP', 'tags':['dst']})
+    for ip in srcDstIps:
+        artifacts.append({'data':ip, 'dataType':'ip', 'message':'Source and local destination IP', 'tags':['src', 'dst']})
+        
     # Add all the observables
-    enriched["artifacts"] = artifacts
+    enriched['artifacts'] = artifacts
 
     # Get the Rule details - NYI
     #enriched["rule_names"] = qradarConnector.getRuleNames(enriched)
@@ -89,8 +117,8 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
 
     artifacts = []
     for artifact in offense['artifacts']:
-        hiveArtefact = theHiveConnector.craftAlertArtifact(dataType = artifact["dataType"], data = artifact["data"], message=artifact["message"])
-        artifacts.append(hiveArtefact)
+        hiveArtifact = theHiveConnector.craftAlertArtifact(dataType = artifact["dataType"], data = artifact["data"], message=artifact["message"], tags=artifact['tags'])
+        artifacts.append(hiveArtifact)
 
     # Build TheHive alert
     alert = theHiveConnector.craftAlert(
@@ -136,20 +164,24 @@ def allOffense2Alert(timerange):
         for offense in offensesList:
 
             offense_report = dict()
-            offense_report['original_offense'] = offense
             
             try:
                 theHiveAlert = qradarOffenseToHiveAlert(theHiveConnector, offense)
-                theHiveConnector.createAlert(theHiveAlert)
+                theHiveEsAlertId = theHiveConnector.createAlert(theHiveAlert)['id']
 
-                offense_report['raised_alert'] = theHiveAlert.jsonify()
+                offense_report['raised_alert_id'] = theHiveEsAlertId
+                offense_report['qradar_offense_id'] = offense['id']
                 offense_report['success'] = True
 
             except Exception as e:
+                logger.error('%s.allOffense2Alert failed', __name__, exc_info=True)
                 offense_report['success'] = False
-                offense_report['message'] = str(e)
-                offense_report['message'] = "Couldn't raise alert in the Hive (%s)" % str(e)
-
+                if isinstance(e, ValueError):
+                    errorMessage = json.loads(str(e))['message']
+                    offense_report['message'] = errorMessage
+                else:
+                    offense_report['message'] = str(e) + ": Couldn't raise alert in TheHive"
+                offense_report['offense_id'] = offense['id'] 
                 # Set overall success if any fails
                 report['success'] = False
 
@@ -159,7 +191,7 @@ def allOffense2Alert(timerange):
 
             logger.error('Failed to create alert from QRadar offense (retrieving offenses failed)', exc_info=True)
             report['success'] = False
-            report['message'] = "Couldn't create alert from QRadar offense (couldn't retrieve offenses: %s)" % str(e)
+            report['message'] = "%s: Failed to create alert from offense" % str(e)
     
     return report
             
