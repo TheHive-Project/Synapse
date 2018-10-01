@@ -119,6 +119,7 @@ class TestQRadarBasicOffenseRetrieval(unittest.TestCase):
                                                )
         self.assertEqual(theHiveAlert.severity, 1)
 
+
     def testUsernameSource(self):
         """Test an offense with a username as the source works"""
         #pylint: disable=line-too-long
@@ -133,6 +134,50 @@ class TestQRadarBasicOffenseRetrieval(unittest.TestCase):
                                                )
         self.assertEqual(len(theHiveAlert.artifacts), 1)
         self.assertEqual(theHiveAlert.artifacts[0].dataType, "other")
+
+class TestArtifactProcessing(unittest.TestCase):
+    """The class tests very basic artifact processing behaviour"""
+
+    def testIPArtifactBlacklisting(self):
+        """Test basic artefact blacklisting"""
+        self.assertTrue(artifactBlacklisted({"dataType":"ip", "data":"127.0.0.1"}))
+        self.assertTrue(artifactBlacklisted({"dataType":"ip", "data":"127.0.0.9"}))
+        self.assertTrue(artifactBlacklisted({"dataType":"ip", "data":":1"}))
+        self.assertTrue(artifactBlacklisted({"dataType":"ip", "data":"192.168.99.11"}))
+        self.assertTrue(artifactBlacklisted({"dataType":"ip", "data":"256.1.1.1"}))
+        self.assertFalse(artifactBlacklisted({"dataType":"ip", "data":"223.1.1.2"}))
+        self.assertFalse(artifactBlacklisted({"dataType":"ip", "data":"11.1.1.1"}))
+        self.assertFalse(artifactBlacklisted({"dataType":"ip", "data":"8.8.8.8"}))
+
+    def testUserArtifactBlacklistingWithConf(self):
+        """Test artefact blackstliing when using a conf"""
+
+        import configparser
+
+        #Test with sane config
+        theConfig = configparser.ConfigParser()
+        theConfig.add_section("TheHive")
+        theConfig.set("TheHive", "blacklisted_user_artifacts", 'user,admin,,foo,bar')
+
+        self.assertFalse(artifactBlacklisted({"dataType":"user", "data":"theuser"}, config=theConfig))
+        self.assertTrue(artifactBlacklisted({"dataType":"user", "data":"foo"}, config=theConfig))
+        self.assertTrue(artifactBlacklisted({"dataType":"user", "data":""}, config=theConfig))
+
+        # Test defaults
+        self.assertFalse(artifactBlacklisted({"dataType":"user", "data":"theuserXX"}, config=None))
+        self.assertFalse(artifactBlacklisted({"dataType":"user", "data":"adminXX"}, config=None))
+
+        # Note - setting the configuration option to blank does have meaning
+        theConfig.set("TheHive", "blacklisted_user_artifacts", '')
+        self.assertTrue(artifactBlacklisted({"dataType":"user", "data":""}, config=theConfig))
+        self.assertFalse(artifactBlacklisted({"dataType":"user", "data":"a"}, config=theConfig))
+
+        # Test with blank config
+        blankConfig = configparser.ConfigParser()
+        self.assertFalse(artifactBlacklisted({"dataType":"user", "data":"user"}, config=blankConfig))
+        self.assertFalse(artifactBlacklisted({"dataType":"user", "data":"admin"}, config=blankConfig))
+        self.assertFalse(artifactBlacklisted({"dataType":"user", "data":"root"}, config=blankConfig))
+        self.assertFalse(artifactBlacklisted({"dataType":"user", "data":""}, config=blankConfig))
 
 class LiveTests(unittest.TestCase):
     """ Note that these require an active connection to a real

@@ -5,6 +5,8 @@ import os, sys
 import logging
 import copy
 import re
+import ipaddress
+import configparser
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 app_dir = current_dir + '/..'
@@ -90,21 +92,52 @@ def enrichOffense(qradarConnector, offense):
 
     return enriched
 
-def artifactBlacklisted(artifact):
+def artifactBlacklisted(artifact, config=None):
+    """ Checks to see if an artifact is blacklisted and shouldn't be
+    raised in TheHive. For example we typically don't want to raise local
+    IPs as observables or they tend to clutter up TheHive (by relating all
+    cases to each other)
+    """
+
+    logger = logging.getLogger(__name__)
+    logger.debug('%s.allOffense2Alert starts', __name__)
+
+    # Users
+    usernames = []
+
+    try:
+        configInUse = config
+
+        if config:
+            configInUse = config
+        else:
+            configInUse = getConf()
+
+        usernames = (configInUse.get("TheHive", "blacklisted_user_artifacts")).split(",")
+
+    except configparser.Error as theException:
+        logger.warning("Config error: %s, config for blacklisted_user_artifacts " \
+                       "may not be as expected", str(theException))
 
     if artifact["dataType"] == "user":
-        # FIXME - Configurable
-        if artifact["data"] in ["administrator", "admin", "root", "user",
-                                "", "N/A", "unknown"]:
+        if artifact["data"] in usernames:
             return True
 
-    # FIXME - Actually parse IP and call is private or similar. 172 is wrong
+    # IPs
     if artifact["dataType"] == "ip":
-        if artifact["data"].startswith("10.") or \
-           artifact["data"].startswith("192.168.") or \
-           artifact["data"].startswith("172.") or \
-           artifact["data"].startswith("127."):
 
+        theIPAddress = None
+
+        try:
+            theIPAddress = ipaddress.ip_address(artifact["data"])
+        except ValueError:
+            return True
+
+        if not theIPAddress:
+            return True
+
+        if theIPAddress.is_private or theIPAddress.is_multicast or \
+           theIPAddress.is_link_local or theIPAddress.is_multicast:
             return True
 
     return False
