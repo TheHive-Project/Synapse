@@ -177,6 +177,13 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
         caseType = offense["use_case"]
         tags.append(offense["use_case"])
 
+    # Setup Template
+    caseTemplate = None
+    if "use_case" in offense:
+        caseTemplateData = theHiveConnector.findFirstMatchingTemplate(offense["use_case"])
+        if caseTemplateData:
+            caseTemplate = caseTemplateData["name"]
+
     # Setup Artifacts
     artifacts = []
     for artifact in offense['artifacts']:
@@ -219,18 +226,18 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
 
     # Build TheHive alert
     alert = theHiveConnector.craftAlert(
-        offense['description'],
-        craftAlertDescription(offense),
-        getHiveSeverity(offense),
-        offense['start_time'],
-        tags,
-        2,
-        'Imported',
-        caseType,
-        'QRadar_Offenses',
-        '%s' % str(offense['id']),
-        artifacts,
-        '')
+        title=offense['description'],
+        description=craftAlertDescription(offense),
+        severity=getHiveSeverity(offense),
+        date=offense['start_time'],
+        tags=tags,
+        tlp=2,
+        type=caseType,
+        source='QRadar_Offenses',
+        status="New",
+        sourceRef='%s' % str(offense['id']),
+        artifacts=artifacts,
+        caseTemplate=caseTemplate)
 
     return alert
 

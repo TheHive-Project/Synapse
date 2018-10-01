@@ -197,6 +197,7 @@ class TheHiveConnector:
     def craftAlert(self, title, description, severity, date, tags, tlp, status, type, source,
         sourceRef, artifacts, caseTemplate):
         self.logger.info('%s.craftAlert starts', __name__)
+        #FIXME - Status is unused ... 
 
         alert = Alert(title=title,
                       description=description,
