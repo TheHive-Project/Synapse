@@ -5,7 +5,7 @@ import logging
 import json
 
 from thehive4py.api import TheHiveApi
-from thehive4py.models import Case, CaseTask, CaseTaskLog, CaseObservable, Alert
+from thehive4py.models import Case, CaseTask, CaseTaskLog, CaseObservable, AlertArtifact, Alert
 
 class TheHiveConnector:
     'TheHive connector'
@@ -110,6 +110,13 @@ class TheHiveConnector:
         else:
             self.logger.error('Task creation failed')
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
+
+    def craftAlertArtifact(self, **attributes):
+        self.logger.info('%s.craftAlertArtifact starts', __name__)
+
+        alertArtifact = AlertArtifact(dataType=attributes["dataType"], message=attributes["message"], data=attributes["data"], tags=attributes['tags'])
+
+        return alertArtifact
 
     def craftTaskLog(self, textLog):
         self.logger.info('%s.craftTaskLog starts', __name__)
