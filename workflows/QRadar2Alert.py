@@ -36,7 +36,7 @@ def enrichOffense(qradarConnector, offense):
 
     # Add the offense source explicitly 
     if enriched['offense_type_str'] == 'Username':
-        artifacts.append({'data':offense['offense_source'], 'dataType':'other', 'message':'Offense Source', 'tags':['username']})
+        artifacts.append({'data':offense['offense_source'], 'dataType':'username', 'message':'Offense Source'})
 
     if enriched['offense_type_str'] == 'Destination IP' or enriched['offense_type_str'] == 'Source IP':
         artifacts.append({'data':offense['offense_source'], 'dataType':'ip', 'message': enriched['offense_type_str']})
@@ -46,7 +46,7 @@ def enrichOffense(qradarConnector, offense):
     srcIps = list()
     #dstIps contains offense destination IPs
     dstIps = list()
-    #srcDstIps contains IPs which are bot source and destination of offense
+    #srcDstIps contains IPs which are both source and destination of offense
     srcDstIps = list()
     for ip in qradarConnector.getSourceIPs(enriched):
         srcIps.append(ip)
@@ -115,9 +115,30 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
         for cat in offense['categories']:
             tags.append(cat)
 
+    defaultObservableDatatype = ['autonomous-system',
+                                'domain',
+                                'file',
+                                'filename',
+                                'fqdn',
+                                'hash',
+                                'ip',
+                                'mail',
+                                'mail_subject',
+                                'other',
+                                'regexp',
+                                'registry',
+                                'uri_path',
+                                'url',
+                                'user-agent']
+
     artifacts = []
     for artifact in offense['artifacts']:
-        hiveArtifact = theHiveConnector.craftAlertArtifact(dataType = artifact["dataType"], data = artifact["data"], message=artifact["message"], tags=artifact['tags'])
+        if artifact['dataType'] in defaultObservableDatatype:
+            hiveArtifact = theHiveConnector.craftAlertArtifact(dataType=artifact['dataType'], data=artifact['data'], message=artifact['message'], tags=artifact['tags'])
+        else:
+            tags = list()
+            tags.append('type:' + artifact['dataType'])
+            hiveArtifact = theHiveConnector.craftAlertArtifact(dataType='other', data=artifact['data'], message=artifact['message'], tags=tags)
         artifacts.append(hiveArtifact)
 
     # Build TheHive alert
