@@ -76,4 +76,84 @@ python3 app.py
 ## Deployment to Production
 
 If you'd like to go live with Synapse, it is advised to use a WSGI server.
-Have a look at the excellent tutorial from Miguel Grinberg [here](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xvii-deployment-on-linux-even-on-the-raspberry-pi) and especially the section named "Setting Up Gunicorn and Supervisor".
+The below will show you how to deploy Synapse as a service with gunicorn and supervisor but feel free to use any others tools for your deployment.
+
+This part is mainly taken from the excellent [Flask Mega-Tutorial] (https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xvii-deployment-on-linux-even-on-the-raspberry-pi) by Miguel Grinberg. 
+Have a look at the section named "Setting Up Gunicorn and Supervisor" for the "original" deployement instructions.
+
+### Instructions
+
+ * Download the WSGI server and the process control system:
+
+```
+sudo apt-get install gunicorn3
+sudo apt-get install supervisor
+```
+
+ * Create the user ```synapse```, this user is dedicated to running the application only.
+
+```
+sudo adduser --disabled-login synapse
+```
+
+ * Create ```/etc/supervisor/conf.d/synapse.conf``` as follow:
+
+```
+[program:synapse]
+command=/usr/bin/gunicorn3 -b localhost:5000 -w 4 app:app
+directory=/opt/Synapse
+user=synapse
+environment=REQUESTS_CA_BUNDLE="<PATH_TO_EWS_CERT>"
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+```
+
+In our case, Synapse is located at ```/opt/Synapse```.
+Make sure that user ```synapse``` has enough rights on this directory:
+
+```
+sudo chown -R synapse:synapse /opt/Synapse/
+```
+
+**Make also sure to replace ```<PATH_TO_EWS_CERT>``` with the file path to your ews certificate.**
+
+ * Reload supervisor to make the changes effective:
+
+```
+sudo supervisorctl reload
+```
+
+From here the application should be deployed and running on port 5000.
+
+### Stoping the application
+
+To stop Synapse, run:
+
+```
+sudo supervisorctl stop synapse
+```
+
+### Starting the application
+
+To start Synapse, run:
+
+```
+sudo supervisorctl start synapse
+```
+
+### Logs
+
+Logs for supervisor are located under:
+
+```
+/var/log/supervisor/
+```
+
+Regarding Synapse, if the application is located at ```/opt``` then logs are under:
+
+```
+/opt/Synapse/logs/
+```
+
