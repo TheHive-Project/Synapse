@@ -76,7 +76,7 @@ def QRadar2alert():
 
 @app.route('/version', methods=['GET'])
 def getSynapseVersion():
-    return jsonify({'version': '1.0'}), 200
+    return jsonify({'version': '1.1'}), 200
 
 if __name__ == '__main__':
     cfg = getConf()
