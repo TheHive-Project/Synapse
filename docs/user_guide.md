@@ -10,6 +10,10 @@ This guide will go through installation and basic configuration for Synapse.
     + [TheHive section](#thehive-section)
 + [Start the app](#start-the-app)
 + [Deployment to Production](#deployment-to-production)
+    + [Instructions](#instructions)
+    + [Stopping the application](#stopping-the-application)
+    + [Starting the application](#starting-the-application)
+    + [Logs](#logs)
 
 ## Installation
 
@@ -78,8 +82,8 @@ python3 app.py
 If you'd like to go live with Synapse, it is advised to use a WSGI server.
 The below will show you how to deploy Synapse as a service with gunicorn and supervisor but feel free to use any others tools for your deployment.
 
-This part is mainly taken from the excellent [Flask Mega-Tutorial] (https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xvii-deployment-on-linux-even-on-the-raspberry-pi) by Miguel Grinberg. 
-Have a look at the section named "Setting Up Gunicorn and Supervisor" for the "original" deployement instructions.
+This part is mainly taken from the excellent [Flask Mega Tutorial] (https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xvii-deployment-on-linux-even-on-the-raspberry-pi) by Miguel Grinberg. 
+Have a look at the section named "Setting Up Gunicorn and Supervisor" for the "original" deployment instructions.
 
 ### Instructions
 
@@ -90,7 +94,7 @@ sudo apt-get install gunicorn3
 sudo apt-get install supervisor
 ```
 
- * Create the user ```synapse```, this user is dedicated to running the application only.
+ * Create the user ```synapse```, this user is dedicated to running the application.
 
 ```
 sudo adduser --disabled-login synapse
@@ -110,8 +114,9 @@ stopasgroup=true
 killasgroup=true
 ```
 
-In our case, Synapse is located at ```/opt/Synapse```.
-Make sure that user ```synapse``` has enough rights on this directory:
+In this case, Synapse is located at ```/opt/Synapse``` as indicated by ```directory=/opt/Synapse```.
+Feel free to adapt ```directory``` to your context.   
+Just make sure that user ```synapse``` has enough rights on this directory:
 
 ```
 sudo chown -R synapse:synapse /opt/Synapse/
@@ -127,7 +132,7 @@ sudo supervisorctl reload
 
 From here the application should be deployed and running on port 5000.
 
-### Stoping the application
+### Stopping the application
 
 To stop Synapse, run:
 
