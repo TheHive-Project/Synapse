@@ -49,9 +49,9 @@ Creating alert from QRadar offenses.
     </td>
 
     <td>
-      <p>
+      <pre>
         Failed to create alert for a QRadar offense.
-      </p>
+      </pre>
     </td>
     
     <td>
@@ -63,7 +63,7 @@ Creating alert from QRadar offenses.
         }
       </pre>
     </td>
-    </tr>
+  </tr>
 </table>
 
 
