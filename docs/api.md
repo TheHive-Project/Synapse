@@ -39,32 +39,32 @@ Creating alert from QRadar offenses.
 
 <table>
   <tr>
-    <th>
-      Responses Codes
-    </th>
-    <th>
-      Description
-    </th>
-    <th>
-      Responses Samples
-    </th>
+  <th>
+    Responses Codes
+  </th>
+  <th>
+    Description
+  </th>
+  <th>
+    Responses Samples
+  </th>
   </tr>
   
   <tr>
-    <td>
-      <p>
-        200
-      </p>
-    </td>
-    
-    <td>
-      <p>
-        Overall success, all offenses have been imported as alert.
-      </p>
-    </td>
-    
-    <td>
-      <pre>
+  <td>
+    <p>
+      200
+    </p>
+  </td>
+  
+  <td>
+    <p>
+      Overall success, all offenses have been imported as alert.
+    </p>
+  </td>
+  
+  <td>
+    <pre>
 {
     "offenses": [
         {
@@ -85,49 +85,49 @@ Creating alert from QRadar offenses.
     ],
     "success": true
 }
-      </pre>
-    </td>
+    </pre>
+  </td>
   </tr>
 
   <tr>
-    <td>
-      <p>
-        500
-      </p>
-    </td>
-    
-    <td>
-      <p>
-        Overall failure, all offenses have failed to be imported as alert.
-      </p>
-    </td>
-    
-    <td>
-      <pre>
+  <td>
+    <p>
+      500
+    </p>
+  </td>
+  
+  <td>
+    <p>
+      Overall failure, all offenses have failed to be imported as alert.
+    </p>
+  </td>
+  
+  <td>
+    <pre>
 {
     "message": "[Errno 13] Permission denied: Failed to create alert from offense",
     "offenses": [],
     "success": false
 }
-      </pre>
-    </td>
+    </pre>
+  </td>
   </tr>
 
   <tr>
-    <td>
-      <p>
-        500
-      </p>
-    </td>
-    
-    <td>
-      <p>
-        Partial failure, at least one offense failed to be imported as alert.
-      </p>
-    </td>
-    
-    <td>
-      <pre>
+  <td>
+    <p>
+      500
+    </p>
+  </td>
+  
+  <td>
+    <p>
+      Partial failure, at least one offense failed to be imported as alert.
+    </p>
+  </td>
+  
+  <td>
+    <pre>
 {
     "offenses": [
         {
@@ -143,8 +143,8 @@ Creating alert from QRadar offenses.
     ],
     "success": false
 }
-      </pre>
-    </td>
+    </pre>
+  </td>
   </tr>
 </table>
 
