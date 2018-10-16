@@ -32,7 +32,7 @@ Creating alert from QRadar offenses.
 
 | Parameter | Data Type | Description | Sample |
 | --------------- | ----------- | ----------------- | ----------------- |
-| "timerange"     | long        | Offenses created during the last <timerange> minutes will be imported as alert. | {"timerange"}:10 |
+| "timerange"     | long        | Offenses created during the last <timerange> minutes will be imported as alert. | ```{"timerange"}:10``` |
 
 #### Success & Error Responses
 
