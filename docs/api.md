@@ -2,6 +2,7 @@
 
 + [Workflows](#workflows)
     + [/ews2case](#get-ews2case)
+    + [/QRadar2alert](#post-qradar2alert)
 + [Version](#version)
     + [/version](#get-version)
 
@@ -20,13 +21,21 @@ Creating case from Microsoft Exchange emails.
 | 200             | Successfully created a case from email | ```{"success":true}``` |
 | 500             | Failed to create a case from email     | ```{"success":false}``` |
 
-### GET ```/QRadar2alert```
+### POST ```/QRadar2alert```
 
 #### Description
 
 Creating alert from QRadar offenses.
 
+#### Parameters
+
+
+| Parameter | Data Type | Description | Sample |
+| --------------- | ----------- | ----------------- |
+| "timerange"     | long | Offenses created during the last <timerange> minutes will be imported as alert. | {"timerange"}:10 |
+
 #### Success & Error Responses
+
 
 <table>
   <tr>
@@ -89,7 +98,7 @@ Creating alert from QRadar offenses.
     
     <td>
       <p>
-        Overall failure, not a single alert has been created from offense.
+        Overall failure, all offenses have failed to be imported as alert.
       </p>
     </td>
     
@@ -137,7 +146,6 @@ Creating alert from QRadar offenses.
       </pre>
     </td>
   </tr>
-
 </table>
 
 ## Version
