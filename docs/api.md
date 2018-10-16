@@ -28,65 +28,47 @@ Creating alert from QRadar offenses.
 
 #### Success & Error Responses
 
-| Responses Codes | Description | Responses Samples |
-| --------------- | ----------- | ----------------- |
-| 500             | Failed to create an alert from offense | ```{```<br>&nbsp;&nbsp;&nbsp;```"message": "[Errno 13] Permission denied: Failed to create alert from offense",```<br>    ```"offenses": [],```<br>    ```"success": false```<br>```}``` |
-
-| Status | Response  |
-| ------ | --------- |
-| 200    | `json`                          |
-|        | `   {`                          |
-|        | ` "id": 10,`                    |
-|        | ` "username": "alanpartridge",` |
-|        | ` more code...`                 |
-|        | `}`                             |
-| 400    |                                 |
-
+```
+        <br/><br/><br/>200<br/><br/><br/><br/><br/>400<br/>
+```
 <table>
-<tr>
-<th>
-Status
-</th>
-<th>
-Response
-</th>
-</tr>
+  <tr>
+    <th>
+      Responses Codes
+    </th>
+    <th>
+      Description
+    </th>
+    <th>
+      Responses Samples
+    </th>
+  </tr>
+  
+  <tr>
+    <td>
+      <pre>
+        500
+      </pre>
+    </td>
 
-<tr>
-
-<td>
-<pre>
-<br/><br/><br/>200<br/><br/><br/><br/><br/>400<br/>
-</pre>
-</td>
-
-<td>
-<pre>
-json
-  {
-    "id": 10,
-    "username": "alanpartridge",
-    "email": "alan@alan.com",
-    "password_hash": "$2a$10$uhUIUmVWVnrBWx9rrDWhS.CPCWCZsyqqa8./whhfzBZydX7yvahHS",
-    "password_salt": "$2a$10$uhUIUmVWVnrBWx9rrDWhS.",
-    "created_at": "2015-02-14T20:45:26.433Z",
-    "updated_at": "2015-02-14T20:45:26.540Z"
-}
-</pre>
-</td>
-
-</tr>
+    <td>
+      <p>
+        Failed to create alert for a QRadar offense.
+      </p>
+    </td>
+    
+    <td>
+      <pre>
+        {
+            "message": "[Errno 13] Permission denied: Failed to create alert from offense",
+            "offenses": [],
+            "success": false
+        }
+      </pre>
+    </td>
+    </tr>
 </table>
 
-##### Responses Samples
-
-```
-{
-    "message": "[Errno 13] Permission denied: Failed to create alert from offense",
-    "offenses": [],
-    "success": false
-}
-```
 
 ## Version
 
