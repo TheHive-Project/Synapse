@@ -74,6 +74,9 @@ Creating alert from QRadar offenses.
 Status
 </th>
 <th>
+Description
+</th>
+<th>
 Response
 </th>
 </tr>
@@ -88,11 +91,17 @@ Response
 
 <td>
 <pre>
-        {
-            "message": "[Errno 13] Permission denied: Failed to create alert from offense",
-            "offenses": [],
-            "success": false
-        }
+Failed to create an alert from offense
+</pre>
+</td>
+
+<td>
+<pre>
+{
+    "message": "[Errno 13] Permission denied: Failed to create alert from offense",
+    "offenses": [],
+    "success": false
+}
 </pre>
 </td>
 
