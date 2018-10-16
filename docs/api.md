@@ -28,9 +28,6 @@ Creating alert from QRadar offenses.
 
 #### Success & Error Responses
 
-```
-        <br/><br/><br/>200<br/><br/><br/><br/><br/>400<br/>
-```
 <table>
   <tr>
     <th>
