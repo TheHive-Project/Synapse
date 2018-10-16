@@ -30,8 +30,18 @@ Creating alert from QRadar offenses.
 
 | Responses Codes | Description | Responses Samples |
 | --------------- | ----------- | ----------------- |
-| 500             | Failed to create an alert from offense | ```{```<br>   ```"message": "[Errno 13] Permission denied: Failed to create alert from offense",```<br>    ```"offenses": [],```<br>    ```"success": false```<br>```}``` |
+| 500             | Failed to create an alert from offense | ```{```<br>```   "message": "[Errno 13] Permission denied: Failed to create alert from offense",```<br>    ```"offenses": [],```<br>    ```"success": false```<br>```}``` |
 
+
+##### Responses Samples
+
+```
+{
+    "message": "[Errno 13] Permission denied: Failed to create alert from offense",
+    "offenses": [],
+    "success": false
+}
+```
 
 ## Version
 
