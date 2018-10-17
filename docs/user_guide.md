@@ -14,6 +14,7 @@ This guide will go through installation and basic configuration for Synapse.
     + [Stopping the application](#stopping-the-application)
     + [Starting the application](#starting-the-application)
     + [Logs](#logs)
++ [Update](#update)
 
 ## Installation
 
@@ -104,7 +105,7 @@ sudo adduser --disabled-login synapse
 
 ```
 [program:synapse]
-command=/usr/bin/gunicorn3 -b localhost:5000 -w 4 app:app
+command=/usr/bin/gunicorn3 -b 0.0.0.0:5000 -w 4 app:app
 directory=/opt/Synapse
 user=synapse
 environment=REQUESTS_CA_BUNDLE="<PATH_TO_EWS_CERT>"
@@ -131,6 +132,7 @@ sudo supervisorctl reload
 ```
 
 From here the application should be deployed and running on port 5000.
+It also means that your server has now port 5000 **open**.
 
 ### Stopping the application
 
@@ -162,3 +164,11 @@ Regarding Synapse, if the application is located at ```/opt``` then logs are und
 /opt/Synapse/logs/
 ```
 
+# Update
+
+In order to update Synapse (minor version), just pull the new version from Github and run the application:
+
+```
+cd Synapse/
+git pull
+```
