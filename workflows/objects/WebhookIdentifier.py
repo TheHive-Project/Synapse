@@ -117,6 +117,21 @@ class Webhook:
             # then status key is not included in the webhook
             return False
 
+    def isMergedInto(self):
+        """
+            Check if the webhook describes a case merging
+
+            :return: True if it is a merging event
+            :rtype: boolean
+        """
+
+        self.logger.info('%s.isMergedInto starts', __name__)
+
+        if 'mergeInto' in self.data['object']:
+            return True
+        else:
+            return False
+        
     def isQRadarAlertMarkedAsRead(self):
         """
             Check if the webhook describes a QRadar alert marked as read
@@ -142,6 +157,9 @@ class Webhook:
             if the case has been opened from a QRadar alert
             returns True
             "store" the offenseId in the webhook attribute "offenseId"
+            If the case is merged, it is not considered to be closed (even if it is
+            from TheHive perspective), as a result, a merged qradar case will not close
+            an offense.
     
             :return: True if it is a QRadar alert marked as read, False if not
             :rtype: boolean
@@ -150,7 +168,7 @@ class Webhook:
         self.logger.info('%s.isClosedQRadarCase starts', __name__)
     
         try:
-            if self.isCase() and self.isClosed():
+            if self.isCase() and self.isClosed() and not self.isMergedInto():
                 #searching in alerts if the case comes from a QRadar alert
                 esCaseId = self.data['objectId']
                 query = dict()
