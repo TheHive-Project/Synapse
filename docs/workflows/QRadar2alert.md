@@ -32,8 +32,8 @@ During one of his shift, two offenses are fired:
 
 ![](../img/qradar2alert/1-qradar-offenses.PNG)
 
-As his shift is about to end, he decides to raise alerts in TheHive for both offenses so Emma can take over them and investigate.   
-To do so, he leverages Synapse API and executes the following POST request:
+As his shift is about to end, he decides to raise alerts in TheHive for both offenses so Emma can take them over and investigate.   
+To do so, he just sends the following POST request to Synapse:
 
 ```
 curl --header "Content-Type: application/json" --request POST --data '{"timerange":10}'  http://synapse.stargazer.org/QRadar2alert
@@ -88,7 +88,7 @@ Good thing is, the source of those failed SSH login, IP ```10.0.0.24``` is autom
 ### Closing QRadar offense from TheHive 
 
 After digging into it, Emma concludes it is a false positive and close the case on TheHive side.   
-Which means she probably should close the offense on QRadar side as well...   
+However, she does not need to connect to QRadar to close the offense because Synapse does it for her !   
 
 Since Synapse is a REST API, it listens for requests.   
 By configuring TheHive to target Synapse with its webhooks, Synapse is aware off all activity going on in TheHive.   
@@ -98,13 +98,13 @@ As such, when:
    * a case, opened from a QRadar alert, is closed
    * a case, created from merged cases where at least one of them is related to a QRadar alert, is closed
 
-Synapse is able to close the related offense in QRadar.   
+Synapse closes the related offense in QRadar.   
 Note that deleting a "QRadar case" will not close its offense.
 
 ## Configuration
 
 Now that you have more insight of what is done with ```QRadar2Alert```, let's configure Synapse.   
-The configuration is located at ```Synapse/conf/synapse.conf``` and we will fill in the ```[EWS]``` section.
+The configuration is located at ```Synapse/conf/synapse.conf``` and we will fill in the ```[QRadar]``` section.
 
 ### QRadar server
 
@@ -141,7 +141,7 @@ You need to provide QRadar certificate to Synapse to avoid any SSL issues.
 To do so:
 
    * Go to QRadar web interface
-   * Extract the certificate from your browser (b64)
+   * Extract the certificate from your browser (base 64 format)
    * Upload it to Synapse server
    * Put the full file path to the certificate in the config file
 
