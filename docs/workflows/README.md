@@ -13,3 +13,6 @@ Available workflows are:
 
    * [Ews2Case](Ews2Case.md)
       * Creating case from Microsoft Exchange emails.
+   * [QRadar2alert](QRadar2alert.md)
+      * Creating alert from QRadar offenses.
+      * Closing QRadar offenses from TheHive.
