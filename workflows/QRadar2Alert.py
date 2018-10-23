@@ -6,8 +6,7 @@ import logging
 import copy
 import json
 
-
-from pprint import pprint
+from time import sleep
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 app_dir = current_dir + '/..'
@@ -37,9 +36,6 @@ def enrichOffense(qradarConnector, offense):
     # Add the offense source explicitly 
     if enriched['offense_type_str'] == 'Username':
         artifacts.append({'data':offense['offense_source'], 'dataType':'username', 'message':'Offense Source'})
-
-    if enriched['offense_type_str'] == 'Destination IP' or enriched['offense_type_str'] == 'Source IP':
-        artifacts.append({'data':offense['offense_source'], 'dataType':'ip', 'message': enriched['offense_type_str']})
 
     # Add the local and remote sources
     #scrIps contains offense source IPs
@@ -76,12 +72,8 @@ def enrichOffense(qradarConnector, offense):
     # Add all the observables
     enriched['artifacts'] = artifacts
 
-    # Get the Rule details - NYI
-    #enriched["rule_names"] = qradarConnector.getRuleNames(enriched)
-
-    # Try and guess a use case / type - NYI 
-    #enriched["use_case"] = guessUseCase(enriched)
-
+    # waiting 90s to make sure the logs are searchable
+    sleep(90)
     #adding the first 3 raw logs
     enriched['logs'] = qradarConnector.getOffenseLogs(enriched)
 
