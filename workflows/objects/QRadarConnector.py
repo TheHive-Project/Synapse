@@ -95,7 +95,7 @@ class QRadarConnector:
             # %3E <=> >
             # moreover we filter on OPEN offenses only
             response = self.client.call_api(
-                'siem/offenses?filter=start_time%3E' + str(timeFilter) + '%20and%20status%3DOPEN', 'GET')
+                'siem/offenses?filter=last_updated_time%3E' + str(timeFilter) + '%20and%20status%3DOPEN', 'GET')
         
             try:
                 response_text = response.read().decode('utf-8')
