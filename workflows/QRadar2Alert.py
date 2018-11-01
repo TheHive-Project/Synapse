@@ -170,35 +170,44 @@ def allOffense2Alert(timerange):
         qradarConnector = QRadarConnector(cfg)
         theHiveConnector = TheHiveConnector(cfg)
 
-        offensesList = getEnrichedOffenses(qradarConnector, timerange)
+        offensesList = qradarConnector.getOffenses(timerange)
         
         #each offenses in the list is represented as a dict
         #we enrich this dict with additional details
         for offense in offensesList:
+            #searching if the offense has already been converted to alert
+            q = dict()
+            q['sourceRef'] = str(offense['id'])
+            logger.info('Looking for offense %s in TheHive alerts', str(offense['id']))
+            results = theHiveConnector.findAlert(q)
+            if len(results) == 0:
+                logger.info('Offense %s not found in TheHive alerts, creating it', str(offense['id']))
+                offense_report = dict()
+                enrichedOffense = enrichOffense(qradarConnector, offense)
+                
+                try:
+                    theHiveAlert = qradarOffenseToHiveAlert(theHiveConnector, enrichedOffense)
+                    theHiveEsAlertId = theHiveConnector.createAlert(theHiveAlert)['id']
 
-            offense_report = dict()
-            
-            try:
-                theHiveAlert = qradarOffenseToHiveAlert(theHiveConnector, offense)
-                theHiveEsAlertId = theHiveConnector.createAlert(theHiveAlert)['id']
+                    offense_report['raised_alert_id'] = theHiveEsAlertId
+                    offense_report['qradar_offense_id'] = offense['id']
+                    offense_report['success'] = True
 
-                offense_report['raised_alert_id'] = theHiveEsAlertId
-                offense_report['qradar_offense_id'] = offense['id']
-                offense_report['success'] = True
+                except Exception as e:
+                    logger.error('%s.allOffense2Alert failed', __name__, exc_info=True)
+                    offense_report['success'] = False
+                    if isinstance(e, ValueError):
+                        errorMessage = json.loads(str(e))['message']
+                        offense_report['message'] = errorMessage
+                    else:
+                        offense_report['message'] = str(e) + ": Couldn't raise alert in TheHive"
+                    offense_report['offense_id'] = offense['id'] 
+                    # Set overall success if any fails
+                    report['success'] = False
 
-            except Exception as e:
-                logger.error('%s.allOffense2Alert failed', __name__, exc_info=True)
-                offense_report['success'] = False
-                if isinstance(e, ValueError):
-                    errorMessage = json.loads(str(e))['message']
-                    offense_report['message'] = errorMessage
-                else:
-                    offense_report['message'] = str(e) + ": Couldn't raise alert in TheHive"
-                offense_report['offense_id'] = offense['id'] 
-                # Set overall success if any fails
-                report['success'] = False
-
-            report['offenses'].append(offense_report)
+                report['offenses'].append(offense_report)
+            else:
+                logger.info('Offense %s already imported as alert', str(offense['id']))
 
     except Exception as e:
 
