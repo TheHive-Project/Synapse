@@ -72,8 +72,8 @@ def enrichOffense(qradarConnector, offense):
     # Add all the observables
     enriched['artifacts'] = artifacts
 
-    # waiting 90s to make sure the logs are searchable
-    sleep(90)
+    # waiting 1s to make sure the logs are searchable
+    sleep(1)
     #adding the first 3 raw logs
     enriched['logs'] = qradarConnector.getOffenseLogs(enriched)
 
