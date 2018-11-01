@@ -5,6 +5,7 @@ import logging
 from .QRadar_Objects.RestApiClient import RestApiClient
 from .QRadar_Objects.arielapiclient import APIClient
 import time, json
+from multiprocessing import Process, Queue
 
 class QRadarConnector:
     'QRadar connector'
@@ -166,14 +167,14 @@ class QRadarConnector:
             self.logger.error('getOffenses failed', exc_info=True)
             raise
 
-    def getAddressesFromIDs(self, path, field, ids):
-
+    def getAddressesFromIDs(self, path, field, ids, queue):
+        #using queue to implement a timeout mecanism
+        #useful if there are more than 50 IPs to look up
         self.logger.debug("Looking up %s with %s IDs..." % (path,ids))
 
         address_strings = []
 
         for address_id in ids:
-
             try:
                 response = self.client.call_api('siem/%s/%s' % (path, address_id), 'GET')
                 response_text = response.read().decode('utf-8')
@@ -193,19 +194,39 @@ class QRadarConnector:
                 self.logger.error('%s.getAddressFromIDs failed', __name__, exc_info=True)
                 raise e
 
-        return address_strings
+        queue.put(address_strings)
 
     def getSourceIPs(self, offense):
         if not "source_address_ids" in offense:
             return []
 
-        return self.getAddressesFromIDs("source_addresses", "source_ip", offense["source_address_ids"])
+        queue = Queue()
+        proc = Process(target=self.getAddressesFromIDs, args=("source_addresses", "source_ip", offense["source_address_ids"], queue,))
+        proc.start()
+        try:
+            res = queue.get(timeout=3)
+            proc.join()
+            return res
+        except:
+            proc.terminate()
+            self.logger.error('%s.getSourceIPs took too long, aborting', __name__, exc_info=True)
+            return []
 
     def getLocalDestinationIPs(self, offense):
         if not "local_destination_address_ids" in offense:
             return []
 
-        return self.getAddressesFromIDs("local_destination_addresses", "local_destination_ip", offense["local_destination_address_ids"])
+        queue = Queue()
+        proc = Process(target=self.getAddressesFromIDs, args=("local_destination_addresses", "local_destination_ip", offense["local_destination_address_ids"], queue,))
+        proc.start()
+        try:
+            res = queue.get(timeout=3)
+            proc.join()
+            return res
+        except:
+            proc.terminate()
+            self.logger.error('%s.getLocalDestinationIPs took too long, aborting', __name__, exc_info=True)
+            return []
 
     def getOffenseTypeStr(self, offenseTypeId):
         """
