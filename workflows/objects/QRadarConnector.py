@@ -301,14 +301,16 @@ class QRadarConnector:
         try:
             offenseId = offense['id']
 
-            #for start_time and last_updated_time
-            #we extend the window to be sure to get the log
             # QRadar does not find the log when filtering
             # on the time window's edges
             #if the window is [14:10 ; 14:20]
-            #we change it to [14:09 ; 14:21]
+            #it should be changes to [14:09 ; 14:21]
+            #moreover, since only the first 3 logs are returned
+            #no need to use last_updated_time (which might be way after start_time
+            #and so consume resource for the search)
+            #as such search window is [start_time - 1 ; start_time +5]
             start_time = (offense['start_time'] - 1 * 60 * 1000)
-            last_updated_time = (offense['last_updated_time'] + 1 * 60 * 1000)
+            last_updated_time = (offense['start_time'] + 5 * 60 * 1000)
 
             start_timeStr = self.convertMilliEpoch2str(start_time)
             last_updated_timeStr = self.convertMilliEpoch2str(
