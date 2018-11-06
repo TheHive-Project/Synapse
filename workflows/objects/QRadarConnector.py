@@ -94,9 +94,12 @@ class QRadarConnector:
             timeFilter = now - timerange
         
             # %3E <=> >
+            # %3C <=> <
             # moreover we filter on OPEN offenses only
+            query = 'siem/offenses?filter=last_updated_time%3E' + str(timeFilter) + '%20and%20last_updated_time%3C' + str(now) + '%20and%20status%3DOPEN'
+            self.logger.debug(query)
             response = self.client.call_api(
-                'siem/offenses?filter=last_updated_time%3E' + str(timeFilter) + '%20and%20status%3DOPEN', 'GET')
+                query, 'GET')
         
             try:
                 response_text = response.read().decode('utf-8')
@@ -476,3 +479,33 @@ class QRadarConnector:
             self.logger.error('Failed to close offense %s', offenseId, exc_info=True)
             raise
 
+    def getRuleNames(self, offense):
+        self.logger.info('%s.getRuleNames starts', __name__)
+
+        ruleNames = []
+        if 'rules' not in offense:
+            return ruleNames
+
+        for rule in offense['rules']:
+            if 'id' not in rule:
+                continue
+            if 'type' not in rule:
+                continue
+            if rule['type'] != 'CRE_RULE':
+                continue
+            rule_id = rule['id']
+
+            try:
+                response = self.client.call_api('siem/analytics/rules/%s' % rule_id, 'GET')
+                response_text = response.read().decode('utf-8')
+                response_body = json.loads(response_text)
+
+                if response.code == 200:
+                    ruleNames.append(response_body['name'])
+                else:
+                    self.logger.warning('Could not get rule name for offense')
+
+            except Exception as e:
+                self.logger.warning('Could not get rule name for offense')
+
+        return ruleNames
