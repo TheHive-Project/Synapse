@@ -6,6 +6,7 @@ import json
 
 from thehive4py.api import TheHiveApi
 from thehive4py.models import Case, CaseTask, CaseTaskLog, CaseObservable, AlertArtifact, Alert
+from thehive4py.query import Eq
 
 class TheHiveConnector:
     'TheHive connector'
@@ -218,3 +219,17 @@ class TheHiveConnector:
         else:
             self.logger.error('findAlert failed')
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
+
+    def findFirstMatchingTemplate(self, searchstring):
+        self.logger.info('%s.findFirstMatchingTemplate starts', __name__)
+
+        query = Eq('status', 'Ok')
+        allTemplates = self.theHiveApi.find_case_templates(query=query)
+        if allTemplates.status_code != 200:
+            raise ValueError('Could not find matching template !')
+
+        for template in allTemplates.json():
+            if searchstring in template['name']:
+                return template
+
+        return None
