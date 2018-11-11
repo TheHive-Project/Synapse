@@ -24,7 +24,7 @@ python-dateutil==2.7.3
 python-magic==0.4.15
 pytz==2018.5
 requests-ntlm==1.1.0
-requests==2.19.1
+requests==2.20.0
 six==1.11.0
 slugify==0.0.1
 thehive4py==1.5.1
