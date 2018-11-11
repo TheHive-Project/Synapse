@@ -41,3 +41,6 @@ While all OS running python3 can be used for Synapse, we recommend the use of Ub
 
 Kudos to Erik Cederstrand for his amazing work on Exchangelib.   
 Check his others projects [here](https://github.com/ecederstrand).   
+
+Kudos to IBM teams for providing a python QRadar API client to the community.   
+Check it [here](https://github.com/ibm-security-intelligence/api-samples).   
