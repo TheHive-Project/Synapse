@@ -15,12 +15,11 @@ That way, you would only execute the workflow you are interrested in by "hitting
 
 Workflows implemented at the moment are:
    * Case creation from email thanks to Exchange Web Service
+   * Alert creation from QRadar offenses
 
 ![](docs/img/big-picture.png)
 
 For detailed explanation on each workflows, have a look at the [workflows page](docs/workflows/README.md).   
-
-*The QRadar connector is under development and the related workflows are not available yet.*   
 
 ## How to use
 
