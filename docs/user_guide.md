@@ -23,7 +23,7 @@ This guide will go through installation and basic configuration for Synapse.
 ```
 sudo apt install python3-distutils
 sudo apt install python3-pip
-sudo apt install python3-dev libkrb5-dev gcc
+sudo apt install python3-dev libkrb5-dev gcc libssl-dev
 sudo pip3 install -r requirements.txt
 ```
 
