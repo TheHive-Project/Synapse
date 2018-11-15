@@ -31,6 +31,14 @@ Have a look at the detailed [user guide](docs/user_guide.md), but in short:
 
 While all OS running python3 can be used for Synapse, we recommend the use of Ubuntu.   
 
+## Running in Docker
+
+   1. Build Image: ```docker build -t synapse .```
+   2. Run Container: ```docker run --rm -ti --name synapse -p 5000:5000 synapse```
+   
+   You can also mount the config file for easier adjustments
+   ```docker run -d --name synapse -v ${pwd}/conf/synapse.conf:/opt/synapse/conf/synapse.conf -p 5000:5000 synapse```
+
 ## Roadmap
 
    * Alert creation from QRadar offense
