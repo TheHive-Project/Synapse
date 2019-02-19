@@ -235,9 +235,9 @@ REQUESTS_CA_BUNDLE=/usr/local/share/ca-certificates/extra/<YOUR_CERT_FILENAME>
 ```
 
 By doing so, ```requests``` and ```pip``` will break and give you ```SSLError```.   
-But it's fine because you are just testing :-)
+But it's fine 'cause you are just testing :-)
 
-The proper way to this is to use a WSGI server and a process control system.   
+The proper way to do this is to use a WSGI server and a process control system.   
 So: 
 
    * Go to your corporate Outlook Web App (most likely located at ```https://email.<YOUR_DOMAIN>```)
