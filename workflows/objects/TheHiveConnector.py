@@ -2,7 +2,7 @@
 # -*- coding: utf8 -*-
 
 import logging
-import json
+import json, time
 
 from thehive4py.api import TheHiveApi
 from thehive4py.models import Case, CaseTask, CaseTaskLog, CaseObservable, AlertArtifact, Alert
@@ -96,7 +96,8 @@ class TheHiveConnector:
 
         commTask = CaseTask(title='Communication',
             status='InProgress',
-            owner='synapse')
+            owner='synapse',
+            startDate=time.time()*1000)
 
         return commTask
 
