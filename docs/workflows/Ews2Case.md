@@ -223,16 +223,29 @@ See [this](#automatic-case-creation) and [this](#automatic-case-assignment) for 
 ### Exchange web certificate
 
 You most likely will need to provide to Synapse the Exchange web certificate (especially if you have an on premises Exchange server).   
-To do so:
+If you just want to try Synapse, do the following:
 
    * Go to your corporate Outlook Web App (most likely located at ```https://email.<YOUR_DOMAIN>```)
-   * Extract the certificate from your browser
+   * Extract the certificate from your browser in "X.509 Certificate (PEM)" format (Base64)
    * Upload it to ```/usr/local/share/ca-certificates/extra``` on Synapse server
    * Edit ```/etc/environment``` and add the following line
 
 ```
 REQUESTS_CA_BUNDLE=/usr/local/share/ca-certificates/extra/<YOUR_CERT_FILENAME>
 ```
+
+By doing so, ```requests``` and ```pip``` will break and give you ```SSLError```.   
+But it's fine because you are just testing :-)
+
+The proper way to this is to use a WSGI server and a process control system.   
+So: 
+
+   * Go to your corporate Outlook Web App (most likely located at ```https://email.<YOUR_DOMAIN>```)
+   * Extract the certificate from your browser in "X.509 Certificate (PEM)" format (Base64)
+   * Upload it somewhere on Synapse server but **not at** ```/usr/local/share/ca-certificates/extra```
+
+Then follow ![Deployment to Production](../user_guide.md/#deployment-to-production).   
+This will prevent ```requests``` and ```pip``` from breaking.
 
 ### Special folder
 
