@@ -3,6 +3,7 @@
 This guide will go through installation and basic configuration for Synapse.   
 
 + [Installation](#installation)
+    + [Download](#download)
     + [Dependecies](#dependecies)
 + [Configuration](#configuration)
     + [Synapse user](#synapse-user)
@@ -17,6 +18,13 @@ This guide will go through installation and basic configuration for Synapse.
 + [Update](#update)
 
 ## Installation
+
+### Download
+Download the project to your server, with ```git``` that would be:   
+
+```
+git clone https://github.com/TheHive-Project/Synapse
+```
 
 ### Dependecies
 
