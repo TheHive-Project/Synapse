@@ -147,17 +147,22 @@ def getEmailBody(email):
         'Subject: ' + str(email.subject) + '\n\n') 
 
     body = email.text_body
+    #email.text_body should get the body either it is
+    #html or raw text
+    #unfortunately it is only supported with Exchange 2013
+    #so we need to get the body from another way
 
-    #alternate way to get the body
-    #soup = BeautifulSoup(email.body, 'html.parser')
-    #try:
-    #    #html email
-    #    body = soup.body.text
-    #except AttributeError:
-    #    #non html email
-    #    body = soup.text
+    if body is None:
+        #alternate way to get the body
+        soup = BeautifulSoup(email.body, 'html.parser')
+        try:
+            #html email
+            body = soup.body.text
+        except AttributeError:
+            #non html email
+            body = soup.text
 
-    return ('```\n' + replyToInfo + body + '\n```')
+    return ('```\n' + replyToInfo + str(body) + '\n```')
 
 if __name__ == '__main__':
     connectEws() 
