@@ -23,99 +23,102 @@ def connectEws():
         cfg = getConf()
 
         ewsConnector = EwsConnector(cfg)
-        folder_name = cfg.get('EWS', 'folder_name')
-        unread = ewsConnector.scan(folder_name)
+        #supporting several folder to listen
+        folders = cfg.get('EWS', 'folder_name').split(',')
 
-        theHiveConnector = TheHiveConnector(cfg)
+        for folder_name in folders:
+            unread = ewsConnector.scan(folder_name)
 
-        for msg in unread:
-            #type(msg)
-            #<class 'exchangelib.folders.Message'>
-            conversationId = msg.conversation_id.id
-            
-            #searching if case has already been created from the email
-            #conversation
-            esCaseId = theHiveConnector.searchCaseByDescription(conversationId)
+            theHiveConnector = TheHiveConnector(cfg)
 
-            if esCaseId is None:
-                #no case previously created from the conversation
-                caseTitle = str(msg.subject)
-                caseDescription = ('```\n' +
-                    'Case created by Synapse\n' +
-                    'conversation_id: "' +
-                    str(msg.conversation_id.id) +
-                    '"\n' +
-                    '```')
-                if msg.categories:
-                    assignee = msg.categories[0]
-                else:
-                    assignee = 'synapse'
+            for msg in unread:
+                #type(msg)
+                #<class 'exchangelib.folders.Message'>
+                conversationId = msg.conversation_id.id
+                
+                #searching if case has already been created from the email
+                #conversation
+                esCaseId = theHiveConnector.searchCaseByDescription(conversationId)
 
-                case = theHiveConnector.craftCase(caseTitle, caseDescription)
-                createdCase = theHiveConnector.createCase(case)
-                caseUpdated = theHiveConnector.assignCase(createdCase, assignee)
+                if esCaseId is None:
+                    #no case previously created from the conversation
+                    caseTitle = str(msg.subject)
+                    caseDescription = ('```\n' +
+                        'Case created by Synapse\n' +
+                        'conversation_id: "' +
+                        str(msg.conversation_id.id) +
+                        '"\n' +
+                        '```')
+                    if msg.categories:
+                        assignee = msg.categories[0]
+                    else:
+                        assignee = 'synapse'
 
-                commTask = theHiveConnector.craftCommTask()
-                esCaseId = caseUpdated.id
-                commTaskId = theHiveConnector.createTask(esCaseId, commTask)
+                    case = theHiveConnector.craftCase(caseTitle, caseDescription)
+                    createdCase = theHiveConnector.createCase(case)
+                    caseUpdated = theHiveConnector.assignCase(createdCase, assignee)
 
-            else:
-                #case previously created from the conversation
-                commTaskId = theHiveConnector.getTaskIdByTitle(
-                    esCaseId, 'Communication')
-
-                if commTaskId != None:
-                    pass
-                else:
-                    #case already exists but no Communication task found
-                    #creating comm task
                     commTask = theHiveConnector.craftCommTask()
-                    commTaskId = theHiveConnector.createTask(esCaseId, commTask) 
+                    esCaseId = caseUpdated.id
+                    commTaskId = theHiveConnector.createTask(esCaseId, commTask)
 
-            fullBody = getEmailBody(msg)
-            taskLog = theHiveConnector.craftTaskLog(fullBody)
-            createdTaskLogId = theHiveConnector.addTaskLog(commTaskId, taskLog)
+                else:
+                    #case previously created from the conversation
+                    commTaskId = theHiveConnector.getTaskIdByTitle(
+                        esCaseId, 'Communication')
 
-            readMsg = ewsConnector.markAsRead(msg)
+                    if commTaskId != None:
+                        pass
+                    else:
+                        #case already exists but no Communication task found
+                        #creating comm task
+                        commTask = theHiveConnector.craftCommTask()
+                        commTaskId = theHiveConnector.createTask(esCaseId, commTask) 
 
-            for attachmentLvl1 in msg.attachments:
-                #uploading the attachment as file observable
-                #is the attachment is a .msg, the eml version
-                #of the file is uploaded
-                tempAttachment = TempAttachment(attachmentLvl1)
+                fullBody = getEmailBody(msg)
+                taskLog = theHiveConnector.craftTaskLog(fullBody)
+                createdTaskLogId = theHiveConnector.addTaskLog(commTaskId, taskLog)
 
-                if not tempAttachment.isInline:
-                    #adding the attachment only if it is not inline
-                    #inline attachments are pictures in the email body
-                    tmpFilepath = tempAttachment.writeFile()
-                    to = str()
-                    for recipient in msg.to_recipients:
-                        to = to + recipient.email_address + ' ' 
-                    comment = 'Attachment from email sent by '
-                    comment += str(msg.author.email_address).lower()
-                    comment += ' and received by '
-                    comment += str(to).lower()
-                    comment += ' with subject: <'
-                    comment += msg.subject
-                    comment += '>'
-                    theHiveConnector.addFileObservable(esCaseId,
-                        tmpFilepath,
-                        comment)
+                readMsg = ewsConnector.markAsRead(msg)
 
-                    if tempAttachment.isEmailAttachment:
-                        #if the attachment is an email
-                        #attachments of this email are also
-                        #uploaded to TheHive
-                        for attachmentLvl2 in tempAttachment.attachments:
-                            tempAttachmentLvl2 = TempAttachment(attachmentLvl2)
-                            tmpFilepath = tempAttachmentLvl2.writeFile()
-                            comment = 'Attachment from the email attached'
-                            theHiveConnector.addFileObservable(esCaseId,
-                                tmpFilepath,
-                                comment)
-        
-        report['success'] = True
-        return report
+                for attachmentLvl1 in msg.attachments:
+                    #uploading the attachment as file observable
+                    #is the attachment is a .msg, the eml version
+                    #of the file is uploaded
+                    tempAttachment = TempAttachment(attachmentLvl1)
+
+                    if not tempAttachment.isInline:
+                        #adding the attachment only if it is not inline
+                        #inline attachments are pictures in the email body
+                        tmpFilepath = tempAttachment.writeFile()
+                        to = str()
+                        for recipient in msg.to_recipients:
+                            to = to + recipient.email_address + ' ' 
+                        comment = 'Attachment from email sent by '
+                        comment += str(msg.author.email_address).lower()
+                        comment += ' and received by '
+                        comment += str(to).lower()
+                        comment += ' with subject: <'
+                        comment += msg.subject
+                        comment += '>'
+                        theHiveConnector.addFileObservable(esCaseId,
+                            tmpFilepath,
+                            comment)
+
+                        if tempAttachment.isEmailAttachment:
+                            #if the attachment is an email
+                            #attachments of this email are also
+                            #uploaded to TheHive
+                            for attachmentLvl2 in tempAttachment.attachments:
+                                tempAttachmentLvl2 = TempAttachment(attachmentLvl2)
+                                tmpFilepath = tempAttachmentLvl2.writeFile()
+                                comment = 'Attachment from the email attached'
+                                theHiveConnector.addFileObservable(esCaseId,
+                                    tmpFilepath,
+                                    comment)
+            
+            report['success'] = True
+            return report
 
     except Exception as e:
             logger.error('Failed to create case from email', exc_info=True)
