@@ -117,8 +117,8 @@ def connectEws():
                                     tmpFilepath,
                                     comment)
             
-            report['success'] = True
-            return report
+        report['success'] = True
+        return report
 
     except Exception as e:
             logger.error('Failed to create case from email', exc_info=True)
