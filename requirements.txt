@@ -1,5 +1,6 @@
 -i https://pypi.org/simple
 asn1crypto==0.24.0
+bs4==0.0.1
 cached-property==1.5.1
 certifi==2018.8.24
 cffi==1.11.5

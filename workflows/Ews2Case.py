@@ -11,6 +11,7 @@ from common.common import getConf
 from objects.EwsConnector import EwsConnector
 from objects.TheHiveConnector import TheHiveConnector
 from objects.TempAttachment import TempAttachment
+from bs4 import BeautifulSoup
 
 def connectEws():
     logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ def connectEws():
 
         theHiveConnector = TheHiveConnector(cfg)
 
-        for msg in unread:
+        for msg in reversed(unread):
             #type(msg)
             #<class 'exchangelib.folders.Message'>
             conversationId = msg.conversation_id.id
@@ -148,14 +149,16 @@ def getEmailBody(email):
 
     body = email.text_body
 
-    #alternate way to get the body
-    #soup = BeautifulSoup(email.body, 'html.parser')
-    #try:
-    #    #html email
-    #    body = soup.body.text
-    #except AttributeError:
-    #    #non html email
-    #    body = soup.text
+    #exchange 2010 doesn't have attribute text_body, need to treat body as html
+    if body is None:
+        #alternate way to get the body
+        soup = BeautifulSoup(msg.body, 'html.parser')
+        try:
+            #html email
+            body = soup.body.text
+        except AttributeError:
+            #non html email
+            body = soup.text
 
     return ('```\n' + replyToInfo + body + '\n```')
 
