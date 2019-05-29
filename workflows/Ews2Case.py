@@ -76,44 +76,10 @@ def connectEws():
             fullBody = getEmailBody(msg)
             taskLog = theHiveConnector.craftTaskLog(fullBody)
             createdTaskLogId = theHiveConnector.addTaskLog(commTaskId, taskLog)
-
+            attachedFiles = getFileAttachments(msg)
+            for attached in attachedFiles:
+                theHiveConnector.addFileObservable(esCaseId, attached['data'], attached['message'])
             readMsg = ewsConnector.markAsRead(msg)
-
-            for attachmentLvl1 in msg.attachments:
-                #uploading the attachment as file observable
-                #is the attachment is a .msg, the eml version
-                #of the file is uploaded
-                tempAttachment = TempAttachment(attachmentLvl1)
-
-                if not tempAttachment.isInline:
-                    #adding the attachment only if it is not inline
-                    #inline attachments are pictures in the email body
-                    tmpFilepath = tempAttachment.writeFile()
-                    to = str()
-                    for recipient in msg.to_recipients:
-                        to = to + recipient.email_address + ' ' 
-                    comment = 'Attachment from email sent by '
-                    comment += str(msg.author.email_address).lower()
-                    comment += ' and received by '
-                    comment += str(to).lower()
-                    comment += ' with subject: <'
-                    comment += msg.subject
-                    comment += '>'
-                    theHiveConnector.addFileObservable(esCaseId,
-                        tmpFilepath,
-                        comment)
-
-                    if tempAttachment.isEmailAttachment:
-                        #if the attachment is an email
-                        #attachments of this email are also
-                        #uploaded to TheHive
-                        for attachmentLvl2 in tempAttachment.attachments:
-                            tempAttachmentLvl2 = TempAttachment(attachmentLvl2)
-                            tmpFilepath = tempAttachmentLvl2.writeFile()
-                            comment = 'Attachment from the email attached'
-                            theHiveConnector.addFileObservable(esCaseId,
-                                tmpFilepath,
-                                comment)
         
         report['success'] = True
         return report
@@ -123,6 +89,36 @@ def connectEws():
             report['success'] = False
             return report
             
+def getFileAttachments(msg):
+    files = []
+    for attachmentLvl1 in msg.attachments:
+        #uploading the attachment as file observable
+        #if the attachment is a .msg, the eml version of the file is uploaded
+        tempAttachment = TempAttachment(attachmentLvl1)
+        
+        if not tempAttachment.isInline:
+            #adding the attachment only if it is not inline
+            #inline attachments are pictures in the email body
+            tmpFilepath = tempAttachment.writeFile()
+            
+            to = str()
+            for recipient in msg.to_recipients:
+                to = to + recipient.email_address + ' ' 
+            comment = 'Attachment from email sent by '
+            comment += str(msg.author.email_address).lower()
+            comment += ' and received by '
+            comment += str(to).lower()
+            comment += ' with subject: <'
+            comment += msg.subject
+            comment += '>'
+            files.append({
+                    "data":tmpFilepath,
+                    "message":comment
+                })
+            if tempAttachment.isEmailAttachment:
+                #recursively extracts attachments from attached emails
+                files.extend(getFileAttachments(attachmentLvl1.item))
+    return files
 
 def getEmailBody(email):
     #crafting some "reply to" info
@@ -137,7 +133,7 @@ def getEmailBody(email):
     #because cannot iterate over None object
     if email.to_recipients:
         for recipient in email.to_recipients:
-            to = to + recipient.email_address + ' ' 
+            to = to + recipient.email_address + ' '
     else:
         to = ''
 
