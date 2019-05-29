@@ -166,6 +166,9 @@ class TheHiveConnector:
         if response.status_code == 201:
             esObservableId = response.json()['id']
             return esObservableId
+        # ignores the attachment if is already in the case
+        elif response.status_code == 400 and response.json().get('message', '') == 'Artifact already exists':
+            return None
         else:
             self.logger.error('File observable upload failed')
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
