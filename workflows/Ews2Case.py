@@ -89,8 +89,11 @@ def connectEws():
                     #inline attachments are pictures in the email body
                     tmpFilepath = tempAttachment.writeFile()
                     to = str()
-                    for recipient in msg.to_recipients:
-                        to = to + recipient.email_address + ' ' 
+                    if msg.to_recipients:
+                        for recipient in msg.to_recipients:
+                            to = to + recipient.email_address + ' '
+                    else:
+                        to = '<undisclosed recipients>'
                     comment = 'Attachment from email sent by '
                     comment += str(msg.author.email_address).lower()
                     comment += ' and received by '
