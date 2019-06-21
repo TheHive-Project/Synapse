@@ -78,7 +78,8 @@ class TempAttachment:
             #the email attachment will be write to disk as eml
             #as filename, we use the email subject
             filename = self.EWS_attachment.item.subject
-
+            if not filename:
+                filename = 'No_Subject'
             #making the filename ok (no special char etc...)
             filename = slugify(filename)
             #adding eml extension
