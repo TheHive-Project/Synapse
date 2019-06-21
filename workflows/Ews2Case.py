@@ -131,20 +131,23 @@ def getEmailBody(email):
     #Cc
     #Subject
 
-    to = str()
     #making sure that there is a recipient
     #because cannot iterate over None object
+    to = ''
     if email.to_recipients:
         for recipient in email.to_recipients:
-            to = to + recipient.email_address + ' ' 
-    else:
-        to = ''
+            to = to + recipient.email_address + ' '
+
+    cc = ''
+    if email.cc_recipients:
+        for cc_recipient in email.cc_recipients:
+            cc = cc + cc_recipient.email_address + ' '
 
     replyToInfo = ('From: ' + str(email.author.email_address).lower() + '\n' +
         'Sent: ' + str(email.datetime_sent) + '\n' +
         'To: ' + to.lower() + '\n' +
-        'Cc: ' + str(email.display_cc).lower() + '\n' +
-        'Subject: ' + str(email.subject) + '\n\n') 
+        ('Cc: ' + cc.lower() + '\n' if cc else '') +
+        'Subject: ' + str(email.subject) + '\n\n')
 
     body = email.text_body
 
