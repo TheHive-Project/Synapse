@@ -7,6 +7,9 @@ from flask import Flask, request, jsonify
 
 from workflows.common.common import getConf
 from workflows.Ews2Case import connectEws
+
+# Adding the Function from the new Ews2Alert
+from workflows.Ews2Alert import alertConnectEws
 from workflows.QRadar2Alert import allOffense2Alert
 from workflows.ManageWebhooks import manageWebhook
 
@@ -52,6 +55,15 @@ def listenWebhook():
 @app.route('/ews2case', methods=['GET'])
 def ews2case():
     workflowReport = connectEws()
+    if workflowReport['success']:
+        return jsonify(workflowReport), 200
+    else:
+        return jsonify(workflowReport), 500
+
+# Adding a new app route to sent GET requests to and trigger the new Workflow
+@app.route('/ews2alert', methods=['GET'])
+def ews2alert():
+    workflowReport = alertConnectEws()
     if workflowReport['success']:
         return jsonify(workflowReport), 200
     else:
