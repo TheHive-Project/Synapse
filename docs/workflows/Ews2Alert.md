@@ -105,12 +105,15 @@ caseTemplate = ""
 Explanations:
 
 ```title = msg.subject```
+
 The default title of the alert is the E-Mail subject
 
 If you want to change the title of your alert to something more like shown in the Demo, you can use Pythons ```regex``` to for example search for specific strings in the Mail-Body.
 
 In the case of the Demo, we used
-```title = re.search('(?<=Message........: )(.*)(?=\n)', msg.text_body).group(1)```
+```
+title = re.search('(?<=Message........: )(.*)(?=\n)', msg.text_body).group(1)
+```
 to search for everything behind ```Message........: ``` and before the next new line. In case of the Demos SNORT alerts, this will yield the intrusion type as a title.
 
 For more information on how to use ```regex``` and a builder for your custom string, please see the "Links and Information" chapter at the end of this document.
