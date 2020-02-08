@@ -18,13 +18,13 @@ Key differences to Ews2Case:
 
 - You can't use the "Assign via Category" functionality due to how alert creation works
 - Alerts created will not update themselves "out of the box".
-- Ews2Alert is intentionally left highly self configurable due to how many different Use-Cases for E-Mail imports exist
+- Ews2Alert is intentionally left highly self configurable due to how many different Use-Cases for E-Mail imports exist.
 
 ### Demo
 
 Our fictional Company is using a Sophos UTM Firewall with Packet Inspection (SNORT) aktive.
 
-Whenever SNORT detects potentially malicious activity, it reports said activity to a Mailbox called IT-Sicherheit
+Whenever SNORT detects potentially malicious activity, it reports said activity to a Mailbox called IT-Sicherheit.
 
 ![](../img/ews2alert/1-intrusion-notification.PNG)
 
@@ -35,11 +35,14 @@ In our case, this Mail gets auto-sorted into the folder "TheHive" based on rules
 Now, either a Team-Member can manualy trigger the Workflow by either using Curl:
 
 ```curl some.fictionaldomain.com/ews2alert
-{"success":true}```
+{"success":true}
+```
 
 Or, like in our Demo, by setting up a Cronjob on the TheHive server to do this automatically in a set time interval.
 
-'''* * * * * curl --silent http://localhost:5000/ews2alert```
+```
+* * * * * curl --silent http://localhost:5000/ews2alert
+```
 
 This particular Cronjob triggers the ews2alert workflow every minute of every hour for every day.
 
@@ -54,11 +57,11 @@ In the case of our Demo-Company and its SNORT setup, this is to prevent all crea
 
 ![](../img/ews2alert/4-alert-info.PNG)
 
-As you can see, the description and other fields of the Alert have been populated
+As you can see, the description and other fields of the Alert have been populated.
 
 ### Configuration
 
-For configuration of the EWS module, please see the documentation of "Ews2Case", specifically the point "Exchange server"
+For configuration of the EWS module, please see the documentation of "Ews2Case", specifically the point "Exchange server".
 
 Ews2Alert creates alerts based of the basic alert variables which you can read up on HERE.
 
@@ -92,7 +95,7 @@ In the case of the Demo, we used
 ```title = re.search('(?<=Message........: )(.*)(?=\n)', msg.text_body).group(1)```
 to search for everything behind ```Message........: ``` and before the next new line. In case of the Demos SNORT alerts, this will yield the intrusion type as a title.
 
-For more information on how to use ```regex``` and a builder for your custom string, please see the "Links and Information" chapter at the end of this document
+For more information on how to use ```regex``` and a builder for your custom string, please see the "Links and Information" chapter at the end of this document.
 
 ```description = msg.text_body```
 The default description of the alert is the Mail-Body (This was used in the Demo).
@@ -101,7 +104,7 @@ The default description of the alert is the Mail-Body (This was used in the Demo
 The default severity (This was used in the Demo).
 
 ```date = time.time() * 1000```
-The date when the alert was created, which in this case is the time of import into TheHive
+The date when the alert was created, which in this case is the time of import into TheHive.
 
 ```tags = "YourTag1","YourTag2"```
 The default tags, seperated by comma (The Demo used "IDS","SNORT").
@@ -123,7 +126,7 @@ The default sourceRef. For the Demo, we generated a Unique ID for the ```sourceR
 ```"Snort Export, ID " + str(date)```
 
 ```artifacts = ""```
-The default artifacts, in this case empty
+The default artifacts, in this case empty.
 
 ```caseTemplate = ""```
-The default case Template, in this case empty
+The default case Template, in this case empty.
