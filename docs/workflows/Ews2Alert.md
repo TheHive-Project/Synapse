@@ -151,3 +151,12 @@ The default artifacts, in this case empty.
 
 ```caseTemplate = ""```
 The default case Template, in this case empty.
+
+## Links and Information
+
+### Cronjob
+For a good reference site for Cronjob creation, please look at [this](https://linuxconfig.org/linux-crontab-reference-guide) website
+
+### REGEX
+
+[REGEX 101](https://regex101.com/) is a great site to read up on and test out REGEX strings on your own text-strings. For example, [this](https://regex101.com/r/cO8lqs/17289) is the REGEX builder string used in the Demo.
