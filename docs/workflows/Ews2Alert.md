@@ -19,7 +19,7 @@ Key differences to Ews2Case:
 - Alerts created will not update themselves "out of the box".
 - Ews2Alert is intentionally left highly self configurable due to how many different Use-Cases for E-Mail imports exist.
 
-### Demo
+## Demo
 
 Our fictional Company is using a Sophos UTM Firewall with Packet Inspection (SNORT) aktive.
 
@@ -68,20 +68,21 @@ In the case of our Demo-Company and its SNORT setup, this is to prevent all crea
 
 As you can see, the description and other fields of the Alert have been populated.
 
-### Configuration
+## Configuration
 
-# Exchange server
+### Exchange server
 
 For configuration of the EWS module, please see the documentation of "Ews2Case", specifically the point "Exchange server".
 
 
-# ews2Alert config
+### ews2Alert config
 
 Ews2Alert creates alerts based of the basic alert variables which you can read up on HERE.
 
 You can configure the ews2Alert workflow by navigating to your Synapse workflow folder and using nano.
 
 ```cd YourPathToSynapse/Synapse/workflows```
+
 ```sudo nano ews2Alert.py```
 
 The default configuration part looks like this:
@@ -103,7 +104,8 @@ caseTemplate = ""
 
 Explanations:
 
-```title = msg.subject```: the default title of the alert is the E-Mail subject
+```title = msg.subject```
+The default title of the alert is the E-Mail subject
 
 If you want to change the title of your alert to something more like shown in the Demo, you can use Pythons ```regex``` to for example search for specific strings in the Mail-Body.
 
