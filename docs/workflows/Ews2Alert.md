@@ -25,11 +25,15 @@ Our fictional Company is using a Sophos UTM Firewall with Packet Inspection (SNO
 
 Whenever SNORT detects potentially malicious activity, it reports said activity to a Mailbox called IT-Sicherheit.
 
+
 ![](../img/ews2alert/1-intrusion-notification.png)
+
 
 In our case, this Mail gets auto-sorted into the folder "TheHive" based on rules set in the Mailbox itself.
 
+
 ![](../img/ews2alert/2-mailbox-TheHive.png)
+
 
 Now, either a Team-Member can manualy trigger the Workflow by either using Curl:
 
@@ -47,20 +51,31 @@ This particular Cronjob triggers the ews2alert workflow every minute of every ho
 
 In case an alert creation fails, the logs to troubleshoot the issue are located at ```Synaspe/logs/synapse.log```.
 
+
 TheHive UI now shows a new created Alert.
+
 
 ![](../img/ews2alert/3-created-alert-ui.png)
 
+
 Due to the way this particular Demo was configured, the ```title``` was Populated with the actual intrusion type instead of for example the subject of the E-Mail.
+
 In the case of our Demo-Company and its SNORT setup, this is to prevent all created Alerts from only displaying "[any.domain.de][CRIT-852] Intrusion Prevention Alert (Packet dropped)" as a ```title```, making intresting reports not immediatly visible. This is because this Companys SNORT Alerts do not come with their own unique identifier in the subject.
 
+
 ![](../img/ews2alert/4-alert-info.png)
+
 
 As you can see, the description and other fields of the Alert have been populated.
 
 ### Configuration
 
+# Exchange server
+
 For configuration of the EWS module, please see the documentation of "Ews2Case", specifically the point "Exchange server".
+
+
+# ews2Alert config
 
 Ews2Alert creates alerts based of the basic alert variables which you can read up on HERE.
 
@@ -71,7 +86,8 @@ You can configure the ews2Alert workflow by navigating to your Synapse workflow 
 
 The default configuration part looks like this:
 
-```title = msg.subject
+```
+title = msg.subject
 description = msg.text_body
 severity = 2
 date = time.time() * 1000
@@ -82,7 +98,8 @@ type = "YourTypeHere"
 source = "YourSourceHere"
 sourceRef = "Snort Export, ID " + str(date)
 artifacts = ""
-caseTemplate = ""```
+caseTemplate = ""
+```
 
 Explanations:
 
