@@ -37,8 +37,8 @@ In our case, this E-Mail gets auto-sorted into the folder "TheHive" based on rul
 
 Now, either a team member can manualy trigger the ```ews2Alert``` workflow by either using Curl:
 
-```curl some.fictionaldomain.com/ews2alert
-{"success":true}
+```
+curl some.fictionaldomain.com/ews2alert
 ```
 
 or, like in our demo, by setting up a Cronjob locally on the TheHive server to do this automatically in a set time interval.
