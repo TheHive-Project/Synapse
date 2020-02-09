@@ -77,8 +77,6 @@ For configuration of the EWS module, please see the documentation of "Ews2Case",
 
 ### ews2Alert config
 
-Ews2Alert creates alerts based of the basic alert variables which you can read up on HERE.
-
 You can configure the ews2Alert workflow by navigating to your Synapse workflow folder and using nano.
 
 ```cd YourPathToSynapse/Synapse/workflows```
