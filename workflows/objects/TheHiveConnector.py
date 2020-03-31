@@ -164,7 +164,7 @@ class TheHiveConnector:
             esCaseId, file_observable)
 
         if response.status_code == 201:
-            esObservableId = response.json()['id']
+            esObservableId = (response.json()[0])['id']
             return esObservableId
         else:
             self.logger.error('File observable upload failed')
