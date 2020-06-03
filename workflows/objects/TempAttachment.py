@@ -61,14 +61,14 @@ class TempAttachment:
         self.filepath = '/tmp/' + self.filename
         
     def getFileType(self):
-        self.logger.info('%s.getFileType starts', __name__)
+        self.logger.debug('%s.getFileType starts', __name__)
         mime = magic.Magic(mime = True)
         #using the first 11 bytes to check the mime-type
         self.filetype = mime.from_buffer(self.EWS_attachment.content[0:10])
         return self.filetype
             
     def getFilename(self):
-        self.logger.info('%s.getFileName starts', __name__)
+        self.logger.debug('%s.getFileName starts', __name__)
         #by default the filename is untitled
         #anticipating the case where no email subject
         filename = 'Untitled'
@@ -87,7 +87,7 @@ class TempAttachment:
         return filename
 
     def writeFile(self):
-        self.logger.info('%s.writeFile starts', __name__)
+        self.logger.debug('%s.writeFile starts', __name__)
         with open(self.filepath, 'wb') as out:
             if self.isFileAttachment:
                 #proper file as attachment
@@ -98,5 +98,5 @@ class TempAttachment:
         return self.filepath
 
     def deleteFile(self):
-        self.logger.info('%s.deleteFile starts', __name__)
+        self.logger.debug('%s.deleteFile starts', __name__)
         os.remove(self.filepath)

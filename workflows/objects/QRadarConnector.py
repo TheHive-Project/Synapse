@@ -2,9 +2,10 @@
 # -*- coding: utf8 -*-
 
 import logging
+import time, json
+from collections import OrderedDict
 from .QRadar_Objects.RestApiClient import RestApiClient
 from .QRadar_Objects.arielapiclient import APIClient
-import time, json
 from multiprocessing import Process, Queue
 
 class QRadarConnector:
@@ -21,11 +22,17 @@ class QRadarConnector:
             :rtype: QRadarConnector
         """
 
-        self.logger = logging.getLogger('workflows.' + __name__)
+        self.logger = logging.getLogger('app2a.' + __name__)
         self.cfg = cfg
         clients = self.getClients()
         self.client = clients[0]
         self.arielClient = clients[1]
+        
+        self.redis_enabled = self.cfg.getboolean('QRadar', 'api_redis_cache')
+        if self.redis_enabled:
+            import redis
+            self.redis_sip = redis.StrictRedis(host="localhost", port=6379, db=0)
+            self.redis_dip = redis.StrictRedis(host="localhost", port=6379, db=1)
 
     def getClients(self):
 
@@ -37,22 +44,25 @@ class QRadarConnector:
             :rtype: list
         """
 
-        self.logger.info('%s.getClient starts', __name__)
+        self.logger.debug('%s.getClient starts', __name__)
 
         try:
             server = self.cfg.get('QRadar', 'server')
             auth_token = self.cfg.get('QRadar', 'auth_token')
             cert_filepath = self.cfg.get('QRadar', 'cert_filepath')
+            cert_verification = self.cfg.get('QRadar', 'cert_verification')
             api_version = self.cfg.get('QRadar', 'api_version')
 
             client = RestApiClient(server,
                 auth_token,
                 cert_filepath,
+                cert_verification,
                 api_version) 
 
             arielClient = APIClient(server,
                 auth_token,
                 cert_filepath,
+                cert_verification,
                 api_version)
 
             clients = list()
@@ -77,26 +87,30 @@ class QRadarConnector:
             :rtype response_body: list
         """
 
-        self.logger.info('%s.getOffenses starts', __name__)
+        self.logger.debug('%s.getOffenses starts', __name__)
 
         try:
-            #getting current time as epoch in millisecond
-            now = int(round(time.time() * 1000))
-        
-            #filtering by time for offenses
-            #timerange is in minute while start_time in QRadar is in millisecond since epoch
-            #converting timerange in second then in millisecond
-            timerange = timerange * 60 * 1000
-        
-            #timerange is by default 1 minutes
-            #so timeFilter is now minus 1 minute
-            #this variable will be use to query QRadar for every offenses since timeFilter
-            timeFilter = now - timerange
-        
-            # %3E <=> >
-            # %3C <=> <
-            # moreover we filter on OPEN offenses only
-            query = 'siem/offenses?filter=last_updated_time%3E' + str(timeFilter) + '%20and%20last_updated_time%3C' + str(now) + '%20and%20status%3DOPEN'
+            if timerange == "all":
+                query = 'siem/offenses?filter=status%3DOPEN'
+            else:
+                #getting current time as epoch in millisecond
+                now = int(round(time.time() * 1000))
+            
+                #filtering by time for offenses
+                #timerange is in minute while start_time in QRadar is in millisecond since epoch
+                #converting timerange in second then in millisecond
+                timerange = int(timerange * 60 * 1000)
+            
+                #timerange is by default 1 minutes
+                #so timeFilter is now minus 1 minute
+                #this variable will be use to query QRadar for every offenses since timeFilter
+                timeFilter = now - timerange
+            
+                # %3E <=> >
+                # %3C <=> <
+                # moreover we filter on OPEN offenses only
+                query = 'siem/offenses?filter=last_updated_time%3E' + str(timeFilter) + '%20and%20last_updated_time%3C' + str(now) + '%20and%20status%3DOPEN'
+            
             self.logger.debug(query)
             response = self.client.call_api(
                 query, 'GET')
@@ -177,21 +191,44 @@ class QRadarConnector:
 
         address_strings = []
 
+        if self.redis_enabled:
+            self.logger.debug("Enabling Redis cache")
+            if path == "source_addresses":
+                self.redis_ip = self.redis_sip
+            if path == "local_destination_addresses":
+                self.redis_ip = self.redis_dip
+
         for address_id in ids:
             try:
-                response = self.client.call_api('siem/%s/%s' % (path, address_id), 'GET')
-                response_text = response.read().decode('utf-8')
-                response_body = json.loads(response_text)
+                #Check if IP is in Redis, if not query QRadar
+                if self.redis_enabled:
+                    self.logger.debug('Looking for %s in Redis' % address_id)
+                    #Redis return byte
+                    self.ip = self.redis_ip.get(address_id)
+                    self.logger.debug('Found %s in Redis for %s' % (self.ip, address_id))
 
-                try:
-                    if response.code == 200:
-                        address_strings.append(response_body[field])
-                    else:
-                        self.logger.warning("Couldn't get id %s from path %s (response code %s)" % (address_id, path, response.code))
+                if not self.redis_enabled or self.ip == None:
+                    self.logger.debug('Looking up %s in QRadar' % address_id)
+                    response = self.client.call_api('siem/%s/%s' % (path, address_id), 'GET')
+                    response_text = response.read().decode('utf-8')
+                    response_body = json.loads(response_text)
 
-                except Exception as e:
-                    self.logger.error('%s.getAddressFromIDs failed', __name__, exc_info=True)
-                    raise e
+                    try:
+                        if response.code == 200:
+                            address_strings.append(response_body[field])
+                            #Put address in Redis
+                            if self.redis_enabled:
+                                self.ip = self.redis_ip.set(address_id, response_body[field], 604800)
+                        else:
+                            self.logger.warning("Couldn't get id %s from path %s (response code %s)" % (address_id, path, response.code))
+
+                    except Exception as e:
+                        self.logger.error('%s.getAddressFromIDs failed', __name__, exc_info=True)
+                        raise e
+                
+                else:
+                    #Add address found in redis. Decode it so it is a proper string in stead of a byte object
+                    address_strings.append(self.ip.decode('UTF-8'))
 
             except Exception as e:
                 self.logger.error('%s.getAddressFromIDs failed', __name__, exc_info=True)
@@ -207,7 +244,7 @@ class QRadarConnector:
         proc = Process(target=self.getAddressesFromIDs, args=("source_addresses", "source_ip", offense["source_address_ids"], queue,))
         proc.start()
         try:
-            res = queue.get(timeout=3)
+            res = queue.get(timeout=int(self.cfg.get('QRadar', 'api_timeout')))
             proc.join()
             return res
         except:
@@ -223,7 +260,7 @@ class QRadarConnector:
         proc = Process(target=self.getAddressesFromIDs, args=("local_destination_addresses", "local_destination_ip", offense["local_destination_address_ids"], queue,))
         proc.start()
         try:
-            res = queue.get(timeout=3)
+            res = queue.get(timeout=int(self.cfg.get('QRadar', 'api_timeout')))
             proc.join()
             return res
         except:
@@ -242,7 +279,7 @@ class QRadarConnector:
             :rtype offenseTypeStr: str
         """
 
-        self.logger.info('%s.getOffenseTypeStr starts', __name__)
+        self.logger.debug('%s.getOffenseTypeStr starts', __name__)
 
         offenseTypeStr = 'Unknown offense_type name for id=' + \
             str(offenseTypeId)
@@ -272,7 +309,7 @@ class QRadarConnector:
                     self.logger.error(
                         'getOffenseTypeStr failed, api returned http %s',
                          str(response.code))
-                    self.logger.info(json.dumps(response_body, indent=4))
+                    self.logger.error(json.dumps(response_body, indent=4))
 
                 return offenseTypeStr
 
@@ -299,7 +336,7 @@ class QRadarConnector:
             :rtype logs: list of dict
         """
 
-        self.logger.info('%s.getOffenseLogs starts', __name__)
+        self.logger.debug('%s.getOffenseLogs starts', __name__)
 
         try:
             offenseId = offense['id']
@@ -361,13 +398,19 @@ class QRadarConnector:
             :rtype offenseTypeStr: dict
         """
         
-        self.logger.info('%s.aqlSearch starts', __name__)
+        #body_json = collections.OrderedDict()
+        
+        self.logger.debug('%s.aqlSearch starts', __name__)
         try:
             response = self.arielClient.create_search(aql_query)
-            response_json = json.loads(response.read().decode('utf-8'))
-            self.logger.info(response_json)
-            search_id = response_json['search_id']
-            response = self.arielClient.get_search(search_id)
+            if (response.code in [200,201]):
+                response_json = json.loads(response.read().decode('utf-8'))
+                self.logger.debug("AQL Search is created: %s" % response_json)
+                search_id = response_json['search_id']
+                response = self.arielClient.get_search(search_id)
+            else:
+                self.logger.error("An error occurred while creating the search: %s, %s" % (response.code, response.read().decode('utf-8')))
+                return {}
 
             error = False
             while (response_json['status'] != 'COMPLETED') and not error:
@@ -377,13 +420,14 @@ class QRadarConnector:
                     response = self.arielClient.get_search(search_id)
                     response_json = json.loads(response.read().decode('utf-8'))
                 else:
+                    self.logger.error("An error occurred while waiting for search completion: %s, %s" % (response.code, response.read().decode('utf-8')))
                     error = True
 
             response = self.arielClient.get_search_results(
                 search_id, 'application/json')
     
             body = response.read().decode('utf-8')
-            body_json = json.loads(body)
+            body_json = json.loads(body, object_pairs_hook=OrderedDict)
 
             return body_json
             #looks like:
@@ -410,7 +454,7 @@ class QRadarConnector:
             :rtype: boolean
         """
 
-        self.logger.info('%s.offenseIsOpen starts', __name__)
+        self.logger.debug('%s.offenseIsOpen starts', __name__)
 
         try:
             response = self.client.call_api('siem/offenses?filter=id%3D' + \
@@ -446,7 +490,7 @@ class QRadarConnector:
             :rtype: 
         """
 
-        self.logger.info('%s.closeOffense starts', __name__)
+        self.logger.debug('%s.closeOffense starts', __name__)
 
         try:
             #when closing an offense with the webUI, the closing_reason_id
@@ -479,12 +523,15 @@ class QRadarConnector:
             self.logger.error('Failed to close offense %s', offenseId, exc_info=True)
             raise
 
+            
+            
+#### Troubleshooten. Wilt nog niet de naam toevoegen aan de rule array
     def getRuleNames(self, offense):
-        self.logger.info('%s.getRuleNames starts', __name__)
+        self.logger.debug('%s.getRuleNames starts', __name__)
 
-        ruleNames = []
+        rules = []
         if 'rules' not in offense:
-            return ruleNames
+            return rules
 
         for rule in offense['rules']:
             if 'id' not in rule:
@@ -492,20 +539,21 @@ class QRadarConnector:
             if 'type' not in rule:
                 continue
             if rule['type'] != 'CRE_RULE':
+                rules.append({'id':rule['id'], 'type':rule['type']})
                 continue
             rule_id = rule['id']
-
+            self.logger.info('Looking up rule id %s', str(rule_id))
             try:
-                response = self.client.call_api('siem/analytics/rules/%s' % rule_id, 'GET')
+                response = self.client.call_api('analytics/rules/%s' % rule_id, 'GET')
                 response_text = response.read().decode('utf-8')
                 response_body = json.loads(response_text)
 
                 if response.code == 200:
-                    ruleNames.append(response_body['name'])
+                    rules.append({'id':rule['id'], 'type':rule['type'], 'name':response_body['name']})
                 else:
                     self.logger.warning('Could not get rule name for offense')
 
             except Exception as e:
                 self.logger.warning('Could not get rule name for offense')
 
-        return ruleNames
+        return rules

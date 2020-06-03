@@ -13,7 +13,7 @@ class EwsConnector:
         self.account = self.getAccount()
 
     def getAccount(self):
-        self.logger.info('%s. getAccount starts', __name__)
+        self.logger.debug('%s. getAccount starts', __name__)
         try:
             username = self.cfg.get('EWS', 'username')
             password = self.cfg.get('EWS', 'password')
@@ -51,7 +51,7 @@ class EwsConnector:
         #returns a query set of unread emails
         #<class 'exchangelib.queryset.QuerySet'>
 
-        self.logger.info('%s.scan starts', __name__)
+        self.logger.debug('%s.scan starts', __name__)
 
         folder = None
         try:
@@ -75,7 +75,7 @@ class EwsConnector:
             raise
 
     def markAsRead(self, msg):
-        self.logger.info('%s.markAsRead starts', __name__)
+        self.logger.debug('%s.markAsRead starts', __name__)
         msg.is_read = True
         msg.save()
         return msg

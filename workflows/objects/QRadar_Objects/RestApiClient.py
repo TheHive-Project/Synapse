@@ -19,7 +19,7 @@ import base64
 class RestApiClient:
 
     # Constructor for the RestApiClient Class
-    def __init__(self, server_ip, auth_token, certificate_file, version):
+    def __init__(self, server_ip, auth_token, certificate_file, certificate_verification, version):
 
 
         self.headers = {'Accept': 'application/json'}
@@ -43,28 +43,35 @@ class RestApiClient:
             print("WARNING: Unable to disable SSLv2 and SSLv3. Caused by exception " + str(e) + '"')
             sys.exit(1)
 
-        context.verify_mode = ssl.CERT_REQUIRED
-        if sys.version_info >= (3, 4):
-            context.check_hostname = True
-
-        check_hostname = True
-        certificate_file = certificate_file
-        if certificate_file is not None:
-            # Load the certificate if the user has specified a certificate
-            # file in config.ini.
-
-            # The default QRadar certificate does not have a valid hostname,
-            # so me must disable hostname checking.
+        if certificate_verification == "enabled":
+            context.verify_mode = ssl.CERT_REQUIRED
             if sys.version_info >= (3, 4):
-                context.check_hostname = False
+                context.check_hostname = True
+
+            check_hostname = True
+            certificate_file = certificate_file
+            if certificate_file is not None:
+                # Load the certificate if the user has specified a certificate
+                # file in config.ini.
+
+                # The default QRadar certificate does not have a valid hostname,
+                # so me must disable hostname checking.
+                if sys.version_info >= (3, 4):
+                    context.check_hostname = False
+                check_hostname = False
+
+                # Instead of loading the default certificates load only the
+                # certificates specified by the user.
+                context.load_verify_locations(cafile=certificate_file)
+
+            install_opener(build_opener(
+                HTTPSHandler(context=context, check_hostname=check_hostname)))
+        else:
+            context.verify_mode = ssl.CERT_NONE
+            context.check_hostname = False
             check_hostname = False
-
-            # Instead of loading the default certificates load only the
-            # certificates specified by the user.
-            context.load_verify_locations(cafile=certificate_file)
-
-        install_opener(build_opener(
-            HTTPSHandler(context=context, check_hostname=check_hostname)))
+            install_opener(build_opener(
+                HTTPSHandler(context=context, check_hostname=check_hostname)))
 
     # This method is used to set up an HTTP request and send it to the server
     def call_api(self, endpoint, method, headers=None, params=[], data=None,

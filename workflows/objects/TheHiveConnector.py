@@ -18,7 +18,7 @@ class TheHiveConnector:
         self.theHiveApi = self.connect()
 
     def connect(self):
-        self.logger.info('%s.connect starts', __name__)
+        self.logger.debug('%s.connect starts', __name__)
 
         url = self.cfg.get('TheHive', 'url')
         api_key = self.cfg.get('TheHive', 'api_key')
@@ -29,7 +29,7 @@ class TheHiveConnector:
         #search case with a specific string in description
         #returns the ES case ID
 
-        self.logger.info('%s.searchCaseByDescription starts', __name__)
+        self.logger.debug('%s.searchCaseByDescription starts', __name__)
 
         query = dict()
         query['_string'] = 'description:"{}"'.format(string)
@@ -55,10 +55,42 @@ class TheHiveConnector:
         else:
             #unknown use case
             raise ValueError('unknown use case after searching case by description')
+            
+    def getCase(self, caseid):
+        self.logger.debug('%s.getCase starts', __name__)
 
+        response = self.theHiveApi.get_case(caseid)
+
+        if response.status_code == 200:
+            return response
+        else:
+            self.logger.error('Case not found')
+            raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
+            
+    def getCaseObservables(self, caseid):
+        self.logger.debug('%s.getCaseObservables starts', __name__)
+
+        response = self.theHiveApi.get_case_observables(caseid)
+
+        if response.status_code == 200:
+            return response
+        else:
+            self.logger.error('Case not found')
+            raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
+            
+    def getCaseTasks(self, caseid):
+        self.logger.debug('%s.getCaseTasks starts', __name__)
+
+        response = self.theHiveApi.get_case_tasks(caseid)
+
+        if response.status_code == 200:
+            return response
+        else:
+            self.logger.error('Case not found')
+            raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
 
     def craftCase(self, title, description):
-        self.logger.info('%s.craftCase starts', __name__)
+        self.logger.debug('%s.craftCase starts', __name__)
 
         case = Case(title=title,
             tlp=2,
@@ -69,7 +101,7 @@ class TheHiveConnector:
         return case
 
     def createCase(self, case):
-        self.logger.info('%s.createCase starts', __name__)
+        self.logger.debug('%s.createCase starts', __name__)
 
         response = self.theHiveApi.create_case(case)
 
@@ -80,9 +112,33 @@ class TheHiveConnector:
         else:
             self.logger.error('Case creation failed')
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
+            
+    def createCaseFromAlert(self, alert_id, casetemplate):
+        self.logger.debug('%s.createCaseFromAlert starts', __name__)
+
+        response = self.theHiveApi.create_case_from_alert(alert_id, casetemplate)
+
+        if response.status_code == 201:
+            esCaseId =  response.json()['id']
+            createdCase = self.theHiveApi.case(esCaseId)
+            return createdCase
+        else:
+            self.logger.error('Case creation failed')
+            raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
+            
+    def updateCase(self, case, fields):
+        self.logger.debug('%s.updateCase starts', __name__)
+
+        response = self.theHiveApi.update_case(case,fields)
+
+        if response.status_code == 200:
+            return response
+        else:
+            self.logger.error('Case update failed')
+            raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
 
     def assignCase(self, case, assignee):
-        self.logger.info('%s.assignCase starts', __name__)
+        self.logger.debug('%s.assignCase starts', __name__)
 
         esCaseId = case.id
         case.owner = assignee
@@ -92,7 +148,7 @@ class TheHiveConnector:
         return updatedCase
 
     def craftCommTask(self):
-        self.logger.info('%s.craftCommTask starts', __name__)
+        self.logger.debug('%s.craftCommTask starts', __name__)
 
         commTask = CaseTask(title='Communication',
             status='InProgress',
@@ -101,7 +157,7 @@ class TheHiveConnector:
         return commTask
 
     def createTask(self, esCaseId, task):
-        self.logger.info('%s.createTask starts', __name__)
+        self.logger.debug('%s.createTask starts', __name__)
 
         response = self.theHiveApi.create_case_task(esCaseId, task)
 
@@ -113,21 +169,21 @@ class TheHiveConnector:
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
 
     def craftAlertArtifact(self, **attributes):
-        self.logger.info('%s.craftAlertArtifact starts', __name__)
+        self.logger.debug('%s.craftAlertArtifact starts', __name__)
 
         alertArtifact = AlertArtifact(dataType=attributes["dataType"], message=attributes["message"], data=attributes["data"], tags=attributes['tags'])
 
         return alertArtifact
 
     def craftTaskLog(self, textLog):
-        self.logger.info('%s.craftTaskLog starts', __name__)
+        self.logger.debug('%s.craftTaskLog starts', __name__)
 
         log = CaseTaskLog(message=textLog)
 
         return log
 
     def addTaskLog(self, esTaskId, textLog):
-        self.logger.info('%s.addTaskLog starts', __name__)
+        self.logger.debug('%s.addTaskLog starts', __name__)
 
         response = self.theHiveApi.create_task_log(esTaskId, textLog)
 
@@ -139,7 +195,7 @@ class TheHiveConnector:
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
 
     def getTaskIdByTitle(self, esCaseId, taskTitle):
-        self.logger.info('%s.getTaskIdByName starts', __name__)
+        self.logger.debug('%s.getTaskIdByName starts', __name__)
 
         response = self.theHiveApi.get_case_tasks(esCaseId)
         for task in response.json():
@@ -150,7 +206,7 @@ class TheHiveConnector:
         return None
 
     def addFileObservable(self, esCaseId, filepath, comment):
-        self.logger.info('%s.addFileObservable starts', __name__)
+        self.logger.debug('%s.addFileObservable starts', __name__)
 
         file_observable = CaseObservable(dataType='file',
             data=[filepath],
@@ -172,7 +228,7 @@ class TheHiveConnector:
 
     def craftAlert(self, title, description, severity, date, tags, tlp, status, type, source,
         sourceRef, artifacts, caseTemplate):
-        self.logger.info('%s.craftAlert starts', __name__)
+        self.logger.debug('%s.craftAlert starts', __name__)
 
         alert = Alert(title=title,
             description=description,
@@ -189,7 +245,7 @@ class TheHiveConnector:
         return alert
 
     def createAlert(self, alert):
-        self.logger.info('%s.createAlert starts', __name__)
+        self.logger.debug('%s.createAlert starts', __name__)
 
         response = self.theHiveApi.create_alert(alert)
 
@@ -197,6 +253,17 @@ class TheHiveConnector:
             return response.json()
         else:
             self.logger.error('Alert creation failed')
+            raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
+            
+    def updateAlert(self, alertid, alert, fields=[]):
+        self.logger.debug('%s.updateAlert starts', __name__)
+
+        response = self.theHiveApi.update_alert(alertid, alert, fields=fields)
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            self.logger.error('Alert update failed')
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
 
     def findAlert(self, q):
@@ -210,7 +277,7 @@ class TheHiveConnector:
             :rtype results: list
         """
 
-        self.logger.info('%s.findAlert starts', __name__)
+        self.logger.debug('%s.findAlert starts', __name__)
 
         response = self.theHiveApi.find_alerts(query=q)
         if response.status_code == 200:
@@ -221,7 +288,7 @@ class TheHiveConnector:
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
 
     def findFirstMatchingTemplate(self, searchstring):
-        self.logger.info('%s.findFirstMatchingTemplate starts', __name__)
+        self.logger.debug('%s.findFirstMatchingTemplate starts', __name__)
 
         query = Eq('status', 'Ok')
         allTemplates = self.theHiveApi.find_case_templates(query=query)
@@ -233,3 +300,14 @@ class TheHiveConnector:
                 return template
 
         return None
+        
+    def runAnalyzer(self, cortex_server, observable, analyzer):
+        self.logger.debug('%s.runAnalyzer starts', __name__)
+
+        response = self.theHiveApi.run_analyzer(cortex_server, observable, analyzer)
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            self.logger.error('Running Analyzer %s failed' % analyzer)
+            raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))

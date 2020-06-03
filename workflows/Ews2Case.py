@@ -13,7 +13,7 @@ from objects.TheHiveConnector import TheHiveConnector
 from objects.TempAttachment import TempAttachment
 
 def connectEws():
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger('app2a')
     logger.info('%s.connectEws starts', __name__)
 
     report = dict()
@@ -147,6 +147,9 @@ def getEmailBody(email):
         'Subject: ' + str(email.subject) + '\n\n') 
 
     body = email.text_body
+    
+    if not body:
+        body = "No body"
 
     #alternate way to get the body
     #soup = BeautifulSoup(email.body, 'html.parser')
