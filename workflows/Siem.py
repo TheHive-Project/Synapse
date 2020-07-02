@@ -398,7 +398,6 @@ class Siem:
             self.alert_id = self.webhook.data['object']['id']
             self.alert_description = self.webhook.data['object']['description']
             self.tags = self.webhook.data['object']['tags']
-            self.customer_id = self.MatchValueAgainstTags(self.tags, self.customers)
             self.uc_regex = self.use_case_config['configuration']['uc_regex']
             self.use_cases = self.use_case_config['use_cases']
             self.alert_updated = False
@@ -417,12 +416,16 @@ class Siem:
                 if tag in self.use_cases:
                     self.rule_id = tag
 
-                    if 'internal' in self.use_cases[self.rule_id] and self.use_cases[self.rule_id]['internal']:
-                        self.logger.info("Rule %s is marked as internal" % self.rule_id)
-                        self.customer_id = self.use_case_config['configuration']['internal_contact']
-                    if 'debug' in self.use_cases[self.rule_id] and self.use_cases[self.rule_id]['debug']:
-                        self.logger.info("Using debug settings for rule %s" % self.rule_id)
-                        self.customer_id = self.use_case_config['configuration']['debug_contact']
+                    #Define customer_id
+                    if cfg.getboolean('UCAutomation','enable_customer_list', fallback=False):
+                        if 'internal' in self.use_cases[self.rule_id] and self.use_cases[self.rule_id]['internal']:
+                            self.logger.info("Rule %s is marked as internal" % self.rule_id)
+                            self.customer_id = self.use_case_config['configuration']['internal_contact']
+                        elif 'debug' in self.use_cases[self.rule_id] and self.use_cases[self.rule_id]['debug']:
+                            self.logger.info("Using debug settings for rule %s" % self.rule_id)
+                            self.customer_id = self.use_case_config['configuration']['debug_contact']
+                        else:
+                            self.customer_id = self.MatchValueAgainstTags(self.tags, self.customers)
 
                     ## Try to retrieve the defined actions
                     self.use_case_actions = self.use_cases[self.rule_id]['automation']
