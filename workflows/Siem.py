@@ -39,7 +39,7 @@ class Siem:
         self.webhook = webhook
         self.root_id = self.webhook.data['rootId']
 
-        if cfg.getboolean('UCAutomation','enable_customer_list'):
+        if cfg.getboolean('UCAutomation','enable_customer_list', fallback=False):
             self.logger.info('Loading Customer configuration')
             #Load optional customer config
             self.customer_cfg = ConfigParser(converters={'list': lambda x: [i.strip() for i in x.split(';')]})
