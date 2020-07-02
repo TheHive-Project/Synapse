@@ -331,8 +331,6 @@ class Siem:
         self.report_action = 'None'
         if self.webhook.isImportedAlert():
             self.tags = self.webhook.data['object']['tags']
-            self.customer_id = self.MatchValueAgainstTags(self.tags, self.customers)
-            self.logger.info('Found customer %s, retrieving recipient' % self.customer_id)
             self.uc_regex = self.use_case_config['configuration']['uc_regex']
             self.use_cases = self.use_case_config['use_cases']
 
@@ -374,6 +372,8 @@ class Siem:
                                 self.report_action = 'updateCase'
                             
                         elif action_type == "CreateMailTask":
+                            self.customer_id = self.MatchValueAgainstTags(self.tags, self.customers)
+                            self.logger.info('Found customer %s, retrieving recipient' % self.customer_id)
                             self.notification_type = "email"
                             self.case_description = self.webhook.data['object']['description']
                             self.title = action_config['title']
