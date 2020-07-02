@@ -301,9 +301,9 @@ class QRadarAutomation():
                 
                 #Retrieve all required attributes from the alert and add them as custom fields to the case
                 customFields = CustomFieldHelper()\
-                    .add_string('offenseType', self.webhook.data['object']['type'])\
-                    .add_string('offenseSource', self.webhook.data['object']['source'])\
-                    .add_number('offenseID', int(self.webhook.data['object']['sourceRef']))\
+                    .add_string(self.qr_config['offense_type_field'], self.webhook.data['object']['type'])\
+                    .add_string(self.qr_config['offense_source_field'], self.webhook.data['object']['source'])\
+                    .add_number(self.qr_config['offense_id_field'], int(self.webhook.data['object']['sourceRef']))\
                     .build()
                 
                 #Add custom fields to the case object
