@@ -3,8 +3,9 @@ Dockerfile-Custom
 
 #Ignore configuration files, except for samples
 conf/*
-!conf/*sample.yml
-!conf/*sample.conf
+!conf/*.sample.yml
+!conf/*/*.sample.conf
+!conf/use_cases/*.sample.yml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
