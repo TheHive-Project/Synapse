@@ -23,7 +23,10 @@ class Actuator():
         self.cfg = cfg
         self.logger = logging.getLogger('workflows.' + __name__)
         self.theHiveConnector = TheHiveConnector(cfg)
-        self.cortexConnector = CortexConnector(cfg)
+        if self.cfg.getboolean('Cortex', 'enabled'):
+            self.cortexConnector = CortexConnector(cfg)
+        else:
+            self.logger.warning('Cortex integration is not enabled, which can lead to errors notifications if Cortex functions are used')
      
     def updateCase(self, case, fields):
         """
