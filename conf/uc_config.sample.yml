@@ -4,7 +4,6 @@ uc_regex: uc-\w+-\d{3}\w{0,2}
 uc_kb_name_regex: uc-\w+-\d+-[\w\-_ ]*
 event_start_time: Start Time
 event_start_time_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-event_id_field: Anomaly ID
 internal_contact: <customer_id>
 debug_contact: <customer_id>
 mail:

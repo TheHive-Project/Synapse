@@ -417,7 +417,7 @@ class Siem:
                     self.rule_id = tag
 
                     #Define customer_id
-                    if cfg.getboolean('UCAutomation','enable_customer_list', fallback=False):
+                    if self.cfg.getboolean('UCAutomation','enable_customer_list', fallback=False):
                         if 'internal' in self.use_cases[self.rule_id] and self.use_cases[self.rule_id]['internal']:
                             self.logger.info("Rule %s is marked as internal" % self.rule_id)
                             self.customer_id = self.use_case_config['configuration']['internal_contact']
