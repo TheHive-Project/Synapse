@@ -271,7 +271,7 @@ class QRadarAutomation():
     
     def __init__(self, webhook, cfg):
         logger.info('Initiating QRadarAutomation')
-        self.actuator = Actuator(cfg)
+        self.actuator = QRadarActuator(cfg)
         self.webhook = webhook
         self.qr_config = {}
         for key, value in cfg.items('QRadar'):
