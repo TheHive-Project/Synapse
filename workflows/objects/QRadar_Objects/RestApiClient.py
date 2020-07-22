@@ -10,6 +10,7 @@ from urllib.request import urlopen
 from urllib.request import install_opener
 from urllib.request import build_opener
 from urllib.request import HTTPSHandler
+from urllib.request import ProxyHandler
 import ssl
 import sys
 import base64
@@ -19,7 +20,7 @@ import base64
 class RestApiClient:
 
     # Constructor for the RestApiClient Class
-    def __init__(self, server_ip, auth_token, certificate_file, certificate_verification, version):
+    def __init__(self, server_ip, auth_token, certificate_file, certificate_verification, version, **kwargs):
 
 
         self.headers = {'Accept': 'application/json'}
@@ -27,6 +28,9 @@ class RestApiClient:
         self.server_ip = server_ip
         self.headers['Version'] = version
         self.base_uri = '/api/'
+        #Create proxy config when proxy is provided
+        self.http_proxy = kwargs.get('http_proxy', None)
+        self.https_proxy = kwargs.get('https_proxy', None)
 
         # Create a secure SSLContext
         # PROTOCOL_SSLv23 is misleading.  PROTOCOL_SSLv23 will use the highest
@@ -90,6 +94,10 @@ class RestApiClient:
         request = Request(
             'https://' + self.server_ip + self.base_uri + path,
             headers=actual_headers)
+        #load optional proxy conf
+        request.set_proxy("http", self.http_proxy)
+        request.set_proxy("https", self.https_proxy)
+        
         request.get_method = lambda: method
 
         # Print the request if print_request is True.

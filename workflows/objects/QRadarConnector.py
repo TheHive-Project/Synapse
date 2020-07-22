@@ -52,12 +52,16 @@ class QRadarConnector:
             cert_filepath = self.cfg.get('QRadar', 'cert_filepath')
             cert_verification = self.cfg.get('QRadar', 'cert_verification')
             api_version = self.cfg.get('QRadar', 'api_version')
+            http_proxy = self.cfg.get('QRadar', 'http_proxy')
+            https_proxy = self.cfg.get('QRadar', 'https_proxy')
 
             client = RestApiClient(server,
                 auth_token,
                 cert_filepath,
                 cert_verification,
-                api_version) 
+                api_version,
+                http_proxy=http_proxy,
+                https_proxy=https_proxy) 
 
             arielClient = APIClient(server,
                 auth_token,
