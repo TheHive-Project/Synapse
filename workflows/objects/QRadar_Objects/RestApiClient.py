@@ -95,8 +95,8 @@ class RestApiClient:
             'https://' + self.server_ip + self.base_uri + path,
             headers=actual_headers)
         #load optional proxy conf
-        request.set_proxy("http", self.http_proxy)
-        request.set_proxy("https", self.https_proxy)
+        request.set_proxy(self.http_proxy, "http")
+        request.set_proxy(self.https_proxy, "https")
         
         request.get_method = lambda: method
 

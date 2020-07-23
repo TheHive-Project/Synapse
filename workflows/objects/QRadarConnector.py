@@ -67,7 +67,9 @@ class QRadarConnector:
                 auth_token,
                 cert_filepath,
                 cert_verification,
-                api_version)
+                api_version,
+                http_proxy=http_proxy,
+                https_proxy=https_proxy)
 
             clients = list()
             clients.append(client)

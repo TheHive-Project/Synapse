@@ -12,7 +12,11 @@ class APIClient(RestApiClient):
 
     # This class will encode any data or query parameters which will then be
     # sent to the call_api() method of its inherited class.
-    def __init__(self, server_ip, auth_token, certificate_file, certificate_verification, version):
+    def __init__(self, server_ip, auth_token, certificate_file, certificate_verification, version, **kwargs):
+
+        #Create proxy config when proxy is provided
+        self.http_proxy = kwargs.get('http_proxy', None)
+        self.https_proxy = kwargs.get('https_proxy', None)
 
         # This version of the ariel APIClient is designed to function with
         # version 6.0 of the ariel API.
