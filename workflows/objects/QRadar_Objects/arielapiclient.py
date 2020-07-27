@@ -14,15 +14,15 @@ class APIClient(RestApiClient):
     # sent to the call_api() method of its inherited class.
     def __init__(self, server_ip, auth_token, certificate_file, certificate_verification, version, **kwargs):
 
-        #Create proxy config when proxy is provided
-        self.http_proxy = kwargs.get('http_proxy', None)
-        self.https_proxy = kwargs.get('https_proxy', None)
-
         # This version of the ariel APIClient is designed to function with
         # version 6.0 of the ariel API.
         self.endpoint_start = 'ariel/'
         super(APIClient, self).__init__(server_ip, auth_token,
                                         certificate_file, certificate_verification, version)
+
+        #Create proxy config when proxy is provided
+        self.http_proxy = kwargs.get('http_proxy', None)
+        self.https_proxy = kwargs.get('https_proxy', None)
 
     def get_databases(self):
 
