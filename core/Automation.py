@@ -7,7 +7,7 @@ from threading import Thread
 from queue import Queue
 from datetime import date
 
-from objects.WebhookActuator import *
+from modules.generic.WebhookActuator import *
 
 #Load required object models
 from thehive4py.models import Case, CustomFieldHelper, CaseObservable, CaseTask

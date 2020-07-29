@@ -7,10 +7,10 @@ import logging, logging.handlers
 from flask import Flask, request, jsonify
 
 from modules.generic.functions import getConf, loadUseCases
-from workflows.Ews2Case import connectEws
-from workflows.QRadar2Alert import allOffense2Alert
-from workflows.ELK2Alert import ml2Alert,logstash2Alert
-from workflows.ManageWebhooks import manageWebhook
+from integrations.EWS.Ews2Case import connectEws
+from integrations.QRadar.QRadar2Alert import allOffense2Alert
+from integrations.ELK.ELK2Alert import ml2Alert,logstash2Alert
+from core.ManageWebhooks import manageWebhook
 
 app_dir = os.path.dirname(os.path.abspath(__file__))
 cfg = getConf()

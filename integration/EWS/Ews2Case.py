@@ -8,9 +8,9 @@ app_dir = current_dir + '/..'
 sys.path.insert(0, current_dir)
 
 from modules.generic.functions import getConf
-from objects.EwsConnector import EwsConnector
-from objects.TheHiveConnector import TheHiveConnector
-from objects.TempAttachment import TempAttachment
+from modules.connectors.EWS.EwsConnector import EwsConnector
+from modules.connectors.TheHiveProject.TheHiveConnector import TheHiveConnector
+from modules.connectors.EWS.objects.TempAttachment import TempAttachment
 
 def connectEws():
     logger = logging.getLogger('app2a')

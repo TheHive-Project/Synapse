@@ -9,7 +9,7 @@ from jinja2 import Template
 from datetime import datetime, timedelta
 from configparser import ConfigParser
 from thehive4py.models import CaseTask, Alert
-from objects.WebhookActuator import *
+from modules.generic.WebhookActuator import *
 
 #Small timezone converter. Source: https://stackoverflow.com/questions/4563272/convert-a-python-utc-datetime-to-a-local-datetime-using-only-python-standard-lib
 def utc_to_local(utc_dt):
