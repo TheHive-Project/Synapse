@@ -7,7 +7,7 @@ import Siem
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, current_dir)
 from modules.generic.WebhookIdentifier import Webhook
-from modules.generic..WebhookActuator import Actuator
+from modules.generic.WebhookActuator import Actuator
 from core.Automation import *
 
 def manageWebhook(webhookData, cfg, use_cases):
