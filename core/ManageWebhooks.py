@@ -3,9 +3,7 @@
 
 import os, sys
 import logging
-import Siem
-current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, current_dir)
+import core.Siem
 from modules.generic.WebhookIdentifier import Webhook
 from modules.generic.WebhookActuator import Actuator
 from core.Automation import *
