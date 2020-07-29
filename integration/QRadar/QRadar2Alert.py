@@ -31,13 +31,16 @@ def formatDate(qradarTimeStamp):
 
     #Parse timestamp received from QRadar
     qradarTimeStamp = qradarTimeStamp / 1000.0
-    formatted_time = datetime.datetime.fromtimestamp(qradarTimeStamp).strftime('%Y-%m-%d %H:%M:%S')
-    formatted_time = formatted_time.replace(tzinfo=current_timezone)
+    formatted_time = datetime.datetime.fromtimestamp(qradarTimeStamp)
+    utc_formatted_time = formatted_time.replace(tzinfo=current_timezone)
 
     #Convert to configured timezone
-    formatted_time = formatted_time.astimezone(new_timezone)
+    ntz_formatted_time = formatted_time.astimezone(new_timezone)
 
-    return formatted_time
+    #Create a string from time object
+    string_formatted_time = ntz_formatted_time.strftime('%Y-%m-%d %H:%M:%S')
+
+    return string_formatted_time
 
 def extractUseCaseIDs(offense, field_name, extraction_regex):
     logger.debug('%s.extractUseCaseIDs starts', __name__)
