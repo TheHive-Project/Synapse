@@ -26,9 +26,8 @@ logger = logging.getLogger('app2a')
 def formatDate(qradarTimeStamp):
     #Define timezones
     current_timezone = tz.gettz('UTC')
-    configured_timezone = cfg.get('QRadar', 'timezone')
-    if not configured_timezone:
-        configured_timezone = tz.gettz('Europe/Amsterdam')
+    configured_timezone = cfg.get('QRadar', 'timezone', fallback='Europe/Amsterdam')
+    new_timezone = tz.gettz(configured_timezone)
 
     #Parse timestamp received from QRadar
     qradarTimeStamp = qradarTimeStamp / 1000.0
@@ -36,7 +35,7 @@ def formatDate(qradarTimeStamp):
     formatted_time = formatted_time.replace(tzinfo=current_timezone)
 
     #Convert to configured timezone
-    formatted_time = formatted_time.astimezone(configured_timezone)
+    formatted_time = formatted_time.astimezone(new_timezone)
 
     return formatted_time
 
