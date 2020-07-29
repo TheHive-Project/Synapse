@@ -33,7 +33,7 @@ def formatDate(qradarTimeStamp):
     #Parse timestamp received from QRadar
     qradarTimeStamp = qradarTimeStamp / 1000.0
     formatted_time = datetime.datetime.fromtimestamp(qradarTimeStamp).strftime('%Y-%m-%d %H:%M:%S')
-    formatted_time formatted_time.replace(tzinfo=current_timezone)
+    formatted_time = formatted_time.replace(tzinfo=current_timezone)
 
     #Convert to configured timezone
     formatted_time = formatted_time.astimezone(configured_timezone)
