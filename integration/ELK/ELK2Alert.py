@@ -10,7 +10,7 @@ import time
 from calendar import timegm
 from time import sleep
 from builtins import str as unicode
-from common.common import getConf
+from modules.generic.functions import getConf
 #Bestaat nog niet niet
 #from objects.ELKConnector import ELKConnector
 from objects.TheHiveConnector import TheHiveConnector

@@ -6,7 +6,7 @@ import sys
 import logging, logging.handlers
 from flask import Flask, request, jsonify
 
-from workflows.common.common import getConf, loadUseCases
+from modules.generic.functions import getConf, loadUseCases
 from workflows.Ews2Case import connectEws
 from workflows.QRadar2Alert import allOffense2Alert
 from workflows.ELK2Alert import ml2Alert,logstash2Alert

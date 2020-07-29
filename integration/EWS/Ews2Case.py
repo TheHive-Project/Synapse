@@ -7,7 +7,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 app_dir = current_dir + '/..'
 sys.path.insert(0, current_dir)
 
-from common.common import getConf
+from modules.generic.functions import getConf
 from objects.EwsConnector import EwsConnector
 from objects.TheHiveConnector import TheHiveConnector
 from objects.TempAttachment import TempAttachment

@@ -8,7 +8,7 @@ import json
 import datetime
 import re
 import itertools
-from common.common import getConf, loadUseCases
+from modules.generic.functions import getConf, loadUseCases
 from dateutil import tz
 from objects.QRadarConnector import QRadarConnector
 from objects.TheHiveConnector import TheHiveConnector
