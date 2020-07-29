@@ -2,9 +2,9 @@
 # -*- coding: utf8 -*-
 
 import logging
-from .QRadarConnector import QRadarConnector
-from .TheHiveConnector import TheHiveConnector
-from .CortexConnector import CortexConnector
+from modules.connectors.QRadar.QRadarConnector import QRadarConnector
+from modules.connectors.TheHiveProject.TheHiveConnector import TheHiveConnector
+from modules.connectors.TheHiveProject.CortexConnector import CortexConnector
 
 class Actuator():
     'Actuator class to group all possible actions following a listened webhook'

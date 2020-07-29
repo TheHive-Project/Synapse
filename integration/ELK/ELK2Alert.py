@@ -10,10 +10,10 @@ import time
 from calendar import timegm
 from time import sleep
 from builtins import str as unicode
-from common.common import getConf
+from modules.generic.functions import getConf
 #Bestaat nog niet niet
 #from objects.ELKConnector import ELKConnector
-from objects.TheHiveConnector import TheHiveConnector
+from modules.connectors.TheHiveProject.TheHiveConnector import TheHiveConnector
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 app_dir = current_dir + '/..'

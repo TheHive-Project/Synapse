@@ -3,12 +3,10 @@
 
 import os, sys
 import logging
-import Siem
-current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, current_dir)
-from objects.WebhookIdentifier import Webhook
-from objects.WebhookActuator import Actuator
-from Automation import *
+import core.Siem as Siem
+from modules.generic.WebhookIdentifier import Webhook
+from modules.generic.WebhookActuator import Actuator
+from core.Automation import *
 
 def manageWebhook(webhookData, cfg, use_cases):
     """

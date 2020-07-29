@@ -8,10 +8,10 @@ import json
 import datetime
 import re
 import itertools
-from common.common import getConf, loadUseCases
+from modules.generic.functions import getConf, loadUseCases
 from dateutil import tz
-from objects.QRadarConnector import QRadarConnector
-from objects.TheHiveConnector import TheHiveConnector
+from modules.connectors.QRadar.QRadarConnector import QRadarConnector
+from modules.connectors.TheHiveProject.TheHiveConnector import TheHiveConnector
 from time import sleep
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -26,19 +26,21 @@ logger = logging.getLogger('app2a')
 def formatDate(qradarTimeStamp):
     #Define timezones
     current_timezone = tz.gettz('UTC')
-    configured_timezone = cfg.get('QRadar', 'timezone')
-    if not configured_timezone:
-        configured_timezone = tz.gettz('Europe/Amsterdam')
+    configured_timezone = cfg.get('QRadar', 'timezone', fallback='Europe/Amsterdam')
+    new_timezone = tz.gettz(configured_timezone)
 
     #Parse timestamp received from QRadar
     qradarTimeStamp = qradarTimeStamp / 1000.0
-    formatted_time = datetime.datetime.fromtimestamp(qradarTimeStamp).strftime('%Y-%m-%d %H:%M:%S')
-    formatted_time = formatted_time.replace(tzinfo=current_timezone)
+    formatted_time = datetime.datetime.fromtimestamp(qradarTimeStamp)
+    utc_formatted_time = formatted_time.replace(tzinfo=current_timezone)
 
     #Convert to configured timezone
-    formatted_time = formatted_time.astimezone(configured_timezone)
+    ntz_formatted_time = formatted_time.astimezone(new_timezone)
 
-    return formatted_time
+    #Create a string from time object
+    string_formatted_time = ntz_formatted_time.strftime('%Y-%m-%d %H:%M:%S')
+
+    return string_formatted_time
 
 def extractUseCaseIDs(offense, field_name, extraction_regex):
     logger.debug('%s.extractUseCaseIDs starts', __name__)

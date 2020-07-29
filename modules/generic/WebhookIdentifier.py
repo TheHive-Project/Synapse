@@ -2,7 +2,7 @@
 # -*- coding: utf8 -*-
 
 import logging
-from .TheHiveConnector import TheHiveConnector
+from modules.connectors.TheHiveProject.TheHiveConnector import TheHiveConnector
 
 class Webhook:
     'Webhook class to identify where the webhook comes from, usual case, QRadar, etc..'
