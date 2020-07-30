@@ -7,7 +7,9 @@ from threading import Thread
 from queue import Queue
 from datetime import date
 
-from modules.generic.WebhookActuator import *
+import modules.connectors.TheHiveProject.TheHiveConnector as TheHiveConnector
+import modules.connectors.TheHiveProject.CortexConnector as CortexConnector
+import modules.connectors.QRadar.QRadarConnector as QRadarConnector
 
 #Load required object models
 from thehive4py.models import Case, CustomFieldHelper, CaseObservable, CaseTask
@@ -60,23 +62,22 @@ def doWork():
         queued_item = q.get()
         
         #Handle a queued item based on its provided action
-        if queued_item['action'] == "create_case_observable":
-            logger.info('Working on %s from queue, caseid: %s' % (queued_item['action'], queued_item['caseid']))
-            #########################
-            #########################
-            #Gaat niet werken met self hier
-            response = self.actuator.createCaseObservable(queued_item['caseid'],queued_item['observable'])
+        # if queued_item['action'] == "create_case_observable":
+        #     logger.info('Working on %s from queue, caseid: %s' % (queued_item['action'], queued_item['caseid']))
+        #     #########################
+        #     #########################
+        #     #Gaat niet werken met self hier
+        #     response = self.TheHiveConnector.createCaseObservable(queued_item['caseid'],queued_item['observable'])
             
-            #Remove the item from queue
-            q.task_done()
+        #     #Remove the item from queue
+        #     q.task_done()
 
 class MISPAutomation():
     def __init__(self, webhook, cfg):
         logger.info('Initiating MISPautomation')
-        if cfg.get['QRadar','enabled']:
-            self.actuator = QRadarActuator(cfg)
-        elif cfg.get['Elasticsearch','enabled']:
-            self.actuator = ElasticSearchActuator(cfg)
+        self.TheHiveConnector = TheHiveConnector(cfg)
+        if self.cfg.getboolean('Cortex', 'enabled'):
+            self.CortexConnector = CortexConnector(cfg)
         self.webhook = webhook
         self.report_action = report_action
         self.qr_config = {}
@@ -104,7 +105,7 @@ class MISPAutomation():
             
                 logger.info('Alert {} contains IOCs that are supported'.format(alert_id))
 
-                response = self.actuator.createCaseFromAlert(alert_id, casetemplate)
+                response = self.TheHiveConnector.createCaseFromAlert(alert_id, casetemplate)
                 
                 self.report_action = 'createCase'
                     
@@ -142,7 +143,7 @@ class MISPAutomation():
             case.customFields = customFields
 
             #Update the case
-            self.actuator.updateCase(case,fields)
+            self.TheHiveConnector.updateCase(case,fields)
             self.report_action = 'updateCase'
         
         """
@@ -156,7 +157,7 @@ class MISPAutomation():
             caseid = self.webhook.data['rootId']
             
             #Retrieve case data
-            case_data = self.actuator.getCase(caseid)
+            case_data = self.TheHiveConnector.getCase(caseid)
             
             #List all supported ioc's for the case
             observable = self.webhook.data['object']
@@ -167,7 +168,7 @@ class MISPAutomation():
             
                 #Trigger a search for the supported ioc
                 logger.info('Launching analyzers for observable: {}'.format(observable['_id']))
-                response = self.actuator.runAnalyzer("Cortex-intern", supported_observable, "IBMQRadar_Search_Manual_0_1")
+                response = self.CortexConnector.runAnalyzer("Cortex-intern", supported_observable, "IBMQRadar_Search_Manual_0_1")
                 
                 #Add customFields firstSearched and lastSearched
                 #Create a Case object
@@ -193,7 +194,7 @@ class MISPAutomation():
                 case.customFields = customFields
 
                 #Update the case
-                self.actuator.updateCase(case,fields)
+                self.TheHiveConnector.updateCase(case,fields)
                 self.report_action = 'updateCase'
                 
         """
@@ -204,7 +205,7 @@ class MISPAutomation():
             #Case ID
             caseid = self.webhook.data['rootId']
             #Load Case information
-            case_data = self.actuator.getCase(caseid)
+            case_data = self.TheHiveConnector.getCase(caseid)
             
             logger.info('Job {} is part of a case that has been tagged as MISP case and has just finished'.format(self.webhook.data['object']['cortexJobId']))
             
@@ -212,7 +213,7 @@ class MISPAutomation():
             if int(float(self.webhook.data['object']['report']['summary']['taxonomies'][0]['value'])) > 0:
                 logger.info('Job {} contains hits, checking if a task is already present for this observable'.format(self.webhook.data['object']['cortexJobId']))
                 #Retrieve case task information
-                response = self.actuator.getCaseTasks(caseid)
+                response = self.TheHiveConnector.getCaseTasks(caseid)
                 case_tasks = response.json()
                 
                 #Load CaseTask template
@@ -258,11 +259,11 @@ class MISPAutomation():
                         case.status = "Open"
 
                         #Update the case
-                        self.actuator.updateCase(case,fields)
+                        self.TheHiveConnector.updateCase(case,fields)
                     
                     #Add the case task
-                    self.actuator.createCaseTask(caseid,casetask)
-                    self.report_action = 'createCaseTask'
+                    self.TheHiveConnector.createTask(caseid,casetask)
+                    self.report_action = 'createTask'
                     
         return self.report_action
 
@@ -271,7 +272,8 @@ class QRadarAutomation():
     
     def __init__(self, webhook, cfg):
         logger.info('Initiating QRadarAutomation')
-        self.actuator = QRadarActuator(cfg)
+        self.TheHiveConnector = TheHiveConnector(cfg)
+        self.QRadarConnector = QRadarConnector(cfg)
         self.webhook = webhook
         self.qr_config = {}
         for key, value in cfg.items('QRadar'):
@@ -310,89 +312,89 @@ class QRadarAutomation():
                 case.customFields = customFields
 
                 #Update the case
-                self.actuator.updateCase(case,fields)
+                self.TheHiveConnector.updateCase(case,fields)
                 self.report_action = 'updateCase'
                 
             else:
                 logger.info('Alert has no attached case, doing nothing...')
             
         #Automatically update cases when new observables are added to the corresponding alert
-        if self.webhook.isQRadarAlertWithArtifacts():
-            logger.info('Alert {} has been tagged as QRadar and contains artifacts. Updating case artifacts'.format(self.webhook.data['rootId']))
-            # Enrich offense with information from the alert by posting the missing information through an API call
+        # if self.webhook.isQRadarAlertWithArtifacts():
+        #     logger.info('Alert {} has been tagged as QRadar and contains artifacts. Updating case artifacts'.format(self.webhook.data['rootId']))
+        #     # Enrich offense with information from the alert by posting the missing information through an API call
 
-            #Retrieve the value of the linked case
-            caseid = self.webhook.data['object']['case']
+        #     #Retrieve the value of the linked case
+        #     caseid = self.webhook.data['object']['case']
             
-            #Retrieve observables from the linked case
-            response = self.actuator.getCaseObservables(caseid)
-            case_observables = response.json()
+        #     #Retrieve observables from the linked case
+        #     response = self.TheHiveConnector.getCaseObservables(caseid)
+        #     case_observables = response.json()
             
-            logger.debug('case observables %s' % str(case_observables) )
+        #     logger.debug('case observables %s' % str(case_observables) )
             
-            #Build a list of observables present in the case
-            case_observable_list = []
-            # observable_tags = {}
-            for observable in case_observables:
-                case_observable_list.append(observable['data'])
-                # if observable['dataType'] == "fqdn":
-                    # observable_tags[observable['data']] = observable['tags']
+        #     #Build a list of observables present in the case
+        #     case_observable_list = []
+        #     # observable_tags = {}
+        #     for observable in case_observables:
+        #         case_observable_list.append(observable['data'])
+        #         # if observable['dataType'] == "fqdn":
+        #             # observable_tags[observable['data']] = observable['tags']
             
-            #Debug output
-            logger.info('Checking for new observables for case %s' % caseid)
+        #     #Debug output
+        #     logger.info('Checking for new observables for case %s' % caseid)
             
-            #Make a counter to count the number of observables updated
-            observable_counter = 0
+        #     #Make a counter to count the number of observables updated
+        #     observable_counter = 0
             
-            missing_observables_list = []
+        #     missing_observables_list = []
             
-            #Loop through every found artifact
-            for artifact in self.webhook.data['details']['artifacts']:
+        #     #Loop through every found artifact
+        #     for artifact in self.webhook.data['details']['artifacts']:
             
-                observable_dict = {}
-                #Check if the artifact is already present in the case
-                observable_missing = False
-                if not artifact['data'] in case_observable_list:
-                    observable_missing = True
+        #         observable_dict = {}
+        #         #Check if the artifact is already present in the case
+        #         observable_missing = False
+        #         if not artifact['data'] in case_observable_list:
+        #             observable_missing = True
                     
-                # if artifact['dataType'] == "fqdn" and artifact['data'] in observable_tags:
-                    # for tag in artifact['tags']:
-                        # if not tag in observable_tags[artifact['data']]:
-                            # observable_missing = True
+        #         # if artifact['dataType'] == "fqdn" and artifact['data'] in observable_tags:
+        #             # for tag in artifact['tags']:
+        #                 # if not tag in observable_tags[artifact['data']]:
+        #                     # observable_missing = True
                 
-                if observable_missing:
-                    logger.debug('Observable %s is missing' % str(artifact['data']) )
-                    observable_counter += 1
+        #         if observable_missing:
+        #             logger.debug('Observable %s is missing' % str(artifact['data']) )
+        #             observable_counter += 1
                 
-                    #Create a Case object? Or whatever it is
-                    observable = CaseObservable()
+        #             #Create a Case object? Or whatever it is
+        #             observable = CaseObservable()
                     
-                    #Add dataType to the observable object
-                    observable.dataType = artifact['dataType']
+        #             #Add dataType to the observable object
+        #             observable.dataType = artifact['dataType']
                     
-                    #Add description to the observable object
-                    observable.message = artifact['message']
+        #             #Add description to the observable object
+        #             observable.message = artifact['message']
                     
-                    #Add TLP to the observable object
-                    observable.tlp = artifact['tlp']
+        #             #Add TLP to the observable object
+        #             observable.tlp = artifact['tlp']
                     
-                    #Add tags to the observable object
-                    observable.tags = artifact['tags']
+        #             #Add tags to the observable object
+        #             observable.tags = artifact['tags']
                     
-                    #Add dataType to the observable object
-                    observable.data = artifact['data']
+        #             #Add dataType to the observable object
+        #             observable.data = artifact['data']
 
-                    #Create observable queue item
-                    observable_dict['action'] = "create_case_observable"
-                    observable_dict['caseid'] = caseid
-                    observable_dict['observable'] = observable
-                    missing_observables_list.append(observable_dict)
+        #             #Create observable queue item
+        #             observable_dict['action'] = "create_case_observable"
+        #             observable_dict['caseid'] = caseid
+        #             observable_dict['observable'] = observable
+        #             missing_observables_list.append(observable_dict)
 
-                    #Add it to the queue
-                    thapi_queue(observable_dict)
+        #             #Add it to the queue
+        #             thapi_queue(observable_dict)
                     
-            logger.info('Created %i observables' % observable_counter)
-            self.report_action = 'updateCase'
+        #     logger.info('Created %i observables' % observable_counter)
+        #     self.report_action = 'updateCase'
 
         #Placeholder for actions to be handled when a case is created from an offense
         #if self.webhook.isNewQRadarCase():
@@ -410,7 +412,7 @@ class QRadarAutomation():
         #Close offenses in QRadar
         if self.webhook.isClosedQRadarCase() or self.webhook.isQRadarAlertMarkedAsRead():
             logger.info('Case {} has been marked as resolved'.format(self.webhook.data['object']['id']))
-            self.actuator.closeOffense(self.webhook.offenseId) 
+            self.QRadarConnector.closeOffense(self.webhook.offenseId) 
             self.report_action = 'closeOffense'
         
         return self.report_action
@@ -418,7 +420,7 @@ class QRadarAutomation():
 class ELKAutomation:
     def __init__(self, webhook, cfg):
         logger.info('Initiating ELKAutomation')
-        self.actuator = Actuator(cfg)
+        self.TheHiveConnector = TheHiveConnector(cfg)
         self.webhook = webhook
         self.es_config = {}
         for key, value in cfg.items('ELK'):
@@ -471,6 +473,6 @@ class ELKAutomation:
                 self.case.customFields = customFields
 
                 #Update the case
-                response = self.actuator.updateCase(self.case,fields)
+                response = self.TheHiveConnector.updateCase(self.case,fields)
 
         return report_action

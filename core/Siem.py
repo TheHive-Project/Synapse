@@ -9,7 +9,10 @@ from jinja2 import Template
 from datetime import datetime, timedelta
 from configparser import ConfigParser
 from thehive4py.models import CaseTask, Alert
-from modules.generic.WebhookActuator import *
+
+import modules.connectors.TheHiveProject.TheHiveConnector as TheHiveConnector
+import modules.connectors.TheHiveProject.CortexConnector as CortexConnector
+import modules.connectors.QRadar.QRadarConnector as QRadarConnector
 
 #Small timezone converter. Source: https://stackoverflow.com/questions/4563272/convert-a-python-utc-datetime-to-a-local-datetime-using-only-python-standard-lib
 def utc_to_local(utc_dt):
@@ -32,10 +35,11 @@ class Siem:
         self.cfg = cfg
         self.app_dir = os.path.dirname(os.path.abspath(__file__))
         self.use_case_config = use_cases
+        self.TheHiveConnector = TheHiveConnector(cfg)
+        if self.cfg.getboolean('Cortex', 'enabled'):
+            self.CortexConnector = CortexConnector(cfg)
         if self.cfg.getboolean('QRadar','enabled'):
-            self.actuator = QRadarActuator(self.cfg)
-        elif self.cfg.getboolean('ELK','enabled'):
-            self.actuator = ElasticSearchActuator(self.cfg)
+            self.QRadarConnector = QRadarConnector(cfg)
         self.webhook = webhook
         self.root_id = self.webhook.data['rootId']
 
@@ -202,7 +206,7 @@ class Siem:
                     
                     #Perform search queries
                     try:
-                        self.search_query_variables[search_query_name]['result'] = self.actuator.Search(self.search_query_variables[search_query_name]['query'])
+                        self.search_query_variables[search_query_name]['result'] = self.QRadarConnector.aqlSearch(self.search_query_variables[search_query_name]['query'])
                     except Exception as e:
                         self.logger.warning("Could not perform query")
                         raise GetOutOfLoop
@@ -242,7 +246,7 @@ class Siem:
                     
                     #Add the case task
                     self.uc_task = self.craftUcTask(self.uc_task_title, self.uc_task_description)
-                    self.actuator.createTask(self.case_id, self.uc_task)
+                    self.TheHiveConnector.createTask(self.case_id, self.uc_task)
 
                 except GetOutOfLoop:
                     pass
@@ -295,7 +299,7 @@ class Siem:
                 
                     #Perform enrichment queries
                     try:
-                        self.enrichment_query_variables[enrichment_query_name]['result'] = self.actuator.RetrieveValue(self.enrichment_query_variables[enrichment_query_name]['query'])
+                        self.enrichment_query_variables[enrichment_query_name]['result'] = self.QRadarConnector.aqlSearch(self.enrichment_query_variables[enrichment_query_name]['query'])['events'][0]['result']
                         self.logger.debug("Found result for %s: %s" % (enrichment_query_name, self.enrichment_query_variables[enrichment_query_name]['result']))
                     except Exception as e:
                         self.logger.warning("Could not perform query")
@@ -318,7 +322,7 @@ class Siem:
             #Update Alert with the new description field
             self.updated_alert = Alert
             self.updated_alert.description = self.alert_description
-            self.actuator.updateAlertDescription(self.alert_id, self.updated_alert)
+            self.TheHiveConnector.updateAlert(self.alert_id, self.updated_alert, ["description"])
                 
             return True
             
@@ -364,7 +368,7 @@ class Siem:
                             
                             #Create Task
                             self.uc_task = self.craftUcTask(self.title, self.description)
-                            self.uc_task_id = self.actuator.createTask(self.case_id, self.uc_task)
+                            self.uc_task_id = self.TheHiveConnector.createTask(self.case_id, self.uc_task)
 
                         #Perform actions for the checkSiem action
                         elif action_type == "checkSiem":
@@ -383,10 +387,10 @@ class Siem:
 
                             #Create Task
                             self.ucTask = self.craftUcTask(self.title, self.description)
-                            self.ucTaskId = self.actuator.createTask(id, self.ucTask)
+                            self.ucTaskId = self.TheHiveConnector.createTask(id, self.ucTask)
                             if action_config['auto_send_mail'] and not self.stopsend:
                                 self.logger.info('Sending mail for task with id: %s' % self.ucTaskId)
-                                self.actuator.runResponder('case_task', self.ucTaskId, self.use_case_config['configuration']['mail']['responder_id'])
+                                self.TheHiveConnector.runResponder('case_task', self.ucTaskId, self.use_case_config['configuration']['mail']['responder_id'])
                         else:
                             self.logger.info('Did not find any supported actions')
 
@@ -457,7 +461,7 @@ class Siem:
                                 }
 
                                 self.logger.info('Sending mail for alert with id: %s' % self.alert_id)
-                                self.actuator.runResponderDirect(self.use_case_config['configuration']['mail']['responder_id'], self.data)
+                                self.CortexConnector.runResponder(self.use_case_config['configuration']['mail']['responder_id'], self.data)
                             #Posting to slack
                             if "slack" in action_config['platforms']:
                                 #Fallback for notification where no short_template is available

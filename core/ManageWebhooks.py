@@ -5,7 +5,6 @@ import os, sys
 import logging
 import core.Siem as Siem
 from modules.generic.WebhookIdentifier import Webhook
-from modules.generic.WebhookActuator import Actuator
 from core.Automation import *
 
 def manageWebhook(webhookData, cfg, use_cases):
