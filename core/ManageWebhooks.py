@@ -3,9 +3,9 @@
 
 import os, sys
 import logging
-import core.Siem as Siem
+import automation.Siem as Siem
 from modules.generic.WebhookIdentifier import Webhook
-from core.Automation import *
+from automation.Automation import *
 
 def manageWebhook(webhookData, cfg, use_cases):
     """
