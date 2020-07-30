@@ -10,9 +10,9 @@ from datetime import datetime, timedelta
 from configparser import ConfigParser
 from thehive4py.models import CaseTask, Alert
 
-import modules.connectors.TheHiveProject.TheHiveConnector as TheHiveConnector
-import modules.connectors.TheHiveProject.CortexConnector as CortexConnector
-import modules.connectors.QRadar.QRadarConnector as QRadarConnector
+from modules.connectors.TheHiveProject.TheHiveConnector import TheHiveConnector
+from modules.connectors.TheHiveProject.CortexConnector import CortexConnector
+from modules.connectors.QRadar.QRadarConnector import QRadarConnector
 
 #Small timezone converter. Source: https://stackoverflow.com/questions/4563272/convert-a-python-utc-datetime-to-a-local-datetime-using-only-python-standard-lib
 def utc_to_local(utc_dt):

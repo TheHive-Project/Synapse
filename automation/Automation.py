@@ -7,9 +7,9 @@ from threading import Thread
 from queue import Queue
 from datetime import date
 
-import modules.connectors.TheHiveProject.TheHiveConnector as TheHiveConnector
-import modules.connectors.TheHiveProject.CortexConnector as CortexConnector
-import modules.connectors.QRadar.QRadarConnector as QRadarConnector
+from modules.connectors.TheHiveProject.TheHiveConnector import TheHiveConnector
+from modules.connectors.TheHiveProject.CortexConnector import CortexConnector
+from modules.connectors.QRadar.QRadarConnector import QRadarConnector
 
 #Load required object models
 from thehive4py.models import Case, CustomFieldHelper, CaseObservable, CaseTask
