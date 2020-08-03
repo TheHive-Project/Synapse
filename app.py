@@ -6,10 +6,10 @@ import sys
 import logging, logging.handlers
 from flask import Flask, request, jsonify
 
-from modules.generic.functions import getConf, loadUseCases
-from integration.EWS.Ews2Case import connectEws
-from integration.QRadar.QRadar2Alert import allOffense2Alert
-from integration.ELK.ELK2Alert import ml2Alert,logstash2Alert
+from core.functions import getConf, loadUseCases
+from modules.EWS.integration import connectEws
+from modules.QRadar.integration import allOffense2Alert
+from modules.ELK.integration import ml2Alert,logstash2Alert
 from core.ManageWebhooks import manageWebhook
 
 app_dir = os.path.dirname(os.path.abspath(__file__))

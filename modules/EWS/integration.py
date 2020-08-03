@@ -7,10 +7,10 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 app_dir = current_dir + '/..'
 sys.path.insert(0, current_dir)
 
-from modules.generic.functions import getConf
-from modules.connectors.EWS.EwsConnector import EwsConnector
-from modules.connectors.TheHiveProject.TheHiveConnector import TheHiveConnector
-from modules.connectors.EWS.objects.TempAttachment import TempAttachment
+from core.functions import getConf
+import modules.EWS.connector as EwsConnector
+import modules.TheHive.connector as TheHiveConnector
+from modules.EWS.objects.TempAttachment import TempAttachment
 
 def connectEws():
     logger = logging.getLogger('app2a')

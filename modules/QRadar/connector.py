@@ -498,33 +498,39 @@ class QRadarConnector:
 
         self.logger.debug('%s.closeOffense starts', __name__)
 
-        try:
-            #when closing an offense with the webUI, the closing_reason_id
-            #is set to 1 by default
-            #this behavior is implemented here with a hardcoded
-            #closing_reason_id=1
-            response = self.client.call_api(
-            'siem/offenses/' + str(offenseId) + '?status=CLOSED&closing_reason_id=1', 'POST')
-            response_text = response.read().decode('utf-8')
-            response_body = json.loads(response_text)
-    
-            #response_body would look like
-            #[
-            #  {
-            #    "property_name": "sourceIP",
-            #    "database_type": "COMMON",
-            #    "id": 0,
-            #    "name": "Source IP",
-            #    "custom": false
-            #  }
-            #]
+        if self.offenseIsOpen(offenseId):
+            try:
+                #when closing an offense with the webUI, the closing_reason_id
+                #is set to 1 by default
+                #this behavior is implemented here with a hardcoded
+                #closing_reason_id=1
+                response = self.client.call_api(
+                'siem/offenses/' + str(offenseId) + '?status=CLOSED&closing_reason_id=1', 'POST')
+                response_text = response.read().decode('utf-8')
+                response_body = json.loads(response_text)
+        
+                #response_body would look like
+                #[
+                #  {
+                #    "property_name": "sourceIP",
+                #    "database_type": "COMMON",
+                #    "id": 0,
+                #    "name": "Source IP",
+                #    "custom": false
+                #  }
+                #]
 
-            if (response.code == 200):
-                self.logger.info('Offense %s successsfully closed', offenseId)
-            else:
-                raise ValueError(response_body)
-        except ValueError as e:
-            self.logger.error('QRadar returned http %s', str(response.code))
+                if (response.code == 200):
+                    self.logger.info('Offense %s successsfully closed', offenseId)
+                else:
+                    raise ValueError(response_body)
+            except ValueError as e:
+                self.logger.error('QRadar returned http %s', str(response.code))
+            except Exception as e:
+                self.logger.error('Failed to close offense %s', offenseId, exc_info=True)
+                raise
+        else:
+            self.logger.info('Offense %s already closed', offenseId)
         except Exception as e:
             self.logger.error('Failed to close offense %s', offenseId, exc_info=True)
             raise

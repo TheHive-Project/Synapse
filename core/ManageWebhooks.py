@@ -7,9 +7,9 @@ import automation.Siem as Siem
 from modules.generic.WebhookIdentifier import Webhook
 
 #Import automation modules
-from automation.ELK.automation import ELKAutomation
-from automation.MISP.automation import MISPAutomation
-from automation.QRadar.automation import QRadarAutomation
+from modules.ELK.automation import ELKAutomation
+from modules.MISP.automation import MISPAutomation
+from modules.QRadar.automation import QRadarAutomation
 
 def manageWebhook(webhookData, cfg, use_cases):
     """

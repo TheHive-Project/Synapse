@@ -8,10 +8,10 @@ import json
 import datetime
 import re
 import itertools
-from modules.generic.functions import getConf, loadUseCases
+from core.functions import getConf, loadUseCases
 from dateutil import tz
-from modules.connectors.QRadar.QRadarConnector import QRadarConnector
-from modules.connectors.TheHiveProject.TheHiveConnector import TheHiveConnector
+import .connector as QRadarConnector
+import modules.TheHive.connector as TheHiveConnector
 from time import sleep
 
 current_dir = os.path.dirname(os.path.abspath(__file__))

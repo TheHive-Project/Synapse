@@ -4,9 +4,9 @@ import time
 import logging
 from datetime import date
 
-from modules.connectors.TheHiveProject.TheHiveConnector import TheHiveConnector
-from modules.connectors.TheHiveProject.CortexConnector import CortexConnector
-from modules.connectors.QRadar.QRadarConnector import QRadarConnector
+import modules.TheHive.connector as TheHiveConnector
+import modules.Cortex.connector as CortexConnector
+import modules.QRadar.connector as QRadarConnector
 
 #Load required object models
 from thehive4py.models import Case, CustomFieldHelper, CaseObservable, CaseTask
