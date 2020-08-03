@@ -5,7 +5,11 @@ import os, sys
 import logging
 import automation.Siem as Siem
 from modules.generic.WebhookIdentifier import Webhook
-from automation.Automation import *
+
+#Import automation modules
+from automation.ELK.automation import ELKAutomation
+from automation.MISP.automation import MISPAutomation
+from automation.QRadar.automation import QRadarAutomation
 
 def manageWebhook(webhookData, cfg, use_cases):
     """
