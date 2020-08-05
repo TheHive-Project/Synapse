@@ -18,7 +18,7 @@ def moduleLoader(submodule):
     #Loop through modules to create a module dictionary
     for module in modules:
         loaded_modules[module] = importlib.import_module("modules.{}.{}".format(module, submodule))
-        logger.info("Loaded {}} module {}".format(submodule,module))
+        logger.info("Loaded {} module {}".format(submodule,module))
         # for item in dir(loaded_modules[module]):
         #     if not "__" in item:
         #         print(item)
