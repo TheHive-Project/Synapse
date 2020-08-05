@@ -3,7 +3,7 @@
 
 import os, sys
 import logging
-from automation.Siem import Siem
+from automation.siem import Siem
 from modules.generic.WebhookIdentifier import Webhook
 
 #Import automation modules
