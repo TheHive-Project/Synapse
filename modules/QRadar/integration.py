@@ -255,6 +255,21 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
 
     return alert
 
+def validateRequest(request):
+    if request.is_json:
+        content = request.get_json()
+        if 'timerange' in content:
+            workflowReport = allOffense2Alert(content['timerange'])
+            if workflowReport['success']:
+                return jsonify(workflowReport), 200
+            else:
+                return jsonify(workflowReport), 500
+        else:
+            logger.error('Missing <timerange> key/value')
+            return jsonify({'sucess':False, 'message':"timerange key missing in request"}), 500
+    else:
+        logger.error('Not json request')
+        return jsonify({'sucess':False, 'message':"Request didn't contain valid JSON"}), 400
 
 def allOffense2Alert(timerange):
     """

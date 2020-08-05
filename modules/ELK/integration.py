@@ -79,6 +79,23 @@ def __findartifacts(value):
 def enrichAlert(elkConnector, mlalert):
     return True
 
+def validateRequest(request):
+    logger.info("Received ELK2Alert request")
+    logger.debug('request: %s' % request.get_data())
+    if request.is_json:
+        content = request.get_json()
+        if content['type'] == 'asml':
+            workflowReport = ml2Alert(content)
+        else:
+            workflowReport = logstash2Alert(content)
+        if workflowReport['success']:
+            return jsonify(workflowReport), 200
+        else:
+            return jsonify(workflowReport), 500
+    else:
+        logger.error('Not json request: %s' % request.get_data())
+        return jsonify({'sucess':False, 'message':"Request didn't contain valid JSON"}), 400
+
 def ELKToHiveAlert(theHiveConnector, alert_data):
     #
     # Creating the alert

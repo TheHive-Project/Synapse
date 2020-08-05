@@ -12,6 +12,13 @@ import modules.EWS.connector as EwsConnector
 from modules.TheHive.connector import TheHiveConnector
 from .objects.TempAttachment import TempAttachment
 
+def validateRequest(request):
+    workflowReport = connectEws()
+    if workflowReport['success']:
+        return jsonify(workflowReport), 200
+    else:
+        return jsonify(workflowReport), 500
+
 def connectEws():
     logger = logging.getLogger(__name__)
     logger.info('%s.connectEws starts', __name__)

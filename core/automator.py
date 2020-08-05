@@ -557,11 +557,11 @@ class Automator:
 
         try:
             #Run the function for the task and return the results
-            results = getattr(automators, '{}'.format(function_name))(task_config, webhook_data)
+            self.results = getattr(automators, '{}'.format(function_name))(task_config, webhook_data)
             
             #Return the results or True if the task was succesful without returning information
-            if results:
-                return results
+            if self.results:
+                return self.results
             else:
                 return False
         except KeyError as e:

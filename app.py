@@ -35,9 +35,9 @@ else:
     out_hdlr.setFormatter(formatter)
     logger.addHandler(out_hdlr)
 
-from modules.EWS.integration import connectEws
-from modules.QRadar.integration import allOffense2Alert
-from modules.ELK.integration import ml2Alert,logstash2Alert
+from modules.EWS.integration import validateRequest
+from modules.QRadar.integration import validateRequest
+from modules.ELK.integration import validateRequest
 from core.managewebhooks import manageWebhook
 
 #Load use cases
@@ -74,46 +74,18 @@ def listenWebhook():
 
 @app.route('/ews2case', methods=['GET'])
 def ews2case():
-    workflowReport = connectEws()
-    if workflowReport['success']:
-        return jsonify(workflowReport), 200
-    else:
-        return jsonify(workflowReport), 500
+    response = validateRequest(request)
+    return response
 
 @app.route('/QRadar2alert', methods=['POST'])
 def QRadar2alert():
-    if request.is_json:
-        content = request.get_json()
-        if 'timerange' in content:
-            workflowReport = allOffense2Alert(content['timerange'])
-            if workflowReport['success']:
-                return jsonify(workflowReport), 200
-            else:
-                return jsonify(workflowReport), 500
-        else:
-            logger.error('Missing <timerange> key/value')
-            return jsonify({'sucess':False, 'message':"timerange key missing in request"}), 500
-    else:
-        logger.error('Not json request')
-        return jsonify({'sucess':False, 'message':"Request didn't contain valid JSON"}), 400
+    response = validateRequest(request)
+    return response
 
 @app.route('/ELK2alert', methods=['POST'])
 def ELK2alert():
-    logger.info("Received ELK2Alert request")
-    logger.debug('request: %s' % request.get_data())
-    if request.is_json:
-        content = request.get_json()
-        if content['type'] == 'asml':
-            workflowReport = ml2Alert(content)
-        else:
-            workflowReport = logstash2Alert(content)
-        if workflowReport['success']:
-            return jsonify(workflowReport), 200
-        else:
-            return jsonify(workflowReport), 500
-    else:
-        logger.error('Not json request: %s' % request.get_data())
-        return jsonify({'sucess':False, 'message':"Request didn't contain valid JSON"}), 400
+    response = validateRequest(request)
+    return response
 
 @app.route('/version', methods=['GET'])
 def getSynapseVersion():
