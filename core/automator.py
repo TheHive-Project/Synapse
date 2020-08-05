@@ -534,7 +534,7 @@ class Automator:
 
         return self.report_action
 
-    def Automate(self, task, task_config):
+    def Automate(self, task, task_config, webhook_data):
 
         #Split the task name on the dot to have a module and a function variable in a list
         try:
@@ -557,7 +557,7 @@ class Automator:
 
         try:
             #Run the function for the task and return the results
-            results = getattr(automators, '{}'.format(function_name))(task_config)
+            results = getattr(automators, '{}'.format(function_name))(task_config, webhook_data)
             
             #Return the results or True if the task was succesful without returning information
             if results:
