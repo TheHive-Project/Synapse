@@ -16,8 +16,8 @@ app_dir = os.path.dirname(os.path.abspath(__file__))
 cfg = getConf()
 
 #create logger
-wflogger = logging.getLogger(__name__)
-wflogger.setLevel(logging.getLevelName(cfg.get('api', 'log_level')))
+logger = logging.getLogger()
+logger.setLevel(logging.getLevelName(cfg.get('api', 'log_level')))
 #log format as: 2013-03-08 11:37:31,411 : : WARNING :: Testing foo
 formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
 #handler writes into, limited to 1Mo in append mode
@@ -32,12 +32,12 @@ if not cfg.getboolean('api', 'dockerized'):
     #using the format defined earlier
     file_handler.setFormatter(formatter)
     #Adding the file handler
-    wflogger.addHandler(file_handler)
+    logger.addHandler(file_handler)
 else:
     #Logging to stdout
     out_hdlr = logging.StreamHandler(sys.stdout)
     out_hdlr.setFormatter(logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s'))
-    wflogger.addHandler(out_hdlr)
+    logger.addHandler(out_hdlr)
 
 #Load use cases
 use_cases = loadUseCases()
@@ -45,27 +45,27 @@ use_case_list = []
 for ucs in use_cases['use_cases']:
     use_case_list.append(ucs)
 #use_case_list = ",".join(use_case_list)
-wflogger.info("Loaded the following use cases: {}".format(use_case_list))
+logger.info("Loaded the following use cases: {}".format(use_case_list))
 
 app = Flask(__name__)
 
 @app.before_first_request
 def initialize():
-    wflogger = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
 @app.route('/webhook', methods=['POST'])
 def listenWebhook():
     if request.is_json:
          try:
             webhook = request.get_json()
-            wflogger.debug("Webhook: %s" % webhook)
+            logger.debug("Webhook: %s" % webhook)
             workflowReport = manageWebhook(webhook, cfg, use_cases)
             if workflowReport['success']:
                 return jsonify(workflowReport), 200
             else:
                 return jsonify(workflowReport), 500
          except Exception as e:
-             wflogger.error('Failed to listen or action webhook: %s' % e, exc_info=True)
+             logger.error('Failed to listen or action webhook: %s' % e, exc_info=True)
              return jsonify({'success':False}), 500
 
     else:
@@ -90,16 +90,16 @@ def QRadar2alert():
             else:
                 return jsonify(workflowReport), 500
         else:
-            wflogger.error('Missing <timerange> key/value')
+            logger.error('Missing <timerange> key/value')
             return jsonify({'sucess':False, 'message':"timerange key missing in request"}), 500
     else:
-        wflogger.error('Not json request')
+        logger.error('Not json request')
         return jsonify({'sucess':False, 'message':"Request didn't contain valid JSON"}), 400
 
 @app.route('/ELK2alert', methods=['POST'])
 def ELK2alert():
-    wflogger.info("Received ELK2Alert request")
-    wflogger.debug('request: %s' % request.get_data())
+    logger.info("Received ELK2Alert request")
+    logger.debug('request: %s' % request.get_data())
     if request.is_json:
         content = request.get_json()
         if content['type'] == 'asml':
@@ -111,7 +111,7 @@ def ELK2alert():
         else:
             return jsonify(workflowReport), 500
     else:
-        wflogger.error('Not json request: %s' % request.get_data())
+        logger.error('Not json request: %s' % request.get_data())
         return jsonify({'sucess':False, 'message':"Request didn't contain valid JSON"}), 400
 
 @app.route('/version', methods=['GET'])
