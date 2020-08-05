@@ -16,7 +16,7 @@ import modules.Cortex.connector as CortexConnector
 import modules.QRadar.connector as QRadarConnector
 
 #import global logger
-logger = logging.getLogger('workflows.' + __name__)
+logger = logging.getLogger('workflows.')
 
 #Define folder structure and empty vars
 app_dir = os.path.dirname(os.path.abspath(__file__))
@@ -49,7 +49,7 @@ class Automator:
             :return: use case report
             :rtype: API call
         """
-        self.logger = logging.getLogger('workflows.' + __name__)
+        self.logger = logging.getLogger('workflows.')
         self.logger.info('Initiating Siem Integration')
 
         self.cfg = cfg
