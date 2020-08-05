@@ -3,6 +3,9 @@ from modules.TheHive.connector import TheHiveConnector
 
 class Automators():
     def __init__(cfg):
+        self.logger = logging.getLogger('workflows')
+        self.logger.info('Initiating The Hive Automation')
+
         self.cfg = cfg
         self.TheHiveConnector = TheHiveConnector(cfg)
         
@@ -26,3 +29,5 @@ class Automators():
         #Create Task
         self.uc_task = self.craftUcTask(self.title, self.description)
         self.uc_task_id = self.TheHiveConnector.createTask(self.case_id, self.uc_task)
+
+        return True

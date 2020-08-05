@@ -15,9 +15,6 @@ from modules.TheHive.connector import TheHiveConnector
 from modules.Cortex.connector import CortexConnector
 from modules.QRadar.connector import QRadarConnector
 
-#import global logger
-logger = logging.getLogger('workflows')
-
 #Define folder structure and empty vars
 app_dir = os.path.dirname(os.path.abspath(__file__))
 modules_dir = app_dir + "/../modules"
@@ -26,11 +23,11 @@ loaded_modules = {}
 #Read all modules from modules folder
 modules = [ name for name in os.listdir(modules_dir) if os.path.isdir(os.path.join(modules_dir, name)) if os.path.isfile(os.path.join(modules_dir, "automators.py")) ]
 
-logger.info("Loading modules for automation")
+wflogger.info("Loading modules for automation")
 #Loop through modules to create a module dictionary
 for module in modules:
     loaded_modules[module] = importlib.import_module("modules.{}.automators".format(module))
-    logger.info("Loaded module {}".format(module))
+    wflogger.info("Loaded module {}".format(module))
     # for item in dir(loaded_modules[module]):
     #     if not "__" in item:
     #         print(item)
@@ -381,7 +378,8 @@ class Automator:
                         self.case_id = self.webhook.data['object']['case']
                         
                         #Run actions through the automator
-                        self.Automate(action_type, action_config)
+                        if self.Automate(action_type, action_config):
+                            return
 
                         #Perform actions for the checkSiem action
                         if action_type == "checkSiem":
@@ -551,7 +549,12 @@ class Automator:
             automators = getattr(loaded_modules[module_name], Automators)(self.cfg)
             #Run the function for the task and return the results
             results = getattr(automators, '{}'.format(function_name))(task_config)
-            return results
+            
+            #Return the results or True if the task was succesful without returning information
+            if results:
+                return results
+            else:
+                return False
         except KeyError as e:
             self.logger.warning("Automation Task not found for {}: {}".format(module_name, function_name))
-            return
+            return False
