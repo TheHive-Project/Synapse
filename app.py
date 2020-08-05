@@ -35,9 +35,9 @@ else:
     out_hdlr.setFormatter(formatter)
     logger.addHandler(out_hdlr)
 
-from modules.EWS.integration import validateRequest
-from modules.QRadar.integration import validateRequest
-from modules.ELK.integration import validateRequest
+from modules.EWS.integration import validateRequest as ewsval
+from modules.QRadar.integration import validateRequest as qrval
+from modules.ELK.integration import validateRequest as elkval
 from core.managewebhooks import manageWebhook
 
 #Load use cases
@@ -74,17 +74,17 @@ def listenWebhook():
 
 @app.route('/ews2case', methods=['GET'])
 def ews2case():
-    response = validateRequest(request)
+    response = ewsval(request)
     return response
 
 @app.route('/QRadar2alert', methods=['POST'])
 def QRadar2alert():
-    response = validateRequest(request)
+    response = qrval(request)
     return response
 
 @app.route('/ELK2alert', methods=['POST'])
 def ELK2alert():
-    response = validateRequest(request)
+    response = elkval(request)
     return response
 
 @app.route('/version', methods=['GET'])
