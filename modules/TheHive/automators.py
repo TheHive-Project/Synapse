@@ -1,6 +1,7 @@
 
 import logging
 from modules.TheHive.connector import TheHiveConnector
+from thehive4py.models import CaseTask
 
 class Automators():
     def __init__(self, cfg):

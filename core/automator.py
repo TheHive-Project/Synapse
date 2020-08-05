@@ -30,7 +30,7 @@ logger.info("Loading modules for automation")
 #Loop through modules to create a module dictionary
 for module in modules:
     loaded_modules[module] = importlib.import_module("modules.{}.automators".format(module))
-    logger.info("Loaded module {}".format(module))
+    logger.info("Loaded automation module {}".format(module))
     # for item in dir(loaded_modules[module]):
     #     if not "__" in item:
     #         print(item)
