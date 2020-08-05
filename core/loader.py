@@ -14,11 +14,11 @@ def moduleLoader(submodule):
     #Read all modules from modules folder
     modules = [ name for name in os.listdir(modules_dir) if os.path.isdir(os.path.join(modules_dir, name)) if os.path.isfile(os.path.join(modules_dir, name, submodule + ".py")) ]
 
-    logger.info("Loading modules for automation")
+    logger.info("Loading modules for {}".format(submodule))
     #Loop through modules to create a module dictionary
     for module in modules:
         loaded_modules[module] = importlib.import_module("modules.{}.{}".format(module, submodule))
-        logger.info("Loaded automation module {}".format(module))
+        logger.info("Loaded {}} module {}".format(submodule,module))
         # for item in dir(loaded_modules[module]):
         #     if not "__" in item:
         #         print(item)

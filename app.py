@@ -78,11 +78,13 @@ def listenWebhook():
 #loop through all integration modules and create the corresponding endpoints
 for cfg_section in cfg.sections():
     endpoint = cfg.get(cfg_section, 'synapse_endpoint', fallback=None)
+    logger.info("Creating endpoint for: {}".format(endpoint))
     if endpoint:
-        methods = cfg.get(cfg_section, 'endpoint_methods', fallback=['GET'])
+        methods = cfg.get(cfg_section, 'endpoint_methods', fallback='GET').split(',')
         @app.route(endpoint, methods=methods)
         def endpoint():
-            response = loaded_modules[cfg_section].validateRequest(request)
+            self.module = cfg_section
+            response = loaded_modules[self.module].validateRequest(request)
             return response
 
 @app.route('/version', methods=['GET'])
