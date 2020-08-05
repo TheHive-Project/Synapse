@@ -3,7 +3,7 @@
 
 import os, sys
 import logging
-import automation.Siem as Siem
+from automation.Siem import Siem
 from modules.generic.WebhookIdentifier import Webhook
 
 #Import automation modules
@@ -47,7 +47,7 @@ def manageWebhook(webhookData, cfg, use_cases):
         
     if cfg.getboolean('UCAutomation', 'enabled'):
         logger.info('Enabling Use Case Automation')
-        uc_automation = Siem.Siem(webhook, cfg, use_cases)
+        uc_automation = Siem(webhook, cfg, use_cases)
         report_action = uc_automation.check_use_case()
 
     #Check if an action is performed for the webhook
