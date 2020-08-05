@@ -17,28 +17,27 @@ cfg = getConf()
 
 #create logger
 wflogger = logging.getLogger(__name__)
-if not wflogger.handlers:
-    wflogger.setLevel(logging.getLevelName(cfg.get('api', 'log_level')))
-    #log format as: 2013-03-08 11:37:31,411 : : WARNING :: Testing foo
-    formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
-    #handler writes into, limited to 1Mo in append mode
-    if not cfg.getboolean('api', 'dockerized'):
-        if not os.path.exists('logs'):
-            #create logs directory if does no exist (typically at first start)
-            os.makedirs('logs')
-        pathLog = app_dir + '/logs/synapse.log'
-        file_handler = logging.handlers.RotatingFileHandler(pathLog, 'a', 1000000, 1)
-        #level debug
-        #file_handler.setLevel(logging.DEBUG)
-        #using the format defined earlier
-        file_handler.setFormatter(formatter)
-        #Adding the file handler
-        wflogger.addHandler(file_handler)
-    else:
-        #Logging to stdout
-        out_hdlr = logging.StreamHandler(sys.stdout)
-        out_hdlr.setFormatter(logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s'))
-        wflogger.addHandler(out_hdlr)
+wflogger.setLevel(logging.getLevelName(cfg.get('api', 'log_level')))
+#log format as: 2013-03-08 11:37:31,411 : : WARNING :: Testing foo
+formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
+#handler writes into, limited to 1Mo in append mode
+if not cfg.getboolean('api', 'dockerized'):
+    if not os.path.exists('logs'):
+        #create logs directory if does no exist (typically at first start)
+        os.makedirs('logs')
+    pathLog = app_dir + '/logs/synapse.log'
+    file_handler = logging.handlers.RotatingFileHandler(pathLog, 'a', 1000000, 1)
+    #level debug
+    #file_handler.setLevel(logging.DEBUG)
+    #using the format defined earlier
+    file_handler.setFormatter(formatter)
+    #Adding the file handler
+    wflogger.addHandler(file_handler)
+else:
+    #Logging to stdout
+    out_hdlr = logging.StreamHandler(sys.stdout)
+    out_hdlr.setFormatter(logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s'))
+    wflogger.addHandler(out_hdlr)
 
 #Load use cases
 use_cases = loadUseCases()
