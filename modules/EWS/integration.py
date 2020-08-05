@@ -9,7 +9,7 @@ sys.path.insert(0, current_dir)
 
 from core.functions import getConf
 import modules.EWS.connector as EwsConnector
-import modules.TheHive.connector as TheHiveConnector
+from modules.TheHive.connector import TheHiveConnector
 from .objects.TempAttachment import TempAttachment
 
 def connectEws():

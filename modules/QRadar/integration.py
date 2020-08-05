@@ -10,8 +10,8 @@ import re
 import itertools
 from core.functions import getConf, loadUseCases
 from dateutil import tz
-import modules.QRadar.connector as QRadarConnector
-import modules.TheHive.connector as TheHiveConnector
+from modules.QRadar.connector import QRadarConnector
+from modules.TheHive.connector import TheHiveConnector
 from time import sleep
 
 current_dir = os.path.dirname(os.path.abspath(__file__))

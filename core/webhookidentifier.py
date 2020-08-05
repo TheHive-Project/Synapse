@@ -2,7 +2,7 @@
 # -*- coding: utf8 -*-
 
 import logging
-import modules.TheHive.connector as TheHiveConnector
+from modules.TheHive.connector import TheHiveConnector
 
 
 class Webhook:

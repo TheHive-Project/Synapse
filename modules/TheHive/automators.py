@@ -1,5 +1,5 @@
 
-import modules.TheHive.connector as TheHiveConnector
+from modules.TheHive.connector import TheHiveConnector
 
 class Automators():
     def __init__(cfg):

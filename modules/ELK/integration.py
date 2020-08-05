@@ -13,7 +13,7 @@ from builtins import str as unicode
 from core.functions import getConf
 #Bestaat nog niet niet
 #from objects.ELKConnector import ELKConnector
-import modules.TheHive.connector as TheHiveConnector
+from modules.TheHive.connector import TheHiveConnector
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 app_dir = current_dir + '/..'

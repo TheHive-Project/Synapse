@@ -4,8 +4,8 @@ import time
 import logging
 from datetime import date
 
-import modules.TheHive.connector as TheHiveConnector
-import modules.Cortex.connector as CortexConnector
+from modules.TheHive.connector import TheHiveConnector
+from modules.Cortex.connector import CortexConnector
 from modules.QRadar.connector import QRadarConnector
 
 #Load required object models

@@ -11,9 +11,9 @@ from datetime import datetime, timedelta
 from configparser import ConfigParser
 from thehive4py.models import CaseTask, Alert
 
-import modules.TheHive.connector as TheHiveConnector
-import modules.Cortex.connector as CortexConnector
-import modules.QRadar.connector as QRadarConnector
+from modules.TheHive.connector import TheHiveConnector
+from modules.Cortex.connector import CortexConnector
+from modules.QRadar.connector import QRadarConnector
 
 #import global logger
 logger = logging.getLogger('workflows.')
