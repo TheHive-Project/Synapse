@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf8 -*-
 
+#load python modules
 import os
 import sys
 import logging, logging.handlers
 from flask import Flask, request, jsonify
+
+#Load custom modules
+from core.functions import getConf, loadUseCases
 
 app_dir = os.path.dirname(os.path.abspath(__file__))
 cfg = getConf()
@@ -31,7 +35,6 @@ else:
     out_hdlr.setFormatter(formatter)
     logger.addHandler(out_hdlr)
 
-from core.functions import getConf, loadUseCases
 from modules.EWS.integration import connectEws
 from modules.QRadar.integration import allOffense2Alert
 from modules.ELK.integration import ml2Alert,logstash2Alert
