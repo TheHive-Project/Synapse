@@ -381,7 +381,7 @@ class Automator:
                         self.Automate(action_type, action_config)
 
                         #Perform actions for the checkSiem action
-                        elif action_type == "checkSiem":
+                        if action_type == "checkSiem":
                             if self.checkSiem(action_config, "search_query"):
                                 self.report_action = 'updateCase'
                             
