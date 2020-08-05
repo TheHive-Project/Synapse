@@ -3,8 +3,8 @@
 
 import os, sys
 import logging
-from automation.siem import Siem
-from modules.generic.WebhookIdentifier import Webhook
+from core.automator import Automator
+from core.webhookidentifier import Webhook
 
 #Import automation modules
 from modules.ELK.automation import ELKAutomation
@@ -47,7 +47,7 @@ def manageWebhook(webhookData, cfg, use_cases):
         
     if cfg.getboolean('UCAutomation', 'enabled'):
         logger.info('Enabling Use Case Automation')
-        uc_automation = Siem(webhook, cfg, use_cases)
+        uc_automation = Automator(webhook, cfg, use_cases)
         report_action = uc_automation.check_use_case()
 
     #Check if an action is performed for the webhook

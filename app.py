@@ -10,7 +10,7 @@ from core.functions import getConf, loadUseCases
 from modules.EWS.integration import connectEws
 from modules.QRadar.integration import allOffense2Alert
 from modules.ELK.integration import ml2Alert,logstash2Alert
-from core.ManageWebhooks import manageWebhook
+from core.managewebhooks import manageWebhook
 
 app_dir = os.path.dirname(os.path.abspath(__file__))
 cfg = getConf()
