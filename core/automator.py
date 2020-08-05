@@ -15,6 +15,8 @@ import modules.TheHive.connector as TheHiveConnector
 import modules.Cortex.connector as CortexConnector
 import modules.QRadar.connector as QRadarConnector
 
+#import global logger
+logger = logging.getLogger('workflows.' + __name__)
 
 #Define folder structure and empty vars
 app_dir = os.path.dirname(os.path.abspath(__file__))
@@ -22,12 +24,12 @@ modules_dir = app_dir + "/../modules"
 loaded_modules = {}
 
 #Read all modules from modules folder
-modules = [ name for name in os.listdir(modules_dir) if os.path.isdir(os.path.join(modules_dir, name)) ]
+modules = [ name for name in os.listdir(modules_dir) if os.path.isdir(os.path.join(modules_dir, name)) if os.path.isfile(os.path.join(modules_dir, "automators.py")) ]
 
 #Loop through modules to create a module dictionary
 for module in modules:
     loaded_modules[module] = importlib.import_module("modules.{}.automators".format(module))
-    self.logger.info("Loaded module {} for automation".format(module))
+    logger.info("Loaded module {} for automation".format(module))
     # for item in dir(loaded_modules[module]):
     #     if not "__" in item:
     #         print(item)
