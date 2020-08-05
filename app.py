@@ -85,8 +85,11 @@ for cfg_section in cfg.sections():
 
 @app.route('/integration/<integration>', methods=['GET', 'POST', 'PUT'])
 def endpoint(integration):
-    response = loaded_modules[modules[integration]].validateRequest(request)
-    return response
+    try:
+        response = loaded_modules[modules[integration]].validateRequest(request)
+        return response
+    except KeyError as e:
+        logger.warning('Integration module not found: {}'.format(integration))
 
 @app.route('/version', methods=['GET'])
 def getSynapseVersion():
