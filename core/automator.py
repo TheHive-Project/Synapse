@@ -26,10 +26,11 @@ loaded_modules = {}
 #Read all modules from modules folder
 modules = [ name for name in os.listdir(modules_dir) if os.path.isdir(os.path.join(modules_dir, name)) if os.path.isfile(os.path.join(modules_dir, "automators.py")) ]
 
+logger.info("Loading modules for automation")
 #Loop through modules to create a module dictionary
 for module in modules:
     loaded_modules[module] = importlib.import_module("modules.{}.automators".format(module))
-    logger.info("Loaded module {} for automation".format(module))
+    logger.info("Loaded module {}".format(module))
     # for item in dir(loaded_modules[module]):
     #     if not "__" in item:
     #         print(item)
@@ -543,6 +544,7 @@ class Automator:
 
         except:
             self.logger.error("{} does not seem to be a valid automator task name".format(task))
+            return
         
         try:
             #Load the Automators class from the module to initialise it
@@ -552,3 +554,4 @@ class Automator:
             return results
         except KeyError as e:
             self.logger.warning("Automation Task not found for {}: {}".format(module_name, function_name))
+            return
