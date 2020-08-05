@@ -15,25 +15,8 @@ from modules.TheHive.connector import TheHiveConnector
 from modules.Cortex.connector import CortexConnector
 from modules.QRadar.connector import QRadarConnector
 
-#import logger
-logger = logging.getLogger(__name__)
-
-#Define folder structure and empty vars
-app_dir = os.path.dirname(os.path.abspath(__file__))
-modules_dir = app_dir + "/../modules"
-loaded_modules = {}
-
-#Read all modules from modules folder
-modules = [ name for name in os.listdir(modules_dir) if os.path.isdir(os.path.join(modules_dir, name)) if os.path.isfile(os.path.join(modules_dir, name, "automators.py")) ]
-
-logger.info("Loading modules for automation")
-#Loop through modules to create a module dictionary
-for module in modules:
-    loaded_modules[module] = importlib.import_module("modules.{}.automators".format(module))
-    logger.info("Loaded automation module {}".format(module))
-    # for item in dir(loaded_modules[module]):
-    #     if not "__" in item:
-    #         print(item)
+from core.loader import moduleLoader
+loaded_modules = moduleLoader("automator")
 
 #Small timezone converter. Source: https://stackoverflow.com/questions/4563272/convert-a-python-utc-datetime-to-a-local-datetime-using-only-python-standard-lib
 def utc_to_local(utc_dt):

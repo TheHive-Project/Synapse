@@ -48,6 +48,9 @@ for ucs in use_cases['use_cases']:
 #use_case_list = ",".join(use_case_list)
 logger.info("Loaded the following use cases: {}".format(use_case_list))
 
+from core.loader import moduleLoader
+loaded_modules = moduleLoader("integration")
+
 app = Flask(__name__)
 
 @app.before_first_request
@@ -72,20 +75,15 @@ def listenWebhook():
     else:
         return jsonify({'success':False, 'message':'Not JSON'}), 400
 
-@app.route('/ews2case', methods=['GET'])
-def ews2case():
-    response = ewsval(request)
-    return response
-
-@app.route('/QRadar2alert', methods=['POST'])
-def QRadar2alert():
-    response = qrval(request)
-    return response
-
-@app.route('/ELK2alert', methods=['POST'])
-def ELK2alert():
-    response = elkval(request)
-    return response
+#loop through all integration modules and create the corresponding endpoints
+for cfg_section in cfg.sections():
+    endpoint = cfg.get(cfg_section, 'synapse_endpoint', fallback=None)
+    if endpoint:
+        methods = cfg.get(cfg_section, 'endpoint_methods', fallback=['GET'])
+        @app.route(endpoint, methods=methods)
+        def endpoint():
+            response = loaded_modules[cfg_section].validateRequest(request)
+            return response
 
 @app.route('/version', methods=['GET'])
 def getSynapseVersion():
