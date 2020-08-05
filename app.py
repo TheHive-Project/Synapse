@@ -5,7 +5,7 @@
 import os
 import sys
 import logging, logging.handlers
-from flask import Flask, request, jsonify
+from flask import Flask, request
 
 #Load custom modules
 from core.functions import getConf, loadUseCases

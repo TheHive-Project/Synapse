@@ -89,12 +89,12 @@ def validateRequest(request):
         else:
             workflowReport = logstash2Alert(content)
         if workflowReport['success']:
-            return jsonify(workflowReport), 200
+            return json.dumps(workflowReport), 200
         else:
-            return jsonify(workflowReport), 500
+            return json.dumps(workflowReport), 500
     else:
         logger.error('Not json request: %s' % request.get_data())
-        return jsonify({'sucess':False, 'message':"Request didn't contain valid JSON"}), 400
+        return json.dumps({'sucess':False, 'message':"Request didn't contain valid JSON"}), 400
 
 def ELKToHiveAlert(theHiveConnector, alert_data):
     #

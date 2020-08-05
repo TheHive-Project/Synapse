@@ -3,6 +3,7 @@
 
 import os, sys
 import logging
+import json
 current_dir = os.path.dirname(os.path.abspath(__file__))
 app_dir = current_dir + '/..'
 sys.path.insert(0, current_dir)
@@ -15,9 +16,9 @@ from .objects.TempAttachment import TempAttachment
 def validateRequest(request):
     workflowReport = connectEws()
     if workflowReport['success']:
-        return jsonify(workflowReport), 200
+        return json.dumps(workflowReport), 200
     else:
-        return jsonify(workflowReport), 500
+        return json.dumps(workflowReport), 500
 
 def connectEws():
     logger = logging.getLogger(__name__)
