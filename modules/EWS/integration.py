@@ -10,7 +10,7 @@ sys.path.insert(0, current_dir)
 from core.functions import getConf
 import modules.EWS.connector as EwsConnector
 import modules.TheHive.connector as TheHiveConnector
-from modules.EWS.objects.TempAttachment import TempAttachment
+from .objects.TempAttachment import TempAttachment
 
 def connectEws():
     logger = logging.getLogger('app2a')

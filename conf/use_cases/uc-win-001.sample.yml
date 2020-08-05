@@ -21,7 +21,7 @@ uc-win-001:
               - Computer
             query: SELECT str(DATEFORMAT(endTime,'YYYY-MM-dd HH:mm:ss')) as Time, "Process CommandLine", "Source Process", ParentImage FROM events WHERE "Computer" = '{{v['Computer']}}' AND qid = 2000038 ORDER BY "Time" START '{{v['Start Time']}}' STOP '{{v['Stop Time']}}';
       create_test_task:
-        type: CreateBasicTask
+        type: TheHive.createBasicTask
         title: test
         description: This is a test
     auto_create_case: false

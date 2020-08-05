@@ -4,8 +4,8 @@
 import logging
 import time, json
 from collections import OrderedDict
-from .QRadar_Objects.RestApiClient import RestApiClient
-from .QRadar_Objects.arielapiclient import APIClient
+from .objects.RestApiClient import RestApiClient
+from .objects.arielapiclient import APIClient
 from multiprocessing import Process, Queue
 
 class QRadarConnector:

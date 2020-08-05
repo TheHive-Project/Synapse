@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from configparser import ConfigParser
 from thehive4py.models import CaseTask, Alert
 
+from automation.automator import Automator
 import modules.TheHive.connector as TheHiveConnector
 import modules.Cortex.connector as CortexConnector
 import modules.QRadar.connector as QRadarConnector
@@ -35,6 +36,7 @@ class Siem:
         self.cfg = cfg
         self.app_dir = os.path.dirname(os.path.abspath(__file__))
         self.use_case_config = use_cases
+        self.Automator = Automator(self.cfg)
         self.TheHiveConnector = TheHiveConnector(cfg)
         if self.cfg.getboolean('Cortex', 'enabled'):
             self.CortexConnector = CortexConnector(cfg)
@@ -359,16 +361,8 @@ class Siem:
                         self.logger.info('Found the following action for %s: %s, with type %s' % (self.rule_id, action, action_type))
                         self.case_id = self.webhook.data['object']['case']
                         
-                        #Perform actions for the CreateBasicTask action
-                        if action_type == "CreateBasicTask":
-                            self.title = action_config['title']
-                            self.description = action_config['description']
-
-                            self.logger.info('Found basic task to create: %s' % self.title)
-                            
-                            #Create Task
-                            self.uc_task = self.craftUcTask(self.title, self.description)
-                            self.uc_task_id = self.TheHiveConnector.createTask(self.case_id, self.uc_task)
+                        #Run actions through the automator
+                        self.Automator(action_type, action_config)
 
                         #Perform actions for the checkSiem action
                         elif action_type == "checkSiem":

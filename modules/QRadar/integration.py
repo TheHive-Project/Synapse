@@ -10,7 +10,7 @@ import re
 import itertools
 from core.functions import getConf, loadUseCases
 from dateutil import tz
-import .connector as QRadarConnector
+import modules.QRadar.connector as QRadarConnector
 import modules.TheHive.connector as TheHiveConnector
 from time import sleep
 
