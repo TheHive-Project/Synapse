@@ -11,7 +11,7 @@ from modules.QRadar.connector import QRadarConnector
 #Load required object models
 from thehive4py.models import Case, CustomFieldHelper, CaseObservable, CaseTask
 
-logger = logging.getLogger('workflows')
+logger = logging.getLogger(__name__)
 
 current_time = 0
 

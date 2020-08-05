@@ -3,7 +3,7 @@ from modules.TheHive.connector import TheHiveConnector
 
 class Automators():
     def __init__(cfg):
-        self.logger = logging.getLogger('workflows')
+        self.logger = logging.getLogger(__name__)
         self.logger.info('Initiating The Hive Automation')
 
         self.cfg = cfg

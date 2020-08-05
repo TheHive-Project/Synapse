@@ -21,7 +21,7 @@ cfg = getConf()
 use_cases = loadUseCases()
 
 #Get logger
-logger = logging.getLogger('app2a')
+logger = logging.getLogger(__name__)
 
 def formatDate(qradarTimeStamp):
     #Define timezones

@@ -22,7 +22,7 @@ class QRadarConnector:
             :rtype: QRadarConnector
         """
 
-        self.logger = logging.getLogger('app2a.' + __name__)
+        self.logger = logging.getLogger(__name__)
         self.cfg = cfg
         clients = self.getClients()
         self.client = clients[0]

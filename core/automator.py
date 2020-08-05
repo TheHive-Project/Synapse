@@ -15,6 +15,9 @@ from modules.TheHive.connector import TheHiveConnector
 from modules.Cortex.connector import CortexConnector
 from modules.QRadar.connector import QRadarConnector
 
+#import logger
+logger = logging.getLogger(__name__)
+
 #Define folder structure and empty vars
 app_dir = os.path.dirname(os.path.abspath(__file__))
 modules_dir = app_dir + "/../modules"
@@ -23,11 +26,11 @@ loaded_modules = {}
 #Read all modules from modules folder
 modules = [ name for name in os.listdir(modules_dir) if os.path.isdir(os.path.join(modules_dir, name)) if os.path.isfile(os.path.join(modules_dir, "automators.py")) ]
 
-wflogger.info("Loading modules for automation")
+logger.info("Loading modules for automation")
 #Loop through modules to create a module dictionary
 for module in modules:
     loaded_modules[module] = importlib.import_module("modules.{}.automators".format(module))
-    wflogger.info("Loaded module {}".format(module))
+    logger.info("Loaded module {}".format(module))
     # for item in dir(loaded_modules[module]):
     #     if not "__" in item:
     #         print(item)
@@ -47,7 +50,7 @@ class Automator:
             :return: use case report
             :rtype: API call
         """
-        self.logger = logging.getLogger('workflows')
+        self.logger = logging.getLogger(__name__)
         self.logger.info('Initiating Siem Integration')
 
         self.cfg = cfg

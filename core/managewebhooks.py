@@ -16,7 +16,7 @@ def manageWebhook(webhookData, cfg, use_cases):
         Filter webhooks received from TheHive and initiate actions like:
             - closing offense in QRadar
     """
-    logger = logging.getLogger('workflows')
+    logger = logging.getLogger(__name__)
     logger.info('%s.ManageWebhook starts', __name__)
 
     report = dict()

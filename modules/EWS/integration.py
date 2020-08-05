@@ -13,7 +13,7 @@ from modules.TheHive.connector import TheHiveConnector
 from .objects.TempAttachment import TempAttachment
 
 def connectEws():
-    logger = logging.getLogger('app2a')
+    logger = logging.getLogger(__name__)
     logger.info('%s.connectEws starts', __name__)
 
     report = dict()

@@ -6,7 +6,7 @@ import os
 import yaml
 from configparser import ConfigParser
 
-logger = logging.getLogger('workflows')
+logger = logging.getLogger(__name__)
 currentPath = os.path.dirname(os.path.abspath(__file__))
 app_dir = currentPath + '/..'
 

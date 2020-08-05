@@ -18,7 +18,7 @@ from modules.TheHive.connector import TheHiveConnector
 current_dir = os.path.dirname(os.path.abspath(__file__))
 app_dir = current_dir + '/..'
 sys.path.insert(0, current_dir)
-logger = logging.getLogger('app2a')
+logger = logging.getLogger(__name__)
     
 def __findartifacts(value):
     """Checks if the given value is contains regexes
