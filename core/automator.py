@@ -538,12 +538,17 @@ class Automator:
         try:
             self.task = task.split(".")
             #Should probably also do some matching for words to mitigate some security concerns?
+            module_name = self.task[0]
+            function_name = self.task[1]
 
         except:
             self.logger.error("{} does not seem to be a valid automator task name".format(task))
         
-        #Load the Automators class from the module to initialise it
-        automators = getattr(loaded_modules[self.task[0]], Automators)(self.cfg)
-        #Run the function for the task and return the results
-        results = getattr(automators, '{}'.format(self.task[1]))(task_config)
-        return results
+        try:
+            #Load the Automators class from the module to initialise it
+            automators = getattr(loaded_modules[module_name], Automators)(self.cfg)
+            #Run the function for the task and return the results
+            results = getattr(automators, '{}'.format(function_name))(task_config)
+            return results
+        except KeyError as e:
+            self.logger.warning("Automation Task not found for {}: {}".format(module_name, function_name))
