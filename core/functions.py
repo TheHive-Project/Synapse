@@ -8,7 +8,7 @@ from configparser import ConfigParser
 
 logger = logging.getLogger('workflows')
 currentPath = os.path.dirname(os.path.abspath(__file__))
-app_dir = currentPath + '/../..'
+app_dir = currentPath + '/..'
 
 def getYamlFiles(dir_name):
     dir_list = os.listdir(dir_name)
