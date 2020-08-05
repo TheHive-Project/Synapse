@@ -531,10 +531,6 @@ class QRadarConnector:
                 raise
         else:
             self.logger.info('Offense %s already closed', offenseId)
-        except Exception as e:
-            self.logger.error('Failed to close offense %s', offenseId, exc_info=True)
-            raise
-
             
             
 #### Troubleshooten. Wilt nog niet de naam toevoegen aan de rule array
