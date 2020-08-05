@@ -80,11 +80,10 @@ modules = {}
 for cfg_section in cfg.sections():
     endpoint = cfg.get(cfg_section, 'synapse_endpoint', fallback=None)
     if endpoint:
-        methods = cfg.get(cfg_section, 'endpoint_methods', fallback='GET').split(',')
-        logger.info("Creating endpoint for {}: {}".format(cfg_section, endpoint))
+        logger.info("Enabling integration for {}: {}".format(cfg_section, endpoint))
         modules[endpoint] = cfg_section
 
-@app.route('/integration/<integration>', methods=methods)
+@app.route('/integration/<integration>', methods=['GET', 'POST', 'PUT'])
 def endpoint(integration):
     response = loaded_modules[modules[integration]].validateRequest(request)
     return response
