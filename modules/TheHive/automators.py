@@ -19,10 +19,10 @@ class Automators():
         
         return uc_task
 
-    def createBasicTask(self, action_config):
+    def createBasicTask(self, action_config, webhook_data):
 
         #Perform actions for the CreateBasicTask action
-
+        self.case_id = webhook_data['object']['case']
         self.title = action_config['title']
         self.description = action_config['description']
 

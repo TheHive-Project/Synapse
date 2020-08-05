@@ -381,7 +381,7 @@ class Automator:
                         self.case_id = self.webhook.data['object']['case']
                         
                         #Run actions through the automator
-                        if self.Automate(action_type, action_config):
+                        if self.Automate(action_type, action_config, self.webhook.data):
                             continue
 
                         #Perform actions for the checkSiem action
