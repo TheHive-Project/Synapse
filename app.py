@@ -19,7 +19,7 @@ cfg = getConf()
 logger = logging.getLogger()
 logger.setLevel(logging.getLevelName(cfg.get('api', 'log_level')))
 #log format as: 2013-03-08 11:37:31,411 : : WARNING :: Testing foo
-formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
+formatter = logging.Formatter('%(asctime)s :: %(name)s :: %(levelname)s :: %(message)s')
 #handler writes into, limited to 1Mo in append mode
 if not cfg.getboolean('api', 'dockerized'):
     if not os.path.exists('logs'):
