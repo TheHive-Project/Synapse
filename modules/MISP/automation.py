@@ -18,7 +18,7 @@ current_time = 0
 #When no condition is match, the default action is None
 report_action = 'None'
 
-class MISPAutomation():
+class Automation():
     def __init__(self, webhook, cfg):
         logger.info('Initiating MISPautomation')
         self.TheHiveConnector = TheHiveConnector(cfg)
@@ -30,7 +30,7 @@ class MISPAutomation():
         for key, value in cfg.items('QRadar'):
             self.qr_config[key] = value
         
-    def parse_misp_hooks(self):
+    def parse_hooks(self):
         """
         Check for new MISP Alert containing supported IOC to search automatically
         """

@@ -18,7 +18,7 @@ current_time = 0
 #When no condition is match, the default action is None
 report_action = 'None'
 
-class ELKAutomation:
+class Automation:
     def __init__(self, webhook, cfg):
         logger.info('Initiating ELKAutomation')
         self.TheHiveConnector = TheHiveConnector(cfg)
@@ -34,7 +34,7 @@ class ELKAutomation:
         return str(self.__dict__)
 
     #Not working still as thehive4py is not added correctly yet
-    def parse_elk_hooks(self):
+    def parse_hooks(self):
         logger.info('Start parsing webhooks for ELK automation')
         
         #Set the default action

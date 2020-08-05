@@ -75,7 +75,7 @@ def listenWebhook():
     else:
         return jsonify({'success':False, 'message':'Not JSON'}), 400
 
-#loop through all integration modules and create the corresponding endpoints
+#loop through all configured sections and create a mapping for the endpoints
 modules = {}
 for cfg_section in cfg.sections():
     endpoint = cfg.get(cfg_section, 'synapse_endpoint', fallback=None)
@@ -83,6 +83,7 @@ for cfg_section in cfg.sections():
         logger.info("Enabling integration for {}: {}".format(cfg_section, endpoint))
         modules[endpoint] = cfg_section
 
+#Use a dynamic route to receive integration based request and send them to the appropriate module found through the configuration
 @app.route('/integration/<integration>', methods=['GET', 'POST', 'PUT'])
 def endpoint(integration):
     try:
@@ -93,7 +94,7 @@ def endpoint(integration):
 
 @app.route('/version', methods=['GET'])
 def getSynapseVersion():
-    return jsonify({'version': '1.1.1'}), 200
+    return jsonify({'version': '2.0.0'}), 200
 
 if __name__ == '__main__':
     app.run(debug=cfg.getboolean('api', 'debug_mode'),

@@ -534,7 +534,7 @@ class Automator:
             #Load the Automators class from the module to initialise it
             automators = loaded_modules[module_name].Automators(self.cfg)
         except KeyError as e:
-            self.logger.warning("Automation module not found: {}".format(module_name), exc_info=True)
+            self.logger.warning("Automator module not found: {}".format(module_name), exc_info=True)
             return False
 
         try:
@@ -547,5 +547,5 @@ class Automator:
             else:
                 return False
         except KeyError as e:
-            self.logger.warning("Automation Task not found for {}: {}".format(module_name, function_name), exc_info=True)
+            self.logger.warning("Automator task not found for {}: {}".format(module_name, function_name), exc_info=True)
             return False

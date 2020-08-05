@@ -18,7 +18,7 @@ current_time = 0
 #When no condition is match, the default action is None
 report_action = 'None'
 
-class QRadarAutomation():
+class Automation():
     
     def __init__(self, webhook, cfg):
         logger.info('Initiating QRadarAutomation')
@@ -33,7 +33,7 @@ class QRadarAutomation():
         #Load the config file for use case automation
         
     
-    def parse_qradar_hooks(self):
+    def parse_hooks(self):
 
         #Enrich the case information with missing information from the alert 
         if self.webhook.isQRadarAlertImported() and not 'lse' in self.webhook.data['object']['tags']:

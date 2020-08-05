@@ -7,9 +7,9 @@ from core.automator import Automator
 from core.webhookidentifier import Webhook
 
 #Import automation modules
-from modules.ELK.automation import ELKAutomation
-from modules.MISP.automation import MISPAutomation
-from modules.QRadar.automation import QRadarAutomation
+
+from core.loader import moduleLoader
+loaded_modules = moduleLoader("automation")
 
 def manageWebhook(webhookData, cfg, use_cases):
     """
@@ -27,28 +27,24 @@ def manageWebhook(webhookData, cfg, use_cases):
     
     webhook = Webhook(webhookData, cfg)    
     
-    if cfg.getboolean('api', 'debug_mode'):
-        logger.info('Enabling Debug logging')
-    
-    if cfg.getboolean('QRadar', 'enabled'):
-        logger.info('Enabling QRadar Automation')
-        qr_automation = QRadarAutomation(webhook, cfg)
-        report_action = qr_automation.parse_qradar_hooks()
+    #loop through all configured sections and create a mapping for the endpoints
+    modules = {}
+    for cfg_section in cfg.sections():
+        automation_enabled = cfg.get(cfg_section, 'automation_enabled', fallback=False)
+        if automation_enabled:
+            logger.info("Enabling automation for {}: {}".format(cfg_section, endpoint))
+            modules[endpoint] = cfg_section
 
-    if cfg.getboolean('ELK', 'enabled'):
-        logger.info('Enabling ELK Automation')
-        elk_automation = ELKAutomation(webhook, cfg)
-        report_action = elk_automation.parse_elk_hooks()
-            
-    if cfg.getboolean('MISP', 'enabled'):
-        logger.info('Enabling MISP Automation')
-        misp_automation = MISPAutomation(webhook, cfg)
-        report_action = misp_automation.parse_misp_hooks()
-        
-    if cfg.getboolean('UCAutomation', 'enabled'):
-        logger.info('Enabling Use Case Automation')
-        uc_automation = Automator(webhook, cfg, use_cases)
-        report_action = uc_automation.check_use_case()
+            try:
+                #Load the Automators class from the module to initialise it
+                automators = loaded_modules[cfg_section].Automation(webhook, cfg)
+            except KeyError as e:
+                logger.warning("Automation module not found: {}".format(cfg_section), exc_info=True)
+                return False
+
+            try:
+                #Run the function for the task and return the results
+                report_action = getattr(parse_hooks, '{}'.format(function_name))
 
     #Check if an action is performed for the webhook
     if report_action:
