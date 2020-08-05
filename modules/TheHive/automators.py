@@ -1,4 +1,5 @@
 
+import logging
 from modules.TheHive.connector import TheHiveConnector
 
 class Automators():
