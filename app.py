@@ -6,12 +6,6 @@ import sys
 import logging, logging.handlers
 from flask import Flask, request, jsonify
 
-from core.functions import getConf, loadUseCases
-from modules.EWS.integration import connectEws
-from modules.QRadar.integration import allOffense2Alert
-from modules.ELK.integration import ml2Alert,logstash2Alert
-from core.managewebhooks import manageWebhook
-
 app_dir = os.path.dirname(os.path.abspath(__file__))
 cfg = getConf()
 
@@ -36,6 +30,12 @@ else:
     out_hdlr = logging.StreamHandler(sys.stdout)
     out_hdlr.setFormatter(formatter)
     logger.addHandler(out_hdlr)
+
+from core.functions import getConf, loadUseCases
+from modules.EWS.integration import connectEws
+from modules.QRadar.integration import allOffense2Alert
+from modules.ELK.integration import ml2Alert,logstash2Alert
+from core.managewebhooks import manageWebhook
 
 #Load use cases
 use_cases = loadUseCases()
