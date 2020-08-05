@@ -27,8 +27,6 @@ if not cfg.getboolean('api', 'dockerized'):
         os.makedirs('logs')
     pathLog = app_dir + '/logs/synapse.log'
     file_handler = logging.handlers.RotatingFileHandler(pathLog, 'a', 1000000, 1)
-    #level debug
-    #file_handler.setLevel(logging.DEBUG)
     #using the format defined earlier
     file_handler.setFormatter(formatter)
     #Adding the file handler
@@ -36,7 +34,7 @@ if not cfg.getboolean('api', 'dockerized'):
 else:
     #Logging to stdout
     out_hdlr = logging.StreamHandler(sys.stdout)
-    out_hdlr.setFormatter(logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s'))
+    out_hdlr.setFormatter(formatter)
     logger.addHandler(out_hdlr)
 
 #Load use cases

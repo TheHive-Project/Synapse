@@ -382,7 +382,7 @@ class Automator:
                         
                         #Run actions through the automator
                         if self.Automate(action_type, action_config):
-                            return
+                            continue
 
                         #Perform actions for the checkSiem action
                         if action_type == "checkSiem":
