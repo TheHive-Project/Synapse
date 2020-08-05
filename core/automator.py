@@ -550,7 +550,7 @@ class Automator:
 
         try:
             #Load the Automators class from the module to initialise it
-            automators = getattr(loaded_modules[module_name], Automators)(self.cfg)
+            automators = loaded_modules[module_name].Automators(self.cfg)
         except KeyError as e:
             self.logger.warning("Automation module not found: {}".format(module_name), exc_info=True)
             return False

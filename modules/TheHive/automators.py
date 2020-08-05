@@ -2,7 +2,7 @@
 from modules.TheHive.connector import TheHiveConnector
 
 class Automators():
-    def __init__(cfg):
+    def __init__(self, cfg):
         self.logger = logging.getLogger(__name__)
         self.logger.info('Initiating The Hive Automation')
 
@@ -17,7 +17,7 @@ class Automators():
         
         return uc_task
 
-    def createBasicTask(action_config):
+    def createBasicTask(self, action_config):
 
         #Perform actions for the CreateBasicTask action
 
