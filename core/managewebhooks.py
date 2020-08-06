@@ -32,8 +32,7 @@ def manageWebhook(webhookData, cfg, use_cases):
     for cfg_section in cfg.sections():
         automation_enabled = cfg.getboolean(cfg_section, 'automation_enabled', fallback=False)
         if automation_enabled:
-            logger.info("Enabling automation for {}: {}".format(cfg_section, cfg_section))
-            modules[endpoint] = cfg_section
+            logger.info("Enabling automation for {}: {}".format(cfg_section)
 
             try:
                 #Load the Automators class from the module to initialise it
