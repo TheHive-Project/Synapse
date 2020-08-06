@@ -44,7 +44,10 @@ def manageWebhook(webhookData, cfg, use_cases):
 
             try:
                 #Run the function for the task and return the results
-                report_action = getattr(parse_hooks, '{}'.format(function_name))
+                report_action = getattr('parse_hooks', '{}'.format(function_name))
+            except KeyError as e:
+                self.logger.warning("Automator task not found for {}: {}".format(module_name, function_name), exc_info=True)
+                return False
 
     #Check if an action is performed for the webhook
     if report_action:
