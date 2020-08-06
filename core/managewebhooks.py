@@ -37,15 +37,10 @@ def manageWebhook(webhookData, cfg, use_cases):
             try:
                 #Load the Automators class from the module to initialise it
                 automations = loaded_modules[cfg_section].Automation(webhook, cfg)
+                #Run the function for the task and return the results
+                report_action = automations.parse_hooks()
             except KeyError as e:
                 logger.warning("Automation module not found: {}".format(cfg_section), exc_info=True)
-                return False
-
-            try:
-                #Run the function for the task and return the results
-                report_action = getattr(automations, 'parse_hooks'.format(function_name))
-            except KeyError as e:
-                self.logger.warning("Automation task not found for {}: {}".format(module_name, function_name), exc_info=True)
                 return False
 
     if cfg.getboolean('UCAutomation', 'enabled'):
