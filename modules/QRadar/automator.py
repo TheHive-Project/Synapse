@@ -44,7 +44,7 @@ class Automators():
 
         self.query_variables = {}
         #Prepare search queries for searches
-        for query_name, query_config in action_config[supported_query_type].items():
+        for query_name, query_config in action_config[self.supported_query_type].items():
             try:
                 self.logger.info('Found the following search queries for %s: %s' % (self.rule_id, query_name))
                 
