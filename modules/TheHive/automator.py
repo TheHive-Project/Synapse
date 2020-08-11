@@ -128,7 +128,7 @@ class Automators():
 
     def createBasicTask(self, action_config, webhook):
         #Only continue if the right webhook is triggered
-        if not self.webhook.isImportedAlert():
+        if not webhook.isImportedAlert():
             return False
 
         #Perform actions for the CreateBasicTask action
@@ -144,16 +144,15 @@ class Automators():
 
         return True
 
-
     def createMailTask(self, action_config, webhook):
         #Only continue if the right webhook is triggered
-        if not self.webhook.isImportedAlert():
+        if not webhook.isImportedAlert():
             return False
         
         self.customer_id = self.MatchValueAgainstTags(self.tags, self.customers)
         self.logger.info('Found customer %s, retrieving recipient' % self.customer_id)
         self.notification_type = "email"
-        self.case_description = self.webhook.data['object']['description']
+        self.case_description = webhook.data['object']['description']
         self.title = action_config['title']
         self.description = self.craftDescription(self.mailsettings, action_config['long_template'], self.tags, self.case_description, self.customer_id, self.notification_type)
 
@@ -168,10 +167,10 @@ class Automators():
 
     def SendNotificationFromAlert(self, action_config, webhook):
         #Only continue if the right webhook is triggered
-        if not self.webhook.isImportedAlert():
+        if not webhook.isImportedAlert():
             return False
 
-        self.case_description = self.webhook.data['object']['description']
+        self.case_description = webhook.data['object']['description']
         self.title = action_config['title']
 
         if self.cfg.getboolean('UCAutomation','enable_customer_list', fallback=False):
