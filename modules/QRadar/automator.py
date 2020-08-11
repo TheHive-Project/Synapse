@@ -24,7 +24,7 @@ class Automators():
         self.logger.debug("Time with offset: %s" % self.start_time_parsed.strftime(format))
         return self.start_time_parsed.strftime(format)
 
-    def checkSiem(self, action_config, webhook:
+    def checkSiem(self, action_config, webhook):
         #Only continue if the right webhook is triggered
         if not webhook.data.isImportedAlert() and webhook.data.isNewAlert() and webhook.data.isQRadarAlertUpdateFollowTrue():
             return False
