@@ -46,6 +46,7 @@ class Automators():
 
 
         self.query_variables = {}
+        self.enriched = False
         #Prepare search queries for searches
         for query_name, query_config in action_config[self.supported_query_type].items():
             try:
@@ -145,7 +146,7 @@ class Automators():
                 pass
         
         #Only enrichment queries need to update the alert out of the loop. The search queries will create a task within the loop
-        if 'enriched' in self and self.enriched:
+        if self.enriched:
             #Update Alert with the new description field
             self.updated_alert = Alert
             self.updated_alert.description = self.alert_description
