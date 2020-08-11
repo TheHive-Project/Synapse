@@ -145,7 +145,7 @@ class Automators():
                 pass
         
         #Only enrichment queries need to update the alert out of the loop. The search queries will create a task within the loop
-        if self.enriched:
+        if 'enriched' in self and self.enriched:
             #Update Alert with the new description field
             self.updated_alert = Alert
             self.updated_alert.description = self.alert_description
