@@ -58,7 +58,10 @@ class Automator:
         self.logger.info('Start parsing use cases for the SIEM based alerts/cases')
         self.ucTaskId = False
         self.report_action = 'None'
-        self.tags = self.webhook.data['object']['tags']
+        try:
+            self.tags = self.webhook.data['object']['tags']
+        except:
+            self.logger.warning("no tags found for webhook {}".format(self.webhook.data['rootId']))
         self.uc_regex = self.use_case_config['configuration']['uc_regex']
         self.use_cases = self.use_case_config['use_cases']
 
