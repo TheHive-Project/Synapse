@@ -13,7 +13,7 @@ class GetOutOfLoop( Exception ):
 class Automators():
     def __init__(self, cfg, use_case_config):
         self.logger = logging.getLogger(__name__)
-        self.logger.info('Initiating The Hive Automation')
+        self.logger.info('Initiating QRadar Automators')
 
         self.cfg = cfg
         self.use_case_config = use_case_config
@@ -49,7 +49,7 @@ class Automators():
         #Prepare search queries for searches
         for query_name, query_config in action_config[self.supported_query_type].items():
             try:
-                self.logger.info('Found the following search queries for %s: %s' % (self.rule_id, query_name))
+                self.logger.info('Found the following search query: %s' % (query_name))
                 
                 #Parse Start Time and optional offset
                 self.start_time = self.TheHiveAutomators.fetchValueFromDescription(webhook.data,self.use_case_config['configuration']['event_start_time'])

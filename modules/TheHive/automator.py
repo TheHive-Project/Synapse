@@ -9,7 +9,7 @@ from thehive4py.models import CaseTask
 class Automators():
     def __init__(self, cfg, use_case_config):
         self.logger = logging.getLogger(__name__)
-        self.logger.info('Initiating The Hive Automation')
+        self.logger.info('Initiating The Hive Automators')
 
         self.cfg = cfg
         self.TheHiveConnector = TheHiveConnector(cfg)
