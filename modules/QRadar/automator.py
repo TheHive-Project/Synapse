@@ -24,7 +24,7 @@ class Automators():
         self.logger.debug("Time with offset: %s" % self.start_time_parsed.strftime(format))
         return self.start_time_parsed.strftime(format)
 
-    def checkSiem(self, action_config, webhook_data)):
+    def checkSiem(self, action_config, webhook_data):
         #Only continue if the right webhook is triggered
         if not self.webhook_data.isImportedAlert() and self.webhook_data.isNewAlert() and self.webhook_data.isQRadarAlertUpdateFollowTrue():
             return False
@@ -138,8 +138,8 @@ class Automators():
                         self.logger.warning("Could not add results from the query to the description")
                         raise GetOutOfLoop
 
-                except GetOutOfLoop:
-                    pass
+            except GetOutOfLoop:
+                pass
         
         #Only enrichment queries need to update the alert out of the loop. The search queries will create a task within the loop
         if self.enriched:

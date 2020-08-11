@@ -166,7 +166,7 @@ class Automators():
             self.logger.info('Sending mail for task with id: %s' % self.ucTaskId)
             self.TheHiveConnector.runResponder('case_task', self.ucTaskId, self.use_case_config['configuration']['mail']['responder_id'])
 
-    def SendNotificationFromAlert(self, action_config, webhook_data)::
+    def SendNotificationFromAlert(self, action_config, webhook_data):
         self.case_description = self.webhook_data['object']['description']
         self.title = action_config['title']
 
