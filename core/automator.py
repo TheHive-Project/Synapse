@@ -120,7 +120,7 @@ class Automator:
 
         try:
             #Run the function for the task and return the results
-            self.results = getattr(automators, '{}'.format(function_name))(task_config, webhook_data)
+            self.results = getattr(automators, '{}'.format(function_name))(task_config, webhook)
             
             #Return the results or True if the task was succesful without returning information
             if self.results:
