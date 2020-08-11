@@ -52,10 +52,10 @@ class Automators():
         #Prepare search queries for searches
         for query_name, query_config in action_config[self.supported_query_type].items():
             try:
-                self.logger.info('Found the following search query: %s' % (query_name))
+                self.logger.info('Found the following query: %s' % (query_name))
                 
                 #Parse Start Time and optional offset
-                self.start_time = self.TheHiveAutomators.fetchValueFromDescription(webhook.data,self.use_case_config['configuration']['event_start_time'])
+                self.start_time = self.TheHiveAutomators.fetchValueFromDescription(webhook,self.use_case_config['configuration']['event_start_time'])
                 if not self.start_time:
                     self.logger.warning("Could not find Start Time value ")
                     raise GetOutOfLoop
@@ -77,7 +77,7 @@ class Automators():
                     #Grab all the variales from the template and try to find them in the description
                     template_vars = meta.find_undeclared_variables(template)
                     for template_var in template_vars:
-                        self.query_variables['input'][input_item] = self.TheHiveAutomators.fetchValueFromDescription(self.webhook,template_var)
+                        self.query_variables['input'][input_item] = self.TheHiveAutomators.fetchValueFromDescription(webhook,template_var)
 
                     self.query_variables[query_name]['query'] = self.template.render(self.query_variables['input'])
                     self.logger.debug("Rendered the following query: %s" % self.query_variables[query_name]['query'])
@@ -134,7 +134,7 @@ class Automators():
 
                     #Add results to description
                     try:
-                        if not self.fetchValueFromDescription(self.webhook,enrichment_query_name) == self.enrichment_query_variables[enrichment_query_name]['result']:
+                        if not self.TheHiveAutomators.fetchValueFromDescription(webhook,enrichment_query_name) == self.enrichment_query_variables[enrichment_query_name]['result']:
                             self.regex_end_of_table = ' \|\\n\\n\\n'
                             self.end_of_table = ' |\n\n\n'
                             self.replacement_description = '|\n | **%s**  | %s %s' % (enrichment_query_name, self.enrichment_query_variables[enrichment_query_name]['result'], self.end_of_table)
