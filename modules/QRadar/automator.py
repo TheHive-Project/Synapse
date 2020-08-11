@@ -29,7 +29,9 @@ class Automators():
 
     def checkSiem(self, action_config, webhook):
         #Only continue if the right webhook is triggered
-        if not webhook.isImportedAlert() or webhook.isNewAlert() or webhook.isQRadarAlertUpdateFollowTrue():
+        if webhook.isImportedAlert() or webhook.isNewAlert() or webhook.isQRadarAlertUpdateFollowTrue():
+            pass
+        else:
             return False
         
         #Define variables and actions based on certain webhook types
