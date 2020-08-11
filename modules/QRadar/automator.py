@@ -7,6 +7,9 @@ from modules.QRadar.connector import QRadarConnector
 from thehive4py.models import CaseTask
 from jinja2 import Template
 
+class GetOutOfLoop( Exception ):
+    pass
+
 class Automators():
     def __init__(self, cfg, use_case_config):
         self.logger = logging.getLogger(__name__)

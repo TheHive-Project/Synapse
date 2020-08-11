@@ -15,9 +15,6 @@ loaded_modules = moduleLoader("automator")
 def utc_to_local(utc_dt):
     return utc_dt.replace(tzinfo=timezone.utc).astimezone(tz=pytz.timezone('CET'))
 
-class GetOutOfLoop( Exception ):
-    pass
-
 class Automator:
     def __init__(self, webhook, cfg, use_cases):
         """
