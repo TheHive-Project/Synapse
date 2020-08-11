@@ -61,6 +61,7 @@ class Automator:
         try:
             self.tags = self.webhook.data['object']['tags']
         except:
+            self.tags = []
             self.logger.warning("no tags found for webhook {}".format(self.webhook.data['rootId']))
         self.uc_regex = self.use_case_config['configuration']['uc_regex']
         self.use_cases = self.use_case_config['use_cases']
