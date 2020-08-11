@@ -84,7 +84,7 @@ class Automator:
                 for action, action_config in self.use_case_actions.items():
                     self.action_config = action_config
                     #Give automator information regarding the webhook as some actions are limited to the state of the alert/case
-                    self.logger.info('Found the following action for %s: %s, with type %s' % (self.rule_id, action))
+                    self.logger.info('Found the following action for %s: %s, with type %s' % (self.rule_id, action, action_config['type']))
                     
                     #Run actions through the automator
                     if self.Automate(action_config, self.webhook.data):
