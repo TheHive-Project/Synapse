@@ -128,7 +128,7 @@ class Automators():
 
     def createBasicTask(self, action_config, webhook):
         #Only continue if the right webhook is triggered
-        if not self.webhook.data.isImportedAlert():
+        if not self.webhook.isImportedAlert():
             return False
 
         #Perform actions for the CreateBasicTask action
@@ -147,7 +147,7 @@ class Automators():
 
     def createMailTask(self, action_config, webhook):
         #Only continue if the right webhook is triggered
-        if not self.webhook.data.isImportedAlert():
+        if not self.webhook.isImportedAlert():
             return False
         
         self.customer_id = self.MatchValueAgainstTags(self.tags, self.customers)
@@ -167,6 +167,10 @@ class Automators():
             self.TheHiveConnector.runResponder('case_task', self.ucTaskId, self.use_case_config['configuration']['mail']['responder_id'])
 
     def SendNotificationFromAlert(self, action_config, webhook):
+        #Only continue if the right webhook is triggered
+        if not self.webhook.isImportedAlert():
+            return False
+
         self.case_description = self.webhook.data['object']['description']
         self.title = action_config['title']
 
