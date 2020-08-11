@@ -24,21 +24,21 @@ class Automators():
         self.logger.debug("Time with offset: %s" % self.start_time_parsed.strftime(format))
         return self.start_time_parsed.strftime(format)
 
-    def checkSiem(self, action_config, webhook_data):
+    def checkSiem(self, action_config, webhook:
         #Only continue if the right webhook is triggered
-        if not webhook_data.isImportedAlert() and webhook_data.isNewAlert() and webhook_data.isQRadarAlertUpdateFollowTrue():
+        if not webhook.data.isImportedAlert() and webhook.data.isNewAlert() and webhook.data.isQRadarAlertUpdateFollowTrue():
             return False
         
         #Define variables and actions based on certain webhook types
         #Alerts
-        if webhook_data.isNewAlert() or webhook_data.isQRadarAlertUpdateFollowTrue():
-            self.alert_id = webhook_data['object']['id']
-            self.alert_description = webhook_data['object']['description']
+        if webhook.data.isNewAlert() or webhook.data.isQRadarAlertUpdateFollowTrue():
+            self.alert_id = webhook.data['object']['id']
+            self.alert_description = webhook.data['object']['description']
             self.supported_query_type = 'enrichment_queries'
 
         #Cases
-        elif webhook_data.isImportedAlert():
-            self.case_id = webhook_data['object']['case']
+        elif webhook.data.isImportedAlert():
+            self.case_id = webhook.data['object']['case']
             self.supported_query_type = 'search_queries'
 
 
@@ -49,7 +49,7 @@ class Automators():
                 self.logger.info('Found the following search queries for %s: %s' % (self.rule_id, query_name))
                 
                 #Parse Start Time and optional offset
-                self.start_time = self.TheHiveAutomators.fetchValueFromDescription(webhook_data,self.use_case_config['configuration']['event_start_time'])
+                self.start_time = self.TheHiveAutomators.fetchValueFromDescription(webhook.data,self.use_case_config['configuration']['event_start_time'])
                 if not self.start_time:
                     self.logger.warning("Could not find Start Time value ")
                     raise GetOutOfLoop

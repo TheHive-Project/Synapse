@@ -87,7 +87,7 @@ class Automator:
                     self.logger.info('Found the following action for %s: %s, with type %s' % (self.rule_id, action, action_config['type']))
                     
                     #Run actions through the automator
-                    if self.Automate(action_config, self.webhook.data):
+                    if self.Automate(action_config, self.webhook):
                         continue
                     else:
                         self.logger.info('Did not find any supported actions')
@@ -97,7 +97,7 @@ class Automator:
 
         return self.report_action
 
-    def Automate(self, task_config, webhook_data):
+    def Automate(self, task_config, webhook):
 
         #Split the task name on the dot to have a module and a function variable in a list
         try:

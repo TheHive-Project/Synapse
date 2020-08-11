@@ -41,7 +41,7 @@ class Automators():
         
         try:
             #The tag should match this regex to find the value
-            value = re.search(self.value_regex, webhook_data['object']['description']).group(1)
+            value = re.search(self.value_regex, webhook.data['object']['description']).group(1)
             return value
         except:
             return False
@@ -126,13 +126,13 @@ class Automators():
             
         return self.results
 
-    def createBasicTask(self, action_config, webhook_data):
+    def createBasicTask(self, action_config, webhook:
         #Only continue if the right webhook is triggered
-        if not self.webhook_data.isImportedAlert():
+        if not self.webhook.data.isImportedAlert():
             return False
 
         #Perform actions for the CreateBasicTask action
-        self.case_id = webhook_data['object']['case']
+        self.case_id = webhook.data['object']['case']
         self.title = action_config['title']
         self.description = action_config['description']
 
@@ -145,15 +145,15 @@ class Automators():
         return True
 
 
-    def createMailTask(self, action_config, webhook_data):
+    def createMailTask(self, action_config, webhook:
         #Only continue if the right webhook is triggered
-        if not self.webhook_data.isImportedAlert():
+        if not self.webhook.data.isImportedAlert():
             return False
         
         self.customer_id = self.MatchValueAgainstTags(self.tags, self.customers)
         self.logger.info('Found customer %s, retrieving recipient' % self.customer_id)
         self.notification_type = "email"
-        self.case_description = self.webhook_data['object']['description']
+        self.case_description = self.webhook.data['object']['description']
         self.title = action_config['title']
         self.description = self.craftDescription(self.mailsettings, action_config['long_template'], self.tags, self.case_description, self.customer_id, self.notification_type)
 
@@ -166,8 +166,8 @@ class Automators():
             self.logger.info('Sending mail for task with id: %s' % self.ucTaskId)
             self.TheHiveConnector.runResponder('case_task', self.ucTaskId, self.use_case_config['configuration']['mail']['responder_id'])
 
-    def SendNotificationFromAlert(self, action_config, webhook_data):
-        self.case_description = self.webhook_data['object']['description']
+    def SendNotificationFromAlert(self, action_config, webhook:
+        self.case_description = self.webhook.data['object']['description']
         self.title = action_config['title']
 
         if self.cfg.getboolean('UCAutomation','enable_customer_list', fallback=False):
