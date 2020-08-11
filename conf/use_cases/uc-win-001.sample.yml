@@ -1,8 +1,7 @@
 uc-win-001:
     automation:
       list_create_processes_for_user:
-        type: checkSiem
-        siem: qradar
+        type: QRadar.checkSiem
         enrichment_queries:
             Username:
               input:
