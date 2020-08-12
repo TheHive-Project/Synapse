@@ -18,7 +18,7 @@ class Automators():
         if self.cfg.getboolean('Cortex', 'enabled'):
             self.CortexConnector = CortexConnector(cfg)
 
-        if self.use_case_config['configuration']['mail']['enabled']:
+        if use_case_config['configuration']['mail']['enabled']:
             self.logger.info('Loading Mail configuration')
             #Check for mail variables
             self.mailsettings = {}
@@ -60,12 +60,13 @@ class Automators():
             return False
 
 
-    def craftDescription(self, settings, body, tags, webhook, notification_type, **kwargs):
+    def craftDescription(self, body, tags, webhook, notification_type, **kwargs):
         self.logger.info('%s.craftDescription starts', __name__)
         self.body = body
         self.description = ""
         self.stopsend = False
         self.customer_id == kwargs.get('customer_id', None)
+        self.mail_settings == kwargs.get('mail_settings', None)
 
         #Retrieve variables from the mail template
         self.logger.info('Templating the following body: %s' % self.body)
@@ -108,17 +109,17 @@ class Automators():
             self.stopsend = True
         
         if notification_type == "email": 
-            if 'header' in settings:
-                self.description += '%s \n\n' % settings['header']
+            if 'header' in self.mail_settings:
+                self.description += '%s \n\n' % self.mail_settings['header']
             
             #Add the body
             self.description += '%s \n' % self.body
 
-            if 'footer' in settings:
-                self.description += '%s \n' % settings['footer']
+            if 'footer' in self.mail_settings:
+                self.description += '%s \n' % self.mail_settings['footer']
 
-            if 'sender_name' in settings:
-                self.description += '%s' % settings['sender_name']
+            if 'sender_name' in self.mail_settings:
+                self.description += '%s' % self.mail_settings['sender_name']
 
         else:
             #Add the body
@@ -201,7 +202,7 @@ class Automators():
 
         if "email" in action_config['platforms']:
             self.notification_type = "email"
-            self.description = self.craftDescription(self.mailsettings, action_config['long_template'], self.tags, webhook, self.notification_type, customer_id=self.customer_id)
+            self.description = self.craftDescription(action_config['long_template'], self.tags, webhook, self.notification_type, customer_id=self.customer_id, mail_settings=self.mailsettings)
             self.logger.info('Found alert to send mail for: %s' % self.title)
 
             self.data = {
@@ -223,7 +224,7 @@ class Automators():
                 template = action_config['long_template']
 
             self.notification_type = "slack"
-            self.description = self.craftDescription(self.mailsettings, template, self.tags, webhook, self.notification_type, customer_id=self.customer_id)
+            self.description = self.craftDescription(template, self.tags, webhook, self.notification_type, customer_id=self.customer_id, mail_settings=self.mailsettings)
             try:
                 self.slack_url = self.customer_cfg.get(self.customer_id, 'slack_url')
             except:
@@ -248,7 +249,7 @@ class Automators():
                 template = action_config['long_template']
 
             self.notification_type = "teams"
-            self.description = self.craftDescription(self.mailsettings, template, self.tags, webhook, self.notification_type, customer_id=self.customer_id)
+            self.description = self.craftDescription(template, self.tags, webhook, self.notification_type, customer_id=self.customer_id, mail_settings=self.mailsettings)
             try:
                 self.teams_url = self.customer_cfg.get(self.customer_id, 'teams_url')
             except:
