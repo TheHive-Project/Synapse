@@ -2,12 +2,12 @@ uc-win-000a:
   internal: true
   automation:
     send_notification_to_customer:
-      type: SendNotificationFromAlert
+      type: TheHive.SendNotificationFromAlert
       platforms:
         - slack
         - teams
       title: RDP Login detected
       short_template: |
-        Machine: {Customer Machine}
-        Klant: {Customer Name}
-        Tijdstip: {Start Time}
+        Machine: {{Customer_Machine}}
+        Klant: {{Customer_Name}}
+        Tijdstip: {{Start_Time}}

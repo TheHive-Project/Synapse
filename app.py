@@ -41,7 +41,7 @@ from modules.ELK.integration import validateRequest as elkval
 from core.managewebhooks import manageWebhook
 
 #Load use cases
-use_cases = loadUseCases()
+use_cases = loadUseCases(cfg.get('UCAutomation', 'use_case_dir', fallback=None))
 use_case_list = []
 for ucs in use_cases['use_cases']:
     use_case_list.append(ucs)

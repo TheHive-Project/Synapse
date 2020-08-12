@@ -43,15 +43,18 @@ def getConf():
     except Exception as e:
         logger.error('%s', __name__, exc_info=True)
 
-def loadUseCases():
+def loadUseCases(path=None):
     uc_config = { 'configuration': {}, 'use_cases': {} }
-
+    
     #Load basic configuration
     use_case_config = app_dir + "/conf/uc_config.yml"
     uc_config['configuration'] = readYamlFile(use_case_config)
-    
+
     #Load Use Case configuration
-    use_case_loc = app_dir + "/conf/use_cases"
+    if path:
+        use_case_loc = path
+    else:
+        use_case_loc = app_dir + "/conf/use_cases"
     
     #Lookup all files in use cases folder
     uc_files = getYamlFiles(use_case_loc)

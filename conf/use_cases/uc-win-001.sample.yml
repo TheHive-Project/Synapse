@@ -6,11 +6,11 @@ uc-win-001:
             Username:
               input:
                 - Offense ID
-              query: select "Local_System_User_Sysmon" as result from events where INOFFENSE('{{v['Offense ID']}}') LIMIT 1 START PARSEDATETIME('{{v['Start Time']}}');
+              query: select "Local_System_User_Sysmon" as result from events where INOFFENSE('{{Offense_ID}}') LIMIT 1 START PARSEDATETIME('{{Start_Time}}');
             Computer:
               input:
                 - Offense ID
-              query: select "Computer" as result from events where INOFFENSE('{{v['Offense ID']}}') LIMIT 1 START PARSEDATETIME('{{v['Start Time']}}');
+              query: select "Computer" as result from events where INOFFENSE('{{Offense_ID}}') LIMIT 1 START PARSEDATETIME('{{Start_Time}}');
         search_queries:
           search_processes_for_computer:
             task_title: Investigate found Command History for computer
@@ -18,7 +18,7 @@ uc-win-001:
             stop_time_offset: -10 
             input:
               - Computer
-            query: SELECT str(DATEFORMAT(endTime,'YYYY-MM-dd HH:mm:ss')) as Time, "Process CommandLine", "Source Process", ParentImage FROM events WHERE "Computer" = '{{v['Computer']}}' AND qid = 2000038 ORDER BY "Time" START '{{v['Start Time']}}' STOP '{{v['Stop Time']}}';
+            query: SELECT str(DATEFORMAT(endTime,'YYYY-MM-dd HH:mm:ss')) as Time, "Process CommandLine", "Source Process", ParentImage FROM events WHERE "Computer" = '{{Computer}}' AND qid = 2000038 ORDER BY "Time" START '{{Start_Time}}' STOP '{{Stop_Time}}';
       create_test_task:
         type: TheHive.createBasicTask
         title: test
