@@ -79,25 +79,28 @@ class Automators():
         self.template_vars = meta.find_undeclared_variables(self.template_parsed)
         self.logger.debug("Found the following variables in template: {}".format(self.template_vars))
 
+        #Define the templating dict
+        self.template_variables = {}
+
         for template_var in self.template_vars:
             self.logger.debug("Looking up variable required for template: {}".format(template_var))
             #Replace the underscore from the variable name to a white space as this is used in the description table
             self.template_var_with_ws = template_var.replace("_", " ")
-            self.template_variables['input'][template_var] = self.fetchValueFromDescription(webhook,self.template_var_with_ws)
+            self.template_variables[template_var] = self.fetchValueFromDescription(webhook,self.template_var_with_ws)
             #Parse the timestamp to a reasonable format
             if template_var == 'Start_Time':
                 try:
                     self.logger.debug("Changing timestamp %s" % self.replacement_var)
-                    timestamp = datetime.strptime(self.template_variables['input'][template_var], self.use_case_config['configuration']['event_start_time_format'])
+                    timestamp = datetime.strptime(self.template_variables[template_var], self.use_case_config['configuration']['event_start_time_format'])
                     #convert to local time
                     local_timestamp = utc_to_local(timestamp)
-                    self.template_variables['input'][template_var] = local_timestamp.strftime("%Y-%m-%d %H:%M:%S")
-                    self.logger.debug("Changed timestamp to %s" % self.template_variables['input'][template_var])
+                    self.template_variables[template_var] = local_timestamp.strftime("%Y-%m-%d %H:%M:%S")
+                    self.logger.debug("Changed timestamp to %s" % self.template_variables[template_var])
                 except Exception as e:
                     self.logger.error("Could not change timestamp: %s" % template_var, exc_info=True)
 
         #Render the template
-        self.body = self.template.render(self.template_variables['input'])
+        self.body = self.template.render(self.template_variables)
 
         #loop through tags to see if there is a recipient present
         if self.customer_id and notification_type == 'email':
