@@ -170,6 +170,7 @@ class Automators():
             return False
         
         self.tags = webhook.data['object']['tags']
+        self.case_id = webhook.data['object']['case']
         if self.cfg.getboolean('UCAutomation','enable_customer_list', fallback=False):
             self.customer_id = self.MatchValueAgainstTags(self.tags, self.customers)
             self.logger.info('Found customer %s, retrieving recipient' % self.customer_id)
@@ -183,8 +184,8 @@ class Automators():
 
         #Create Task
         self.ucTask = self.craftUcTask(self.title, self.description)
-        self.ucTaskId = self.TheHiveConnector.createTask(id, self.ucTask)
-        if action_config['auto_send_mail'] and not self.stopsend:
+        self.ucTaskId = self.TheHiveConnector.createTask(self.caseid, self.ucTask)
+        if 'auto_send_mail' in action_config and action_config['auto_send_mail'] and not self.stopsend:
             self.logger.info('Sending mail for task with id: %s' % self.ucTaskId)
             self.TheHiveConnector.runResponder('case_task', self.ucTaskId, self.use_case_config['configuration']['mail']['responder_id'])
 
