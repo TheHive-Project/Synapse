@@ -163,6 +163,23 @@ class Webhook:
             # then status key is not included in the webhook
             return False
 
+    def isDeleted(self):
+        """
+            Check if the webhook describes a deleted event
+            if it returns false, it doesn't mean that the case is 
+            not deleted. It might already be deleted.
+
+            :return: True if it is a deleting event, False if not
+            :rtype: boolean
+        """
+
+        self.logger.debug('%s.isDeleted starts', __name__)
+
+        if self.data['operation'] == 'Delete':
+            return True
+        else:
+            return False
+
     def isMergedInto(self):
         """
             Check if the webhook describes a case merging
@@ -409,6 +426,47 @@ class Webhook:
                 #not a case or have not been closed when
                 #when the webhook has been issued
                 #(might be open or already closed)
+                return False
+    
+        except Exception as e:
+            self.logger.error('%s.isClosedQRadarCase failed', __name__, exc_info=True)
+            raise
+
+    def isDeletedQRadarCase(self):
+        """
+            Check if the webhook describes deleting a QRadar case,
+            
+            "store" the offenseId in the webhook attribute "offenseId"
+    
+            :return: True if it is deleting a QRadar case, False if not
+            :rtype: boolean
+        """
+    
+        self.logger.debug('%s.isDeletedQRadarCase starts', __name__)
+    
+        try:
+            if self.isCase() and self.isDeleted():
+                #searching in alerts if the case comes from a QRadar alert
+                esCaseId = self.data['objectId']
+                if self.fromQRadar(esCaseId):
+                    return True
+                else:
+                    #at this point, the case was not opened from a QRadar alert
+                    #however, it could be a case created from merged cases
+                    #if one of the merged case is related to QRadar alert
+                    #then we consider the case as being from QRadar
+                    if self.isFromMergedCases():
+                        for esCaseId in self.data['object']['mergeFrom']:
+                            if self.fromQRadar(esCaseId):
+                                return True
+                        #went through all merged case and none where from QRadar
+                        return False
+                    else:
+                    #not a QRadar case
+                        return False
+            else:
+                #not a case or have not been deleted when
+                #when the webhook has been issued
                 return False
     
         except Exception as e:

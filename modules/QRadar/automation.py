@@ -69,7 +69,7 @@ class Automation():
                 logger.info('Alert has no attached case, doing nothing...')
         
         #Close offenses in QRadar
-        if self.webhook.isClosedQRadarCase() or self.webhook.isQRadarAlertMarkedAsRead():
+        if self.webhook.isClosedQRadarCase() or self.webhook.isDeletedQRadarCase() or self.webhook.isQRadarAlertMarkedAsRead():
             if self.webhook.data['operation'] == 'Delete':
                 self.case_id = self.webhook.data['objectId']
             else:

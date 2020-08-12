@@ -56,22 +56,6 @@ class Automators():
                 self.logger.info('Found the following query: %s' % (query_name))
                 self.query_variables[query_name] = {}
                 
-                #Parse Start Time and optional offset
-                self.start_time = self.TheHiveAutomators.fetchValueFromDescription(webhook,self.use_case_config['configuration']['event_start_time'])
-                if not self.start_time:
-                    self.logger.warning("Could not find Start Time value ")
-                    raise GetOutOfLoop
-                self.logger.debug("Found Start Time: %s" % self.start_time)
-                if 'start_time_offset' in query_config:
-                    self.query_variables['input'][self.use_case_config['configuration']['event_start_time']] = self.parseTimeOffset(self.start_time, self.use_case_config['configuration']['event_start_time_format'], query_config['start_time_offset'])
-                else:
-                    self.query_variables['input'][self.use_case_config['configuration']['event_start_time']] = self.start_time
-                    
-                if 'stop_time_offset' in query_config:
-                    self.query_variables['input']['Stop Time'] = self.parseTimeOffset(self.start_time, self.use_case_config['configuration']['event_start_time_format'], query_config['stop_time_offset'])
-                else:
-                    self.query_variables['input']['Stop Time'] = datetime.now().strftime(self.use_case_config['configuration']['event_start_time_format'])
-                
                 #Render query
                 try:
                     #Prepare the template
@@ -85,10 +69,32 @@ class Automators():
                     self.logger.debug("Found the following variables in query: {}".format(self.template_vars))
 
                     for template_var in self.template_vars:
+                        
+                        #Skip dynamically generated Stop_time variable
+                        if template_var == "Stop_Time":
+                            continue
+                        
                         self.logger.debug("Looking up variable required for template: {}".format(template_var))
                         #Replace the underscore from the variable name to a white space as this is used in the description table
                         self.template_var_with_ws = template_var.replace("_", " ")
                         self.query_variables['input'][template_var] = self.TheHiveAutomators.fetchValueFromDescription(webhook,self.template_var_with_ws)
+                        
+                        #Parse times required for the query (with or without offset)
+                        if template_var == "Start_Time":
+                            self.logger.debug("Found Start Time: %s" % self.query_variables['input']['Start_Time'])
+                            if 'start_time_offset' in query_config:
+                                self.query_variables['input']['Start_Time'] = self.parseTimeOffset(self.query_variables['input']['Start_Time'], self.use_case_config['configuration']['event_start_time_format'], query_config['start_time_offset'])
+                            else:
+                                self.query_variables['input']['Start_Time'] = self.query_variables['input']['Start_Time']
+                                
+                            if 'stop_time_offset' in query_config:
+                                self.query_variables['input']['Stop_Time'] = self.parseTimeOffset(self.query_variables['input']['Start_Time'], self.use_case_config['configuration']['event_start_time_format'], query_config['stop_time_offset'])
+                            else:
+                                self.query_variables['input']['Stop_Time'] = datetime.now().strftime(self.use_case_config['configuration']['event_start_time_format'])
+
+                    if not self.query_variables['input']['Start_Time']:
+                        self.logger.warning("Could not find Start Time value ")
+                        raise GetOutOfLoop
 
                     self.query_variables[query_name]['query'] = self.template.render(self.query_variables['input'])
                     self.logger.debug("Rendered the following query: %s" % self.query_variables[query_name]['query'])
