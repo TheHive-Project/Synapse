@@ -112,7 +112,7 @@ class Automators():
                 #Check results
                 self.logger.debug('The search result returned the following information: \n %s' % self.query_variables[query_name]['result'])
                     
-                if self.supported_query_type == "search_query":
+                if self.supported_query_type == "search_queries":
                     #Task name
                     self.uc_task_title = query_config['task_title']
                 
@@ -144,10 +144,10 @@ class Automators():
                         
                     
                     #Add the case task
-                    self.uc_task = self.craftUcTask(self.uc_task_title, self.uc_task_description)
+                    self.uc_task = self.TheHiveAutomators.craftUcTask(self.uc_task_title, self.uc_task_description)
                     self.TheHiveConnector.createTask(self.case_id, self.uc_task)
 
-                if self.supported_query_type == "enrichment_query":
+                if self.supported_query_type == "enrichment_queries":
 
                     #Add results to description
                     try:
