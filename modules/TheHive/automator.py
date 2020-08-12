@@ -83,7 +83,7 @@ class Automators():
             self.logger.debug("Looking up variable required for template: {}".format(template_var))
             #Replace the underscore from the variable name to a white space as this is used in the description table
             self.template_var_with_ws = template_var.replace("_", " ")
-            self.template_variables['input'][template_var] = self.TheHiveAutomators.fetchValueFromDescription(webhook,self.template_var_with_ws)
+            self.template_variables['input'][template_var] = self.fetchValueFromDescription(webhook,self.template_var_with_ws)
             #Parse the timestamp to a reasonable format
             if template_var == 'Start_Time':
                 try:
