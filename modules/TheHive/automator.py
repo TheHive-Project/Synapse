@@ -50,11 +50,12 @@ class Automators():
             return False
 
 
-    def craftDescription(self, settings, body, tags, webhook, customer_id, notification_type):
+    def craftDescription(self, settings, body, tags, webhook, notification_type, **kwargs):
         self.logger.info('%s.craftDescription starts', __name__)
         self.body = body
         self.description = ""
         self.stopsend = False
+        self.customer_id == kwargs.get('customer_id', None)
 
         #Retrieve variables from the mail template
         self.logger.info('Templating the following body: %s' % self.body)
@@ -88,10 +89,10 @@ class Automators():
         self.body = self.template.render(self.template_variables['input'])
 
         #loop through tags to see if there is a recipient present
-        if customer_id and notification_type == 'email':
-            self.logger.info('Found customer %s, retrieving recipient' % customer_id)
-            self.description = 'mailto:%s\n' % self.customer_cfg.get(customer_id, 'recipient')
-        if not customer_id and notification_type == 'email':
+        if self.customer_id and notification_type == 'email':
+            self.logger.info('Found customer %s, retrieving recipient' % self.customer_id)
+            self.description = 'mailto:%s\n' % self.customer_cfg.get(self.customer_id, 'recipient')
+        if not self.customer_id and notification_type == 'email':
             self.logger.warning('Could not find customer in tags, using default template')
             self.description = 'mailto:{recipient}\n'
             self.stopsend = True
@@ -154,11 +155,13 @@ class Automators():
         else:
             return False
         
-        self.customer_id = self.MatchValueAgainstTags(self.tags, self.customers)
-        self.logger.info('Found customer %s, retrieving recipient' % self.customer_id)
+        self.tags = webhook.data['object']['tags']
+        if self.cfg.getboolean('UCAutomation','enable_customer_list', fallback=False):
+            self.customer_id = self.MatchValueAgainstTags(self.tags, self.customers)
+            self.logger.info('Found customer %s, retrieving recipient' % self.customer_id)
         self.notification_type = "email"
         self.title = action_config['title']
-        self.description = self.craftDescription(self.mailsettings, action_config['long_template'], self.tags, webhook, self.customer_id, self.notification_type)
+        self.description = self.craftDescription(self.mailsettings, action_config['long_template'], self.tags, webhook, self.notification_type, customer_id=self.customer_id)
 
         self.logger.info('Found mail task to create: %s' % self.title)
 
@@ -176,6 +179,7 @@ class Automators():
         else:
             return False
 
+        self.tags = webhook.data['object']['tags']
         self.title = action_config['title']
 
         if self.cfg.getboolean('UCAutomation','enable_customer_list', fallback=False):
@@ -183,7 +187,7 @@ class Automators():
 
         if "email" in action_config['platforms']:
             self.notification_type = "email"
-            self.description = self.craftDescription(self.mailsettings, action_config['long_template'], self.tags, webhook, self.customer_id, self.notification_type)
+            self.description = self.craftDescription(self.mailsettings, action_config['long_template'], self.tags, webhook, self.notification_type, customer_id=self.customer_id)
             self.logger.info('Found alert to send mail for: %s' % self.title)
 
             self.data = {
@@ -205,7 +209,7 @@ class Automators():
                 template = action_config['long_template']
 
             self.notification_type = "slack"
-            self.description = self.craftDescription(self.mailsettings, template, self.tags, webhook, self.customer_id, self.notification_type)
+            self.description = self.craftDescription(self.mailsettings, template, self.tags, webhook, self.notification_type, customer_id=self.customer_id)
             try:
                 self.slack_url = self.customer_cfg.get(self.customer_id, 'slack_url')
             except:
@@ -230,7 +234,7 @@ class Automators():
                 template = action_config['long_template']
 
             self.notification_type = "teams"
-            self.description = self.craftDescription(self.mailsettings, template, self.tags, webhook, self.customer_id, self.notification_type)
+            self.description = self.craftDescription(self.mailsettings, template, self.tags, webhook, self.notification_type, customer_id=self.customer_id)
             try:
                 self.teams_url = self.customer_cfg.get(self.customer_id, 'teams_url')
             except:
