@@ -5,7 +5,7 @@ from modules.TheHive.connector import TheHiveConnector
 from modules.TheHive.automator import Automators as TheHiveAutomators
 from modules.QRadar.connector import QRadarConnector
 from thehive4py.models import CaseTask
-from jinja2 import Template
+from jinja2 import Template, Environment, meta
 
 class GetOutOfLoop( Exception ):
     pass
@@ -74,10 +74,15 @@ class Automators():
                 
                 #Render query
                 try:
+                    #Prepare the template
                     self.template = Template(query_config['query'])
 
+                    #Find variables in the template
+                    self.template_env = Environment()
+                    self.template_parsed = env.parse(query_config['query'])
                     #Grab all the variales from the template and try to find them in the description
-                    template_vars = meta.find_undeclared_variables(template)
+                    template_vars = meta.find_undeclared_variables(self.template_parsed)
+                    
                     for template_var in template_vars:
                         self.logger.debug("Looking up variable required for template: {}".format(template_var))
                         self.query_variables['input'][template_var] = self.TheHiveAutomators.fetchValueFromDescription(webhook,template_var)
