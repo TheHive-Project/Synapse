@@ -82,15 +82,18 @@ class Automators():
                     self.template_parsed = self.template_env.parse(query_config['query'])
                     #Grab all the variales from the template and try to find them in the description
                     self.template_vars = meta.find_undeclared_variables(self.template_parsed)
-                    
+                    self.logger.debug("Found the following variables in query: {}".format(self.template_vars))
+
                     for template_var in self.template_vars:
                         self.logger.debug("Looking up variable required for template: {}".format(template_var))
-                        self.query_variables['input'][template_var] = self.TheHiveAutomators.fetchValueFromDescription(webhook,template_var)
+                        #Replace the underscore from the variable name to a white space as this is used in the description table
+                        self.template_var_with_ws = template_var.replace("_", " ")
+                        self.query_variables['input'][template_var] = self.TheHiveAutomators.fetchValueFromDescription(webhook,self.template_var_with_ws)
 
                     self.query_variables[query_name]['query'] = self.template.render(self.query_variables['input'])
                     self.logger.debug("Rendered the following query: %s" % self.query_variables[query_name]['query'])
                 except Exception as e:
-                    self.logger.warning("Could not render query due to missing variables")
+                    self.logger.warning("Could not render query due to missing variables", exc_info=True)
                     raise GetOutOfLoop
                 
                 #Perform search queries
