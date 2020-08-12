@@ -45,14 +45,6 @@ class Automator:
                 self.logger.debug('Loaded configuration for %s' % self.customers)
             except Exception as e:
                 self.logger.error('%s', __name__, exc_info=True)
-
-        if self.use_case_config['configuration']['mail']['enabled']:
-            self.logger.info('Loading Mail configuration')
-            #Check for mail variables
-            self.mailsettings = {}
-            self.mailsettings['header'] = self.use_case_config['configuration']['mail']['header']
-            self.mailsettings['footer'] = self.use_case_config['configuration']['mail']['footer']
-            self.mailsettings['sender_name'] = self.use_case_config['configuration']['mail']['sender_name']
     
     def check_use_case(self):
         self.logger.info('Start parsing use cases for the SIEM based alerts/cases')

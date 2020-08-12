@@ -18,6 +18,16 @@ class Automators():
         if self.cfg.getboolean('Cortex', 'enabled'):
             self.CortexConnector = CortexConnector(cfg)
 
+        if self.use_case_config['configuration']['mail']['enabled']:
+            self.logger.info('Loading Mail configuration')
+            #Check for mail variables
+            self.mailsettings = {}
+            self.mailsettings['header'] = self.use_case_config['configuration']['mail']['header']
+            self.mailsettings['footer'] = self.use_case_config['configuration']['mail']['footer']
+            self.mailsettings['sender_name'] = self.use_case_config['configuration']['mail']['sender_name']
+        else:
+            self.mailsettings = None
+
     '''
     Can be used to check if there is a match between tags and the provided list.
     Useful for checking if there is a customer tag (having a list of customers) present where only one can match.
@@ -159,9 +169,11 @@ class Automators():
         if self.cfg.getboolean('UCAutomation','enable_customer_list', fallback=False):
             self.customer_id = self.MatchValueAgainstTags(self.tags, self.customers)
             self.logger.info('Found customer %s, retrieving recipient' % self.customer_id)
+        else:
+            self.customer_id = None
         self.notification_type = "email"
         self.title = action_config['title']
-        self.description = self.craftDescription(self.mailsettings, action_config['long_template'], self.tags, webhook, self.notification_type, customer_id=self.customer_id)
+        self.description = self.craftDescription(action_config['long_template'], self.tags, webhook, self.notification_type, customer_id=self.customer_id, mail_settings=self.mailsettings)
 
         self.logger.info('Found mail task to create: %s' % self.title)
 
@@ -184,6 +196,8 @@ class Automators():
 
         if self.cfg.getboolean('UCAutomation','enable_customer_list', fallback=False):
             self.customer_id = self.checkCustomerId()
+        else:
+            self.customer_id = None
 
         if "email" in action_config['platforms']:
             self.notification_type = "email"
