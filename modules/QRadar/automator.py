@@ -106,7 +106,7 @@ class Automators():
                 try:
                     self.query_variables[query_name]['result'] = self.QRadarConnector.aqlSearch(self.query_variables[query_name]['query'])
                 except Exception as e:
-                    self.logger.warning("Could not perform query")
+                    self.logger.warning("Could not perform query", exc_info=True)
                     raise GetOutOfLoop
             
                 #Check results
