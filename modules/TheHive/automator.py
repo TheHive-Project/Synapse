@@ -43,6 +43,7 @@ class Automators():
         try:
             #The tag should match this regex to find the value
             value = re.search(self.value_regex, webhook.data['object']['description']).group(1)
+            self.logger.debug("Found value for template variable {}: {}".format(variable, value))
             return value
         except:
             return False
