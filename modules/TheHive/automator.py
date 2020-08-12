@@ -1,6 +1,7 @@
 import logging
 import requests
 import json
+import re
 
 from modules.TheHive.connector import TheHiveConnector
 from modules.Cortex.connector import CortexConnector

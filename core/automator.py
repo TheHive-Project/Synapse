@@ -1,7 +1,7 @@
 import logging
 import re
 import os
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 import pytz
 from configparser import ConfigParser
 from thehive4py.models import CaseTask, Alert

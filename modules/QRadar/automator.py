@@ -1,6 +1,6 @@
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from modules.TheHive.connector import TheHiveConnector
 from modules.TheHive.automator import Automators as TheHiveAutomators
 from modules.QRadar.connector import QRadarConnector
@@ -48,11 +48,13 @@ class Automators():
 
 
         self.query_variables = {}
+        self.query_variables['input'] = {}
         self.enriched = False
         #Prepare search queries for searches
         for query_name, query_config in action_config[self.supported_query_type].items():
             try:
                 self.logger.info('Found the following query: %s' % (query_name))
+                self.query_variables[query_name] = {}
                 
                 #Parse Start Time and optional offset
                 self.start_time = self.TheHiveAutomators.fetchValueFromDescription(webhook,self.use_case_config['configuration']['event_start_time'])
@@ -77,7 +79,7 @@ class Automators():
                     #Grab all the variales from the template and try to find them in the description
                     template_vars = meta.find_undeclared_variables(template)
                     for template_var in template_vars:
-                        self.query_variables['input'][input_item] = self.TheHiveAutomators.fetchValueFromDescription(webhook,template_var)
+                        self.query_variables['input'][template_var] = self.TheHiveAutomators.fetchValueFromDescription(webhook,template_var)
 
                     self.query_variables[query_name]['query'] = self.template.render(self.query_variables['input'])
                     self.logger.debug("Rendered the following query: %s" % self.query_variables[query_name]['query'])
