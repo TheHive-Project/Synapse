@@ -71,7 +71,7 @@ class Automation():
         #Close offenses in QRadar
         if self.webhook.isClosedQRadarCase() or self.webhook.isQRadarAlertMarkedAsRead():
             if self.webhook.data['operation'] == 'Delete':
-                self.case_id = self.webhook.data['objectId]
+                self.case_id = self.webhook.data['objectId']
             else:
                 self.case_id = self.webhook.data['object']['id']
             logger.info('Case {} has been marked as resolved'.format(self.case_id))
