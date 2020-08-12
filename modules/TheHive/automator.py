@@ -65,8 +65,8 @@ class Automators():
         self.body = body
         self.description = ""
         self.stopsend = False
-        self.customer_id == kwargs.get('customer_id', None)
-        self.mail_settings == kwargs.get('mail_settings', None)
+        self.customer_id = kwargs.get('customer_id', None)
+        self.mail_settings = kwargs.get('mail_settings', None)
 
         #Retrieve variables from the mail template
         self.logger.info('Templating the following body: %s' % self.body)
