@@ -35,9 +35,6 @@ else:
     out_hdlr.setFormatter(formatter)
     logger.addHandler(out_hdlr)
 
-from modules.EWS.integration import validateRequest as ewsval
-from modules.QRadar.integration import validateRequest as qrval
-from modules.ELK.integration import validateRequest as elkval
 from core.managewebhooks import manageWebhook
 
 #Load use cases
