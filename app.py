@@ -8,7 +8,7 @@ import logging, logging.handlers
 from flask import Flask, request, jsonify
 
 #Load custom modules
-from core.functions import getConf, loadUseCases
+from core.functions import getConf, loadAutomationConfiguration
 
 app_dir = os.path.dirname(os.path.abspath(__file__))
 cfg = getConf()
@@ -37,13 +37,12 @@ else:
 
 from core.managewebhooks import manageWebhook
 
-#Load use cases
-use_cases = loadUseCases(cfg.get('UCAutomation', 'use_case_dir', fallback=None))
-use_case_list = []
-for ucs in use_cases['use_cases']:
-    use_case_list.append(ucs)
-#use_case_list = ",".join(use_case_list)
-logger.info("Loaded the following use cases: {}".format(use_case_list))
+#Load automation config
+automation_config = loadAutomationConfiguration(cfg.get('Automation', 'automation_config_dir', fallback=None))
+tag_list = []
+for a_id in automation_config['automation_ids']:
+    automation_list.append(a_id)
+logger.info("Loaded the following automation identifiers: {}".format(automation_list))
 
 from core.loader import moduleLoader
 loaded_modules = moduleLoader("integration")
@@ -60,7 +59,7 @@ def listenWebhook():
          try:
             webhook = request.get_json()
             logger.debug("Webhook: %s" % webhook)
-            workflowReport = manageWebhook(webhook, cfg, use_cases)
+            workflowReport = manageWebhook(webhook, cfg, automation_config)
             if workflowReport['success']:
                 return jsonify(workflowReport), 200
             else:

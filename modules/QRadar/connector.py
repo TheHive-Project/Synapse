@@ -34,6 +34,27 @@ class QRadarConnector:
             self.redis_sip = redis.StrictRedis(host="localhost", port=6379, db=0)
             self.redis_dip = redis.StrictRedis(host="localhost", port=6379, db=1)
 
+    def formatDate(self, qradarTimeStamp):
+    #Define timezones
+    current_timezone = tz.gettz('UTC')
+    
+    #Retrieve timezone from config or use local time (None)
+    configured_timezone = cfg.get('QRadar', 'timezone', fallback=None)
+    new_timezone = tz.gettz(configured_timezone)
+
+    #Parse timestamp received from QRadar
+    qradarTimeStamp = qradarTimeStamp / 1000.0
+    formatted_time = datetime.datetime.fromtimestamp(qradarTimeStamp)
+    utc_formatted_time = formatted_time.replace(tzinfo=current_timezone)
+
+    #Convert to configured timezone
+    ntz_formatted_time = formatted_time.astimezone(new_timezone)
+
+    #Create a string from time object
+    string_formatted_time = ntz_formatted_time.strftime('%Y-%m-%d %H:%M:%S')
+
+    return string_formatted_time
+
     def getClients(self):
 
         """
@@ -358,8 +379,9 @@ class QRadarConnector:
             start_time = (offense['start_time'] - 1 * 60 * 1000)
             last_updated_time = (offense['start_time'] + 5 * 60 * 1000)
 
-            start_timeStr = self.convertMilliEpoch2str(start_time)
-            last_updated_timeStr = self.convertMilliEpoch2str(
+            ####### NEED TO ADD TIMEZONE INFO HERE #########
+            start_timeStr = self.formatDate(start_time)
+            last_updated_timeStr = self.formatDate(
                 last_updated_time
             )
 
@@ -445,9 +467,6 @@ class QRadarConnector:
         except Exception as e:
             self.logger.error('%s.aqlSearch failed', __name__, exc_info=True)
             raise
-
-    def convertMilliEpoch2str(self, milliEpoch):
-        return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(milliEpoch/1000))
 
     def offenseIsOpen(self, offenseId):
         """

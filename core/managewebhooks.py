@@ -11,7 +11,7 @@ from core.webhookidentifier import Webhook
 from core.loader import moduleLoader
 loaded_modules = moduleLoader("automation")
 
-def manageWebhook(webhookData, cfg, use_cases):
+def manageWebhook(webhookData, cfg, automation_config):
     """
         Filter webhooks received from TheHive and initiate actions like:
             - closing offense in QRadar
@@ -44,10 +44,10 @@ def manageWebhook(webhookData, cfg, use_cases):
             #Run the function for the task and return the results
             report_action = automations.parse_hooks()
 
-    if cfg.getboolean('UCAutomation', 'enabled'):
+    if cfg.getboolean('Automation', 'enabled'):
          logger.info('Enabling Use Case Automation')
-         uc_automation = Automator(webhook, cfg, use_cases)
-         report_action = uc_automation.check_use_case()
+         uc_automation = Automator(webhook, cfg, automation_config)
+         report_action = uc_automation.check_automation()
 
     #Check if an action is performed for the webhook
     if report_action:

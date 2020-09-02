@@ -8,7 +8,6 @@ import json
 import datetime
 import re
 import itertools
-from core.functions import getConf, loadUseCases
 from dateutil import tz
 from modules.QRadar.connector import QRadarConnector
 from modules.TheHive.connector import TheHiveConnector
@@ -18,37 +17,18 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = current_dir + '/../..'
 sys.path.insert(0, current_dir)
 cfg = getConf()
-use_cases = loadUseCases()
 
 #Get logger
 logger = logging.getLogger(__name__)
 
-def formatDate(qradarTimeStamp):
-    #Define timezones
-    current_timezone = tz.gettz('UTC')
-    configured_timezone = cfg.get('QRadar', 'timezone', fallback='Europe/Amsterdam')
-    new_timezone = tz.gettz(configured_timezone)
-
-    #Parse timestamp received from QRadar
-    qradarTimeStamp = qradarTimeStamp / 1000.0
-    formatted_time = datetime.datetime.fromtimestamp(qradarTimeStamp)
-    utc_formatted_time = formatted_time.replace(tzinfo=current_timezone)
-
-    #Convert to configured timezone
-    ntz_formatted_time = formatted_time.astimezone(new_timezone)
-
-    #Create a string from time object
-    string_formatted_time = ntz_formatted_time.strftime('%Y-%m-%d %H:%M:%S')
-
-    return string_formatted_time
-
-def extractUseCaseIDs(offense, field_name, extraction_regex):
-    logger.debug('%s.extractUseCaseIDs starts', __name__)
-    #print(extraction_regex)
-    regex = re.compile(extraction_regex)
-    #print(str(offense[field_name]))
-    logger.debug("offense: %s" % offense[field_name])
-    uc_matches = regex.findall(str(offense[field_name]))
+def extractAutomationIDs(offense, field_names, extraction_regexes):
+    logger.debug('%s.extractAutomationIDs starts', __name__)
+    uc_matches = []
+    for field_name in field_names:
+        for extraction_regex in extraction_regexes:
+            regex = re.compile(extraction_regex)
+            logger.debug("offense: %s" % offense[field_name])
+            uc_matches.append(regex.findall(str(offense[field_name])))
     if len(uc_matches) > 0:
         logger.debug("uc_matches: %s" % uc_matches)
         return uc_matches
@@ -193,18 +173,33 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
     # Setup Tags
     tags = ['QRadar', 'Offense', 'Synapse']
     
-    #Check if the use case id needs te extracted
-    if cfg.getboolean('QRadar', 'extract_use_case'):
+    #Check if the automation ids need to be extracted
+    if cfg.getboolean('QRadar', 'extract_automation_identifiers'):
         
-        #Run the extraction function and add it to the tags list
-        use_case_ids = extractUseCaseIDs(offense, use_cases['configuration']['uc_field'], use_cases['configuration']['uc_regex'])
-        offense['use_case_names'] = extractUseCaseIDs(offense, use_cases['configuration']['uc_field'], use_cases['configuration']['uc_kb_name_regex'])
+        #Run the extraction function and add it to the offense data
+        #Extract automation ids
+        automation_ids = extractAutomationIDs(offense, cfg.get('QRadar', 'automation_fields']), cfg.get('QRadar', 'automation_regexes']))
+        #Extract any possible name for a document on a knowledge base
+        offense['use_case_names'] = extractAutomationIDs(offense, cfg.get('QRadar', 'automation_fields'], cfg.get('QRadar', 'uc_kb_name_regexes']))
+
         
-        if use_case_ids:
-            tags.extend(use_case_ids)
+        if automation_ids:
+            tags.extend(automation_ids)
         else:
             logger.info('No match found for offense %s', offense['id'])
     
+    #Check if the mitre ids need to be extracted
+    if cfg.getboolean('QRadar', 'extract_mitre_ids'):
+        #Extract mitre tactics
+        offense['mitre_tactics'] = extractAutomationIDs(offense, "rules", ['[tT][aA]\d{4}']))
+        if 'mitre_tactics' in offense:
+            tags.extend(offense['mitre_tactics'])
+
+        #Extract mitre techniques
+        offense['mitre_techniques'] = extractAutomationIDs(offense, "rules", ['[tT]\d{4}']))
+        if 'mitre_techniques' in offense:
+            tags.extend(offense['mitre_techniques'])
+
     if "categories" in offense:
         for cat in offense['categories']:
             tags.append(cat)
@@ -363,6 +358,12 @@ def craftAlertDescription(offense):
     
     #Start empty
     description = ""
+
+    #Add url to Offense
+    QRadarIp = cfg.get('QRadar', 'server')
+    url = ('[%s](https://%s/console/qradar/jsp/QRadar.jsp?appName=Sem&pageId=OffenseSummary&summaryId=%s)' % (str(offense['id']), QRadarIp, str(offense['id'])))
+
+    description += '#### Offense: \n - ' + url + '\n\n'
     
     #Format associated rules
     rule_names_formatted = "#### Rules triggered: \n"
@@ -374,30 +375,42 @@ def craftAlertDescription(offense):
             else:
                 continue
 
-    #Format associated documentation
-    uc_links_formatted = "#### Use Case documentation: \n"
-    if 'use_case_names' in offense and offense['use_case_names']:
-        for uc in offense['use_case_names']:
-            uc_links_formatted += "- [%s](%s/%s) \n" % (uc, use_cases['configuration']['kb_url'], uc)
-
-    #Add url to Offense
-    QRadarIp = cfg.get('QRadar', 'server')
-    url = ('[%s](https://%s/console/qradar/jsp/QRadar.jsp?appName=Sem&pageId=OffenseSummary&summaryId=%s)' % (str(offense['id']), QRadarIp, str(offense['id'])))
-
-    description += '#### Offense: \n - ' + url + '\n\n'
-    
     #Add rules overview to description
     description += rule_names_formatted + '\n\n'
     
-    #Add associated documentation
-    description += uc_links_formatted + '\n\n'
+    #Format associated documentation
+    uc_links_formatted = "#### Use Case documentation: \n"
+    if 'use_case_names' in offense and offense['use_case_names']:
+        for uc in offense['automation_names']:
+            uc_links_formatted += "- [%s](%s/%s) \n" % (uc, cfg.get('QRadar', 'kb_url'), uc)
+
+        #Add associated documentation
+        description += uc_links_formatted + '\n\n'
+    
+    #Add mitre Tactic information
+    mitre_ta_links_formatted = "#### MITRE Tactics: \n"
+    if 'mitre_tactics' in offense and offense['mitre_tactics']:
+        for tactic in offense['mitre_tactics']:
+            mitre_ta_links_formatted += "- [%s](%s/%s) \n" % (tactic, 'https://attack.mitre.org/tactics/', tactic)
+        
+        #Add associated documentation
+        description += mitre_ta_links_formatted + '\n\n'
+
+    #Add mitre Technique information
+    mitre_t_links_formatted = "#### MITRE Techniques: \n"
+    if 'mitre_techniques' in offense and offense['mitre_techniques']:
+        for technique in offense['mitre_techniques']:
+            mitre_t_links_formatted += "- [%s](%s/%s) \n" % (technique, cfg.get('QRadar', 'https://attack.mitre.org/techniques/', technique)
+
+        #Add associated documentation
+        description += mitre_t_links_formatted + '\n\n'
 
     #Add offense details table
     description += (
         '#### Summary\n\n' +
         '|                         |               |\n' +
         '| ----------------------- | ------------- |\n' +
-        '| **Start Time**          | ' + str(formatDate(offense['start_time'])) + ' |\n' +
+        '| **Start Time**          | ' + str(QRadarConnector.formatDate(offense['start_time'])) + ' |\n' +
         '| **Offense ID**          | ' + str(offense['id']) + ' |\n' +
         '| **Description**         | ' + str(offense['description'].replace('\n', '')) + ' |\n' +
         '| **Offense Type**        | ' + str(offense['offense_type_str']) + ' |\n' +

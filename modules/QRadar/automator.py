@@ -1,5 +1,6 @@
 
 import logging
+from core.automator import Main
 from datetime import datetime, timedelta
 from modules.TheHive.connector import TheHiveConnector
 from modules.TheHive.automator import Automators as TheHiveAutomators
@@ -10,7 +11,7 @@ from jinja2 import Template, Environment, meta
 class GetOutOfLoop( Exception ):
     pass
 
-class Automators():
+class Automators(Main):
     def __init__(self, cfg, use_case_config):
         self.logger = logging.getLogger(__name__)
         self.logger.info('Initiating QRadar Automators')
@@ -83,14 +84,14 @@ class Automators():
                         if template_var == "Start_Time":
                             self.logger.debug("Found Start Time: %s" % self.query_variables['input']['Start_Time'])
                             if 'start_time_offset' in query_config:
-                                self.query_variables['input']['Start_Time'] = self.parseTimeOffset(self.query_variables['input']['Start_Time'], self.use_case_config['configuration']['event_start_time_format'], query_config['start_time_offset'])
+                                self.query_variables['input']['Start_Time'] = self.parseTimeOffset(self.query_variables['input']['Start_Time'], self.cfg.get('Automation', 'event_start_time_format'], query_config['start_time_offset'))
                             else:
                                 self.query_variables['input']['Start_Time'] = self.query_variables['input']['Start_Time']
                                 
                             if 'stop_time_offset' in query_config:
-                                self.query_variables['input']['Stop_Time'] = self.parseTimeOffset(self.query_variables['input']['Start_Time'], self.use_case_config['configuration']['event_start_time_format'], query_config['stop_time_offset'])
+                                self.query_variables['input']['Stop_Time'] = self.parseTimeOffset(self.query_variables['input']['Start_Time'], self.cfg.get('Automation', 'event_start_time_format'], query_config['stop_time_offset'))
                             else:
-                                self.query_variables['input']['Stop_Time'] = datetime.now().strftime(self.use_case_config['configuration']['event_start_time_format'])
+                                self.query_variables['input']['Stop_Time'] = datetime.now().strftime(self.cfg.get('Automation', 'event_start_time_format'))
 
                     if not self.query_variables['input']['Start_Time']:
                         self.logger.warning("Could not find Start Time value ")

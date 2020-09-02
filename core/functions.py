@@ -35,34 +35,31 @@ def readYamlFile(file_name):
 def getConf():
     logger.debug('%s.getConf starts', __name__)
 
-    cfg = ConfigParser()
+    #cfg = ConfigParser()
     confPath = app_dir + '/conf/synapse.conf'
     try:
-        cfg.read(confPath)
+        cfg = readYamlFile(confPath)
         return cfg
     except Exception as e:
         logger.error('%s', __name__, exc_info=True)
 
-def loadUseCases(path=None):
-    uc_config = { 'configuration': {}, 'use_cases': {} }
+def loadAutomationConfiguration(path=None):
+    autom_config = { 'automation_ids': {} }
     
-    #Load basic configuration
-    use_case_config = app_dir + "/conf/uc_config.yml"
-    uc_config['configuration'] = readYamlFile(use_case_config)
-
-    #Load Use Case configuration
+    #Load automation configuration
     if path:
-        use_case_loc = path
+        automation_config_loc = path
     else:
-        use_case_loc = app_dir + "/conf/use_cases"
+        automation_config_loc = app_dir + "/conf/automation"
     
     #Lookup all files in use cases folder
-    uc_files = getYamlFiles(use_case_loc)
+    autom_files = getYamlFiles(automation_config_loc)
 
     #Read use case files one by one and add them to the configuration variable
-    for uc_file in uc_files:
-        logger.info('uc_file: {}'.format(uc_file))
-        uc_yml_file = readYamlFile(uc_file)
-        uc_config['use_cases'] = {**uc_config['use_cases'], **uc_yml_file}
+    for autom_file in autom_files:
+        logger.info('autom_file: {}'.format(autom_file))
+        autom_yml_file = readYamlFile(autom_file)
+        #Add new values to the dict as a dict
+        autom_config['automation_ids'] = {**uc_config['automation_ids'], **autom_yml_file}
     
     return uc_config

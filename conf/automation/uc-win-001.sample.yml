@@ -1,0 +1,20 @@
+uc-win-001:
+  automation:
+    list_create_processes_for_user:
+      task: QRadar.checkSiem
+      enrichment_queries:
+          Username:
+            query: select "Local_System_User_Sysmon" as result from events where INOFFENSE('{{Offense_ID}}') LIMIT 1 START PARSEDATETIME('{{Start_Time}}');
+          Computer:
+            query: select "Computer" as result from events where INOFFENSE('{{Offense_ID}}') LIMIT 1 START PARSEDATETIME('{{Start_Time}}');
+      search_queries:
+        search_processes_for_computer:
+          task_title: Investigate found Command History for computer
+          start_time_offset: 5
+          stop_time_offset: -10
+          query: SELECT str(DATEFORMAT(endTime,'YYYY-MM-dd HH:mm:ss')) as Time, "Process CommandLine", "Source Process", ParentImage FROM events WHERE "Computer" = '{{Computer}}' AND qid = 2000038 ORDER BY "Time" START '{{Start_Time}}' STOP '{{Stop_Time}}';
+    create_test_task:
+      task: TheHive.createBasicTask
+      title: test
+      description: This is a test
+  auto_create_case: false
