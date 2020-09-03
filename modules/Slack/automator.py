@@ -3,6 +3,8 @@ import json
 import requests
 import re
 
+from core.automator import Main
+
 class Automators(Main):
     def __init__(self, cfg, use_case_config):
         self.logger = logging.getLogger(__name__)

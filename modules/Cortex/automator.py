@@ -1,6 +1,7 @@
 import logging
 import re
 
+from core.automator import Main
 from modules.Cortex.connector import CortexConnector
 
 class Automators(Main):

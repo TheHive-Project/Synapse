@@ -38,7 +38,7 @@ def getConf():
     #cfg = ConfigParser()
     confPath = app_dir + '/conf/synapse.conf'
     try:
-        cfg = YamlCP
+        cfg = YamlCP()
         cfg.config = readYamlFile(confPath)
         return cfg
     except Exception as e:
@@ -71,7 +71,7 @@ class YamlCP:
     def get(cls, section, key, **kwargs):
         fallback = kwargs.get('fallback')
 
-        section =  config.get(section)
+        section =  cls.config.get(section)
         if section:
             value = section.get(key)
             if value:
@@ -80,7 +80,8 @@ class YamlCP:
                 return None
         else:
             return None
-
+    
+    @classmethod
     def getboolean(cls, section, key, **kwargs):
         fallback = kwargs.get('fallback')
         return cls.get(section, key, fallback=fallback)
