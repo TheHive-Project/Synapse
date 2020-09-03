@@ -9,6 +9,7 @@ import datetime
 import re
 import itertools
 from dateutil import tz
+from core.functions import getConf
 from modules.QRadar.connector import QRadarConnector
 from modules.TheHive.connector import TheHiveConnector
 from time import sleep
@@ -178,9 +179,9 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
         
         #Run the extraction function and add it to the offense data
         #Extract automation ids
-        automation_ids = extractAutomationIDs(offense, cfg.get('QRadar', 'automation_fields'), cfg.get('QRadar', 'automation_regexes')
+        automation_ids = extractAutomationIDs(offense, cfg.get('QRadar', 'automation_fields'), cfg.get('QRadar', 'automation_regexes'))
         #Extract any possible name for a document on a knowledge base
-        offense['use_case_names'] = extractAutomationIDs(offense, cfg.get('QRadar', 'automation_fields'), cfg.get('QRadar', 'uc_kb_name_regexes')
+        offense['use_case_names'] = extractAutomationIDs(offense, cfg.get('QRadar', 'automation_fields'), cfg.get('QRadar', 'uc_kb_name_regexes'))
 
         
         if automation_ids:
@@ -191,12 +192,12 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
     #Check if the mitre ids need to be extracted
     if cfg.getboolean('QRadar', 'extract_mitre_ids'):
         #Extract mitre tactics
-        offense['mitre_tactics'] = extractAutomationIDs(offense, "rules", ['[tT][aA]\d{4}']))
+        offense['mitre_tactics'] = extractAutomationIDs(offense, "rules", ['[tT][aA]\d{4}'])
         if 'mitre_tactics' in offense:
             tags.extend(offense['mitre_tactics'])
 
         #Extract mitre techniques
-        offense['mitre_techniques'] = extractAutomationIDs(offense, "rules", ['[tT]\d{4}']))
+        offense['mitre_techniques'] = extractAutomationIDs(offense, "rules", ['[tT]\d{4}'])
         if 'mitre_techniques' in offense:
             tags.extend(offense['mitre_techniques'])
 
@@ -400,7 +401,7 @@ def craftAlertDescription(offense):
     mitre_t_links_formatted = "#### MITRE Techniques: \n"
     if 'mitre_techniques' in offense and offense['mitre_techniques']:
         for technique in offense['mitre_techniques']:
-            mitre_t_links_formatted += "- [%s](%s/%s) \n" % (technique, cfg.get('QRadar', 'https://attack.mitre.org/techniques/', technique)
+            mitre_t_links_formatted += "- [%s](%s/%s) \n" % (technique, 'https://attack.mitre.org/techniques/', technique)
 
         #Add associated documentation
         description += mitre_t_links_formatted + '\n\n'

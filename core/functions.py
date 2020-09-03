@@ -85,3 +85,7 @@ class YamlCP:
     def getboolean(cls, section, key, **kwargs):
         fallback = kwargs.get('fallback')
         return cls.get(section, key, fallback=fallback)
+
+    @classmethod
+    def sections(cls):
+        return cls.config.keys()

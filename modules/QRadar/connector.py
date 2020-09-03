@@ -271,7 +271,7 @@ class QRadarConnector:
         proc = Process(target=self.getAddressesFromIDs, args=("source_addresses", "source_ip", offense["source_address_ids"], queue,))
         proc.start()
         try:
-            res = queue.get(timeout=int(self.cfg.get('QRadar', 'api_timeout'))
+            res = queue.get(timeout=int(self.cfg.get('QRadar', 'api_timeout')))
             proc.join()
             return res
         except:
