@@ -178,9 +178,9 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
         
         #Run the extraction function and add it to the offense data
         #Extract automation ids
-        automation_ids = extractAutomationIDs(offense, cfg.get('QRadar', 'automation_fields']), cfg.get('QRadar', 'automation_regexes']))
+        automation_ids = extractAutomationIDs(offense, cfg.get('QRadar', 'automation_fields'), cfg.get('QRadar', 'automation_regexes')
         #Extract any possible name for a document on a knowledge base
-        offense['use_case_names'] = extractAutomationIDs(offense, cfg.get('QRadar', 'automation_fields'], cfg.get('QRadar', 'uc_kb_name_regexes']))
+        offense['use_case_names'] = extractAutomationIDs(offense, cfg.get('QRadar', 'automation_fields'], cfg.get('QRadar', 'uc_kb_name_regexes')
 
         
         if automation_ids:
