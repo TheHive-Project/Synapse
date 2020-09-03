@@ -70,7 +70,7 @@ class YamlCP():
         self.config = config
 
     @classmethod
-    def get(section, key, **kwargs):
+    def get(self, section, key, **kwargs):
         self.fallback = kwargs.get('fallback')
 
         self.section =  self.config.get(section)
