@@ -60,7 +60,7 @@ class Automation():
                 customFields.build()
                 
                 #Add custom fields to the case object
-                case.customFields = customFields
+                case.customFields = customFields.build()
 
                 #Update the case
                 self.TheHiveConnector.updateCase(case,fields)
