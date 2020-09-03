@@ -80,5 +80,5 @@ class YamlCP():
                 return self.value
             else:
                 return None
-        else
+        else:
             return None
