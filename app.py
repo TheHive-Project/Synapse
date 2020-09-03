@@ -74,6 +74,9 @@ def listenWebhook():
 #loop through all configured sections and create a mapping for the endpoints
 modules = {}
 for cfg_section in cfg.sections():
+    #Skip non module config
+    if cfg_section in ['api', 'Automation']:
+        continue
     endpoint = cfg.get(cfg_section, 'synapse_endpoint', fallback=None)
     if endpoint:
         logger.info("Enabling integration for {}: {}".format(cfg_section, endpoint))

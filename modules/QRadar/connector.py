@@ -46,7 +46,7 @@ class QRadarConnector:
 
         #Parse timestamp received from QRadar
         qradarTimeStamp = qradarTimeStamp / 1000.0
-        formatted_time = datetime.datetime.fromtimestamp(qradarTimeStamp)
+        formatted_time = datetime.fromtimestamp(qradarTimeStamp)
         utc_formatted_time = formatted_time.replace(tzinfo=current_timezone)
 
         #Convert to configured timezone

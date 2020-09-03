@@ -18,6 +18,9 @@ root_dir = current_dir + '/../..'
 sys.path.insert(0, current_dir)
 cfg = getConf()
 
+qradarConnector = QRadarConnector(cfg)
+theHiveConnector = TheHiveConnector(cfg)
+
 #Get logger
 logger = logging.getLogger(__name__)
 
@@ -28,22 +31,22 @@ def extractAutomationIDs(offense, field_names, extraction_regexes):
         for extraction_regex in extraction_regexes:
             regex = re.compile(extraction_regex)
             logger.debug("offense: %s" % offense[field_name])
-            uc_matches.append(regex.findall(str(offense[field_name])))
+            uc_matches.extend(regex.findall(str(offense[field_name])))
     if len(uc_matches) > 0:
         logger.debug("uc_matches: %s" % uc_matches)
         return uc_matches
     else:
-        return False
+        return []
         
-def getEnrichedOffenses(qradarConnector, timerange):
-    enrichedOffenses = []
+# def getEnrichedOffenses(qradarConnector, timerange):
+#     enrichedOffenses = []
 
-    for offense in qradarConnector.getOffenses(timerange):
-        enrichedOffenses.append(enrichOffense(qradarConnector, offense))
+#     for offense in qradarConnector.getOffenses(timerange):
+#         enrichedOffenses.append(enrichOffense(qradarConnector, offense))
 
-    return enrichedOffenses
+#     return enrichedOffenses
 
-def enrichOffense(qradarConnector, offense):
+def enrichOffense(offense):
 
     enriched = copy.deepcopy(offense)
 
@@ -139,6 +142,7 @@ def check_if_updated(current_a, new_a):
         if item is "tags":
             #loop through the newly created alert array to extract the tags and add them so a separate variable
             diff = list(itertools.filterfalse(lambda x: x in new_a['tags'], current_a['tags']))
+            diff = diff + list(itertools.filterfalse(lambda x: x in current_a['tags'], new_a['tags']))
             if len(diff) > 0:
                 logger.debug("Found diff in tags: %s" % diff)
                 return True
@@ -149,7 +153,7 @@ def check_if_updated(current_a, new_a):
             #return True
     return False
 
-def qradarOffenseToHiveAlert(theHiveConnector, offense):
+def qradarOffenseToHiveAlert(offense):
 
     def getHiveSeverity(offense):
         #severity in TheHive is either low, medium or high
@@ -181,9 +185,7 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
         automation_ids = extractAutomationIDs(offense, cfg.get('QRadar', 'automation_fields'), cfg.get('QRadar', 'automation_regexes'))
         #Extract any possible name for a document on a knowledge base
         offense['use_case_names'] = extractAutomationIDs(offense, cfg.get('QRadar', 'automation_fields'), cfg.get('QRadar', 'uc_kb_name_regexes'))
-
-        
-        if automation_ids:
+        if len(automation_ids) > 0:
             tags.extend(automation_ids)
         else:
             logger.info('No match found for offense %s', offense['id'])
@@ -191,12 +193,12 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
     #Check if the mitre ids need to be extracted
     if cfg.getboolean('QRadar', 'extract_mitre_ids'):
         #Extract mitre tactics
-        offense['mitre_tactics'] = extractAutomationIDs(offense, "rules", ['[tT][aA]\d{4}'])
+        offense['mitre_tactics'] = extractAutomationIDs(offense, ["rules"], ['[tT][aA]\d{4}'])
         if 'mitre_tactics' in offense:
             tags.extend(offense['mitre_tactics'])
 
         #Extract mitre techniques
-        offense['mitre_techniques'] = extractAutomationIDs(offense, "rules", ['[tT]\d{4}'])
+        offense['mitre_techniques'] = extractAutomationIDs(offense, ["rules"], ['[tT]\d{4}'])
         if 'mitre_techniques' in offense:
             tags.extend(offense['mitre_techniques'])
 
@@ -225,8 +227,8 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
         if artifact['dataType'] in defaultObservableDatatype:
             hiveArtifact = theHiveConnector.craftAlertArtifact(dataType=artifact['dataType'], data=artifact['data'], message=artifact['message'], tags=artifact['tags'])
         else:
-            tags = list()
-            tags.append('type:' + artifact['dataType'])
+            artifact_tags = list()
+            artifact_tags.append('type:' + artifact['dataType'])
             hiveArtifact = theHiveConnector.craftAlertArtifact(dataType='other', data=artifact['data'], message=artifact['message'], tags=tags)
         artifacts.append(hiveArtifact)
 
@@ -279,9 +281,6 @@ def allOffense2Alert(timerange):
     report['offenses'] = list()
 
     try:
-        qradarConnector = QRadarConnector(cfg)
-        theHiveConnector = TheHiveConnector(cfg)
-
         offensesList = qradarConnector.getOffenses(timerange)
         
         #each offenses in the list is represented as a dict
@@ -291,9 +290,9 @@ def allOffense2Alert(timerange):
             offense_report = dict()
             logger.debug("offense: %s" % offense)
             logger.info("Enriching offense...")
-            enrichedOffense = enrichOffense(qradarConnector, offense)
+            enrichedOffense = enrichOffense(offense)
             logger.debug("Enriched offense: %s" % enrichedOffense)
-            theHiveAlert = qradarOffenseToHiveAlert(theHiveConnector, enrichedOffense)
+            theHiveAlert = qradarOffenseToHiveAlert(enrichedOffense)
             
             #searching if the offense has already been converted to alert
             q = dict()
@@ -381,7 +380,7 @@ def craftAlertDescription(offense):
     #Format associated documentation
     uc_links_formatted = "#### Use Case documentation: \n"
     if 'use_case_names' in offense and offense['use_case_names']:
-        for uc in offense['automation_names']:
+        for uc in offense['use_case_names']:
             uc_links_formatted += "- [%s](%s/%s) \n" % (uc, cfg.get('QRadar', 'kb_url'), uc)
 
         #Add associated documentation
@@ -410,7 +409,7 @@ def craftAlertDescription(offense):
         '#### Summary\n\n' +
         '|                         |               |\n' +
         '| ----------------------- | ------------- |\n' +
-        '| **Start Time**          | ' + str(QRadarConnector.formatDate(offense['start_time'])) + ' |\n' +
+        '| **Start Time**          | ' + str(qradarConnector.formatDate(offense['start_time'])) + ' |\n' +
         '| **Offense ID**          | ' + str(offense['id']) + ' |\n' +
         '| **Description**         | ' + str(offense['description'].replace('\n', '')) + ' |\n' +
         '| **Offense Type**        | ' + str(offense['offense_type_str']) + ' |\n' +

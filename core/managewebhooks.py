@@ -30,6 +30,9 @@ def manageWebhook(webhookData, cfg, automation_config):
     #loop through all configured sections and create a mapping for the endpoints
     modules = {}
     for cfg_section in cfg.sections():
+        #Skip non module config
+        if cfg_section in ['api', 'Automation']:
+            continue
         automation_enabled = cfg.getboolean(cfg_section, 'automation_enabled', fallback=False)
         if automation_enabled:
             logger.info("Enabling automation for {}".format(cfg_section))
@@ -39,7 +42,8 @@ def manageWebhook(webhookData, cfg, automation_config):
                 automations = loaded_modules[cfg_section].Automation(webhook, cfg)
             except KeyError as e:
                 logger.warning("Automation module not found: {}".format(cfg_section), exc_info=True)
-                return False
+                report['success'] = False
+                return report
 
             #Run the function for the task and return the results
             report_action = automations.parse_hooks()
