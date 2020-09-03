@@ -38,7 +38,8 @@ def getConf():
     #cfg = ConfigParser()
     confPath = app_dir + '/conf/synapse.conf'
     try:
-        cfg = YamlCP(readYamlFile(confPath))
+        cfg = YamlCP
+        cfg.config = readYamlFile(confPath)
         return cfg
     except Exception as e:
         logger.error('%s', __name__, exc_info=True)
