@@ -63,7 +63,7 @@ def loadAutomationConfiguration(path=None):
         #Add new values to the dict as a dict
         autom_config['automation_ids'] = {**autom_config['automation_ids'], **autom_yml_file}
     
-    return uc_config
+    return autom_config
 
 
 class YamlCP:

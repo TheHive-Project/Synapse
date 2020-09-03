@@ -15,7 +15,7 @@ cfg = getConf()
 
 #create logger
 logger = logging.getLogger()
-logger.setLevel(logging.getLevelName(cfg.get('api', 'log_level')))
+logger.setLevel(logging.getLevelName(cfg.get('api', 'log_level'))
 #log format as: 2013-03-08 11:37:31,411 : : WARNING :: Testing foo
 formatter = logging.Formatter('%(asctime)s :: %(name)s :: %(levelname)s :: %(message)s')
 #handler writes into, limited to 1Mo in append mode
@@ -39,7 +39,7 @@ from core.managewebhooks import manageWebhook
 
 #Load automation config
 automation_config = loadAutomationConfiguration(cfg.get('Automation', 'automation_config_dir', fallback=None))
-tag_list = []
+automation_list = []
 for a_id in automation_config['automation_ids']:
     automation_list.append(a_id)
 logger.info("Loaded the following automation identifiers: {}".format(automation_list))

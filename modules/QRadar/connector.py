@@ -35,25 +35,25 @@ class QRadarConnector:
             self.redis_dip = redis.StrictRedis(host="localhost", port=6379, db=1)
 
     def formatDate(self, qradarTimeStamp):
-    #Define timezones
-    current_timezone = tz.gettz('UTC')
-    
-    #Retrieve timezone from config or use local time (None)
-    configured_timezone = cfg.get('QRadar', 'timezone', fallback=None)
-    new_timezone = tz.gettz(configured_timezone)
+        #Define timezones
+        current_timezone = tz.gettz('UTC')
+        
+        #Retrieve timezone from config or use local time (None)
+        configured_timezone = cfg.get('QRadar', 'timezone', fallback=None)
+        new_timezone = tz.gettz(configured_timezone)
 
-    #Parse timestamp received from QRadar
-    qradarTimeStamp = qradarTimeStamp / 1000.0
-    formatted_time = datetime.datetime.fromtimestamp(qradarTimeStamp)
-    utc_formatted_time = formatted_time.replace(tzinfo=current_timezone)
+        #Parse timestamp received from QRadar
+        qradarTimeStamp = qradarTimeStamp / 1000.0
+        formatted_time = datetime.datetime.fromtimestamp(qradarTimeStamp)
+        utc_formatted_time = formatted_time.replace(tzinfo=current_timezone)
 
-    #Convert to configured timezone
-    ntz_formatted_time = formatted_time.astimezone(new_timezone)
+        #Convert to configured timezone
+        ntz_formatted_time = formatted_time.astimezone(new_timezone)
 
-    #Create a string from time object
-    string_formatted_time = ntz_formatted_time.strftime('%Y-%m-%d %H:%M:%S')
+        #Create a string from time object
+        string_formatted_time = ntz_formatted_time.strftime('%Y-%m-%d %H:%M:%S')
 
-    return string_formatted_time
+        return string_formatted_time
 
     def getClients(self):
 
@@ -271,7 +271,7 @@ class QRadarConnector:
         proc = Process(target=self.getAddressesFromIDs, args=("source_addresses", "source_ip", offense["source_address_ids"], queue,))
         proc.start()
         try:
-            res = queue.get(timeout=int(self.cfg.get('QRadar', 'api_timeout')))
+            res = queue.get(timeout=int(self.cfg.get('QRadar', 'api_timeout'))
             proc.join()
             return res
         except:
