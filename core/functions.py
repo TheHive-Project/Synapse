@@ -65,20 +65,21 @@ def loadAutomationConfiguration(path=None):
     return uc_config
 
 
-class YamlCP():
-    def __init__(self, config):
-        self.config = config
-
+class YamlCP:
     @classmethod
-    def get(self, section, key, **kwargs):
-        self.fallback = kwargs.get('fallback')
+    def get(cls, section, key, **kwargs):
+        fallback = kwargs.get('fallback')
 
-        self.section =  self.config.get(section)
-        if self.section:
-            self.value = self.section.get(key)
-            if self.value:
-                return self.value
+        section =  config.get(section)
+        if section:
+            value = section.get(key)
+            if value:
+                return value
             else:
                 return None
         else:
             return None
+
+    def getboolean(cls, section, key, **kwargs):
+        fallback = kwargs.get('fallback')
+        return cls.get(section, key, fallback=fallback)
