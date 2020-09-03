@@ -74,8 +74,6 @@ def listenWebhook():
 #loop through all configured sections and create a mapping for the endpoints
 modules = {}
 for cfg_section in cfg.sections():
-    #A module is disabled by default
-    endpoint = False
     #Skip non module config
     if cfg_section in ['api', 'Automation']:
         continue
