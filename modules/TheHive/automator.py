@@ -2,9 +2,8 @@ import logging
 import requests
 import json
 import re
-from jinja2 import Template, Environment, meta
 
-from core.automator import Main
+from core.modules import Main
 from modules.TheHive.connector import TheHiveConnector
 from modules.Cortex.connector import CortexConnector
 from thehive4py.models import CaseTask
@@ -35,20 +34,6 @@ class Automators(Main):
             description=description)
         
         return uc_task
-
-    '''
-    Can be used to extract values from the alert/case description in a webhook
-    '''
-    def fetchValueFromDescription(self, webhook, variable):
-        self.value_regex = '\|\s*\*\*%s\*\*\s*\|\s*(.*?)\s*\|' % variable
-        
-        try:
-            #The tag should match this regex to find the value
-            value = re.search(self.value_regex, webhook.data['object']['description']).group(1)
-            self.logger.debug("Found value for template variable {}: {}".format(variable, value))
-            return value
-        except:
-            return False
 
     def createBasicTask(self, action_config, webhook):
         #Only continue if the right webhook is triggered

@@ -4,7 +4,7 @@
 import logging
 import os
 import yaml
-from configparser import ConfigParser
+#from configparser import ConfigParser
 
 logger = logging.getLogger(__name__)
 currentPath = os.path.dirname(os.path.abspath(__file__))
@@ -38,7 +38,7 @@ def getConf():
     #cfg = ConfigParser()
     confPath = app_dir + '/conf/synapse.conf'
     try:
-        cfg = YamlCP()
+        cfg = YamlCP
         cfg.config = readYamlFile(confPath)
         return cfg
     except Exception as e:
