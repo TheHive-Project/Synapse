@@ -25,9 +25,7 @@ class Automation():
         self.TheHiveConnector = TheHiveConnector(cfg)
         self.QRadarConnector = QRadarConnector(cfg)
         self.webhook = webhook
-        self.qr_config = {}
-        for key, value in cfg.items('QRadar'):
-            self.qr_config[key] = value
+        self.cfg = cfg
         self.report_action = report_action
         
         #Load the config file for use case automation
@@ -52,11 +50,14 @@ class Automation():
                 fields = ['customFields']
                 
                 #Retrieve all required attributes from the alert and add them as custom fields to the case
-                customFields = CustomFieldHelper()\
-                    .add_string(self.qr_config['offense_type_field'], self.webhook.data['object']['type'])\
-                    .add_string(self.qr_config['offense_source_field'], self.webhook.data['object']['source'])\
-                    .add_number(self.qr_config['offense_id_field'], int(self.webhook.data['object']['sourceRef']))\
-                    .build()
+                customFields = CustomFieldHelper()
+                if self.cfg.get('QRadar', 'offense_type_field'):
+                    customFields.add_string(self.cfg.get('QRadar', 'offense_type_field'), self.webhook.data['object']['type'])\
+                if self.cfg.get('QRadar', 'offense_source_field'):
+                    customFields.add_string(self.cfg.get('QRadar', 'offense_source_field'), self.webhook.data['object']['source'])\
+                if self.cfg.get('QRadar', 'offense_id_field'):
+                    customFields.add_number(self.cfg.get('QRadar', 'offense_id_field'), int(self.webhook.data['object']['sourceRef']))\
+                customFields.build()
                 
                 #Add custom fields to the case object
                 case.customFields = customFields
