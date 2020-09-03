@@ -66,7 +66,7 @@ def loadAutomationConfiguration(path=None):
 
 
 class YamlCP():
-    def __init__(self, config)
+    def __init__(self, config):
         self.config = config
 
     @classmethod
