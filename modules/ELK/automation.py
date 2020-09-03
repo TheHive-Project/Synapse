@@ -23,9 +23,6 @@ class Automation:
         logger.info('Initiating ELKAutomation')
         self.TheHiveConnector = TheHiveConnector(cfg)
         self.webhook = webhook
-        self.es_config = {}
-        for key, value in cfg.items('ELK'):
-            self.es_config[key] = value
         self.report_action = report_action
         self.webhook = webhook
   
