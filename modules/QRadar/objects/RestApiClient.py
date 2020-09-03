@@ -24,9 +24,9 @@ class RestApiClient:
 
 
         self.headers = {'Accept': 'application/json'}
-        self.headers['SEC'] = auth_token
-        self.server_ip = server_ip
-        self.headers['Version'] = version
+        self.headers['SEC'] = str(auth_token)
+        self.server_ip = str(server_ip)
+        self.headers['Version'] = str(version)
         self.base_uri = '/api/'
         #Create proxy config when proxy is provided
         self.http_proxy = kwargs.get('http_proxy', None)

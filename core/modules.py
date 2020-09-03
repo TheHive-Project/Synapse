@@ -1,10 +1,14 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from jinja2 import Template, Environment, meta
 
 class Main():
     def __init__(self, cfg, use_case_config):
         self.logger = logging.getLogger(__name__)
+
+    #Small timezone converter. Source: https://stackoverflow.com/questions/4563272/convert-a-python-utc-datetime-to-a-local-datetime-using-only-python-standard-lib
+    def utc_to_local(self, utc_dt):
+        return utc_dt.replace(tzinfo=timezone.utc).astimezone(tz=pytz.timezone('CET'))
 
     '''
     Can be used to extract values from the alert/case description in a webhook
@@ -65,7 +69,7 @@ class Main():
                     self.logger.debug("Changing timestamp %s" % self.replacement_var)
                     timestamp = datetime.strptime(self.template_variables[template_var], self.cfg.get('Automation', 'event_start_time_format'))
                     #convert to local time
-                    local_timestamp = utc_to_local(timestamp)
+                    local_timestamp = self.utc_to_local(timestamp)
                     self.template_variables[template_var] = local_timestamp.strftime("%Y-%m-%d %H:%M:%S")
                     self.logger.debug("Changed timestamp to %s" % self.template_variables[template_var])
                 except Exception as e:

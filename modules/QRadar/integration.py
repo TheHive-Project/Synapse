@@ -8,7 +8,6 @@ import json
 import datetime
 import re
 import itertools
-from dateutil import tz
 from core.functions import getConf
 from modules.QRadar.connector import QRadarConnector
 from modules.TheHive.connector import TheHiveConnector

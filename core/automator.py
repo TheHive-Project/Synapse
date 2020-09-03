@@ -1,7 +1,6 @@
 import logging
 import re
 import os
-from datetime import datetime, timezone
 import pytz
 from configparser import ConfigParser
 from thehive4py.models import CaseTask, Alert
@@ -10,10 +9,6 @@ from modules.TheHive.connector import TheHiveConnector
 
 from core.loader import moduleLoader
 loaded_modules = moduleLoader("automator")
-
-#Small timezone converter. Source: https://stackoverflow.com/questions/4563272/convert-a-python-utc-datetime-to-a-local-datetime-using-only-python-standard-lib
-def utc_to_local(utc_dt):
-    return utc_dt.replace(tzinfo=timezone.utc).astimezone(tz=pytz.timezone('CET'))
 
 class Automator():
     def __init__(self, webhook, cfg, automation_config):

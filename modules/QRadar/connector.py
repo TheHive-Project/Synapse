@@ -3,6 +3,8 @@
 
 import logging
 import time, json
+from datetime import datetime, timezone
+from dateutil import tz
 from collections import OrderedDict
 from .objects.RestApiClient import RestApiClient
 from .objects.arielapiclient import APIClient
@@ -39,7 +41,7 @@ class QRadarConnector:
         current_timezone = tz.gettz('UTC')
         
         #Retrieve timezone from config or use local time (None)
-        configured_timezone = cfg.get('QRadar', 'timezone', fallback=None)
+        configured_timezone = self.cfg.get('QRadar', 'timezone', fallback=None)
         new_timezone = tz.gettz(configured_timezone)
 
         #Parse timestamp received from QRadar
