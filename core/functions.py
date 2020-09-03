@@ -38,7 +38,7 @@ def getConf():
     #cfg = ConfigParser()
     confPath = app_dir + '/conf/synapse.conf'
     try:
-        cfg = readYamlFile(confPath)
+        cfg = YamlCP(readYamlFile(confPath))
         return cfg
     except Exception as e:
         logger.error('%s', __name__, exc_info=True)
@@ -63,3 +63,22 @@ def loadAutomationConfiguration(path=None):
         autom_config['automation_ids'] = {**uc_config['automation_ids'], **autom_yml_file}
     
     return uc_config
+
+
+class YamlCP():
+    def __init__(self, config)
+        self.config = config
+
+    @classmethod
+    def get(section, key, **kwargs):
+        self.fallback = kwargs.get('fallback')
+
+        self.section =  self.config.get(section)
+        if self.section:
+            self.value = self.section.get(key)
+            if self.value:
+                return self.value
+            else:
+                return None
+        else
+            return None
