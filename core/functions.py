@@ -60,7 +60,7 @@ def loadAutomationConfiguration(path=None):
         logger.info('autom_file: {}'.format(autom_file))
         autom_yml_file = readYamlFile(autom_file)
         #Add new values to the dict as a dict
-        autom_config['automation_ids'] = {**uc_config['automation_ids'], **autom_yml_file}
+        autom_config['automation_ids'] = {**autom_config['automation_ids'], **autom_yml_file}
     
     return uc_config
 
