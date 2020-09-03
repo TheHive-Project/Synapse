@@ -52,11 +52,11 @@ class Automation():
                 #Retrieve all required attributes from the alert and add them as custom fields to the case
                 customFields = CustomFieldHelper()
                 if self.cfg.get('QRadar', 'offense_type_field'):
-                    customFields.add_string(self.cfg.get('QRadar', 'offense_type_field'), self.webhook.data['object']['type'])\
+                    customFields.add_string(self.cfg.get('QRadar', 'offense_type_field'), self.webhook.data['object']['type'])
                 if self.cfg.get('QRadar', 'offense_source_field'):
-                    customFields.add_string(self.cfg.get('QRadar', 'offense_source_field'), self.webhook.data['object']['source'])\
+                    customFields.add_string(self.cfg.get('QRadar', 'offense_source_field'), self.webhook.data['object']['source'])
                 if self.cfg.get('QRadar', 'offense_id_field'):
-                    customFields.add_number(self.cfg.get('QRadar', 'offense_id_field'), int(self.webhook.data['object']['sourceRef']))\
+                    customFields.add_number(self.cfg.get('QRadar', 'offense_id_field'), int(self.webhook.data['object']['sourceRef']))
                 customFields.build()
                 
                 #Add custom fields to the case object
