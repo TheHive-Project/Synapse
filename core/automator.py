@@ -50,7 +50,10 @@ class Automator():
         except:
             self.tags = []
             self.logger.warning("no tags found for webhook {}".format(self.webhook.data['rootId']))
-        self.automation_regexes = self.cfg.get('Automation', 'automation_regexes')
+        self.automation_regexes = self.cfg.get('Automation', 'automation_regexes', fallback=None)
+        if not self.automation_regexes:
+            self.logger.error("Could not find any regexes to find tags for automation")
+            return report_action
         self.automation_ids = self.automation_config['automation_ids']
 
         #loop through tags to see if there is a use case present

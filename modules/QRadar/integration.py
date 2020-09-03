@@ -24,17 +24,17 @@ theHiveConnector = TheHiveConnector(cfg)
 #Get logger
 logger = logging.getLogger(__name__)
 
-def extractAutomationIDs(offense, field_names, extraction_regexes):
-    logger.debug('%s.extractAutomationIDs starts', __name__)
-    uc_matches = []
+def tagExtractor(offense, field_names, extraction_regexes):
+    logger.debug('%s.tagExtractor starts', __name__)
+    matches = []
     for field_name in field_names:
         for extraction_regex in extraction_regexes:
             regex = re.compile(extraction_regex)
             logger.debug("offense: %s" % offense[field_name])
-            uc_matches.extend(regex.findall(str(offense[field_name])))
-    if len(uc_matches) > 0:
-        logger.debug("uc_matches: %s" % uc_matches)
-        return uc_matches
+            matches.extend(regex.findall(str(offense[field_name])))
+    if len(matches) > 0:
+        logger.debug("matches: %s" % matches)
+        return matches
     else:
         return []
         
@@ -182,23 +182,23 @@ def qradarOffenseToHiveAlert(offense):
         
         #Run the extraction function and add it to the offense data
         #Extract automation ids
-        automation_ids = extractAutomationIDs(offense, cfg.get('QRadar', 'automation_fields'), cfg.get('QRadar', 'automation_regexes'))
+        tags_extracted = tagExtractor(offense, cfg.get('QRadar', 'automation_fields'), cfg.get('QRadar', 'tag_regexes'))
         #Extract any possible name for a document on a knowledge base
-        offense['use_case_names'] = extractAutomationIDs(offense, cfg.get('QRadar', 'automation_fields'), cfg.get('QRadar', 'uc_kb_name_regexes'))
-        if len(automation_ids) > 0:
-            tags.extend(automation_ids)
+        offense['use_case_names'] = tagExtractor(offense, cfg.get('QRadar', 'automation_fields'), cfg.get('QRadar', 'uc_kb_name_regexes'))
+        if len(tags_extracted) > 0:
+            tags.extend(tags_extracted)
         else:
             logger.info('No match found for offense %s', offense['id'])
     
     #Check if the mitre ids need to be extracted
     if cfg.getboolean('QRadar', 'extract_mitre_ids'):
         #Extract mitre tactics
-        offense['mitre_tactics'] = extractAutomationIDs(offense, ["rules"], ['[tT][aA]\d{4}'])
+        offense['mitre_tactics'] = tagExtractor(offense, ["rules"], ['[tT][aA]\d{4}'])
         if 'mitre_tactics' in offense:
             tags.extend(offense['mitre_tactics'])
 
         #Extract mitre techniques
-        offense['mitre_techniques'] = extractAutomationIDs(offense, ["rules"], ['[tT]\d{4}'])
+        offense['mitre_techniques'] = tagExtractor(offense, ["rules"], ['[tT]\d{4}'])
         if 'mitre_techniques' in offense:
             tags.extend(offense['mitre_techniques'])
 
