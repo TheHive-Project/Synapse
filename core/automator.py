@@ -76,7 +76,7 @@ class Automator():
                     for action, action_config in self.use_case_actions.items():
                         self.action_config = action_config
                         #Give automator information regarding the webhook as some actions are limited to the state of the alert/case
-                        self.logger.info('Found the following action for %s: %s, with type %s' % (self.found_a_id, action, action_config['type']))
+                        self.logger.info('Found the following action for %s: %s, with task %s' % (self.found_a_id, action, action_config['task']))
                         
                         #Add support for multiple tasks, loop them 1 by 1
                         if 'tasks' in self.action_config:
