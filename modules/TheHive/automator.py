@@ -80,7 +80,7 @@ class Automators(Main):
 
         #Create Task
         self.ucTask = self.craftUcTask(self.title, self.description)
-        self.ucTaskId = self.TheHiveConnector.createTask(self.caseid, self.ucTask)
+        self.ucTaskId = self.TheHiveConnector.createTask(self.case_id, self.ucTask)
         if 'auto_send_mail' in action_config and action_config['auto_send_mail'] and not self.stopsend:
             self.logger.info('Sending mail for task with id: %s' % self.ucTaskId)
             self.TheHiveConnector.runResponder('case_task', self.ucTaskId, self.use_case_config['configuration']['mail']['responder_id'])
