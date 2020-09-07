@@ -18,6 +18,9 @@ class Automators(Main):
         if self.cfg.getboolean('Cortex', 'enabled'):
             self.CortexConnector = CortexConnector(cfg)
 
+        #Read mail config
+        self.mailsettings = self.cfg.get('TheHive', 'mail')
+
     '''
     Can be used to check if there is a match between tags and the provided list.
     Useful for checking if there is a customer tag (having a list of customers) present where only one can match.
