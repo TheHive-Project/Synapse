@@ -100,7 +100,7 @@ class Automator():
         
         #Split the task name on the dot to have a module and a function variable in a list
         try:
-            self.task = task_config['type'].split(".")
+            self.task = task_config['task'].split(".")
             #Should probably also do some matching for words to mitigate some security concerns?
             module_name = self.task[0]
             function_name = self.task[1]
