@@ -40,6 +40,9 @@ def getConf():
     try:
         cfg = YamlCP
         cfg.config = readYamlFile(confPath)
+        if not cfg.config:
+            logger.error("Configuration not loaded successfully")
+            raise Exception
         return cfg
     except Exception as e:
         logger.error('%s', __name__, exc_info=True)
