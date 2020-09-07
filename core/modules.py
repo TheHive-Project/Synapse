@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import datetime, timezone
 from jinja2 import Template, Environment, meta
 
@@ -22,7 +23,8 @@ class Main():
             self.logger.debug("Found value for template variable {}: {}".format(variable, value))
             return value
         except:
-            return False
+            self.logger.warning("Could not find value for variable {}".format(variable))
+            return None
     
     def checkCustomerId(self):
         if 'internal' in self.use_cases[self.rule_id] and self.use_cases[self.rule_id]['internal']:
@@ -62,6 +64,7 @@ class Main():
             self.logger.debug("Looking up variable required for template: {}".format(template_var))
             #Replace the underscore from the variable name to a white space as this is used in the rendered_template table
             self.template_var_with_ws = template_var.replace("_", " ")
+            self.logger.debug("Variable name after replacing whitespaces: {}".format(self.template_var_with_ws))
             self.template_variables[template_var] = self.fetchValueFromDescription(webhook,self.template_var_with_ws)
             #Parse the timestamp to a reasonable format
             if template_var == 'Start_Time':
