@@ -381,7 +381,6 @@ class QRadarConnector:
             start_time = (offense['start_time'] - 1 * 60 * 1000)
             last_updated_time = (offense['start_time'] + 5 * 60 * 1000)
 
-            ####### NEED TO ADD TIMEZONE INFO HERE #########
             start_timeStr = self.formatDate(start_time)
             last_updated_timeStr = self.formatDate(
                 last_updated_time
@@ -389,7 +388,7 @@ class QRadarConnector:
 
             query = ("select  DATEFORMAT(starttime,'YYYY-MM-dd HH:mm:ss') as Date, UTF8(payload) from events where INOFFENSE('" + str(offenseId) + "') ORDER BY Date ASC  LIMIT 3 START '" + start_timeStr + "' STOP '" + last_updated_timeStr + "';")
 
-            self.logger.debug(query)
+            self.logger.debug("Running the enrichment query for the first 3 payloads: {}".format(query))
             response = self.aqlSearch(query)
 
             #response looks like
