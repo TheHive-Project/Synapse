@@ -106,7 +106,7 @@ class Automator():
             function_name = self.task[1]
 
         except:
-            self.logger.error("{} does not seem to be a valid automator task name".format(task))
+            self.logger.error("{} does not seem to be a valid automator task name".format(self.task))
             return
         
 
