@@ -4,10 +4,11 @@ This guide will go through installation and basic configuration for Synapse.
 
 + [Introduction](#introduction)
     + [Structure](#structure)
+    + [Enabling Modules](#Enabling-modules)
 + [Developing](#developing)
     + [Configuration](#configuration)
     + [Creating an Integration](#creating-an-integration)
-    + [Connector](#connector)
+    + [Creating Automation Tasks](#creating-automation-tasks)
 
 ## Introduction
 As of Synapse 2.0 a module based approach is used. These modules allow the core structure of Synapse to remain untouched while making new integrations and automation very easy.
@@ -303,3 +304,67 @@ Finally you can work on the response the API request will receive. This can be r
 After this step, the module is more or less finished and can be used. There are options to extend the module to also synchronize changes through Alert updates, but this is optional.
 
 ### Creating Automation Tasks
+Creating automation tasks is a bit easier than creating a full integration. Automation tasks are all about input/output.
+
+When creating an automation task you need to take the format of the automation configuration into account
+
+```
+uc-win-001:
+  automation:
+    list_create_processes_for_user:
+      task: QRadar.checkSiem
+      enrichment_queries:
+          Username:
+            query: select "Local_System_User_Sysmon" as result from events where INOFFENSE('{{Offense_ID}}') LIMIT 1 START PARSEDATETIME('{{Start_Time}}');
+          Computer:
+            query: select "Computer" as result from events where INOFFENSE('{{Offense_ID}}') LIMIT 1 START PARSEDATETIME('{{Start_Time}}');
+      search_queries:
+        search_processes_for_computer:
+          task_title: Investigate found Command History for computer
+          start_time_offset: 5
+          stop_time_offset: -10
+          query: SELECT str(DATEFORMAT(endTime,'YYYY-MM-dd HH:mm:ss')) as Time, "Process CommandLine", "Source Process", ParentImage FROM events WHERE "Computer" = '{{Computer}}' AND qid = 2000038 ORDER BY "Time" START '{{Start_Time}}' STOP '{{Stop_Time}}';
+    create_test_task:
+      task: TheHive.createBasicTask
+      title: test
+      description: This is a test
+  auto_create_case: false
+```
+The core code will scan the webhooks for any available tags and will select the automation configuration based on the identifier that matches (`uc-win-001` in this example). If an identifier matches the entire body under `automation:` will be parsed to find tasks. These tasks can be named freely (For example `list_create_processes_for_user` in the sample above). Just take note that this is a yaml key and therefore has limited character support (no whitespaces and such).
+Every task will contain the `task` key which contains the actual task to call. Based on this task name `QRadar.checkSiem` the appropriate module and function will be chosen.
+The configuration for this task will be provided on the same level and can be anything that you require for completing the task succesfully. For example `TheHive.createBasicTask` requires a title and a description to create a new task in The Hive.
+
+The below snipped shows the function behind the task. Here you can see that the configuration mentioned is put in a dictionary called `action_config`. This dictionary can therefore be used to provide all the required details from the automation configuration to your function.
+Besides this, it is just a regular function that runs python code to make things happens. It returns True when it is succesful and False when it is not. Nothing more nothing less...
+
+```
+def createBasicTask(self, action_config, webhook):
+        #Only continue if the right webhook is triggered
+        if webhook.isImportedAlert():
+            pass
+        else:
+            return False
+
+        #Perform actions for the CreateBasicTask action
+        self.case_id = webhook.data['object']['case']
+        self.title = action_config['title']
+        self.description = action_config['description']
+
+        self.logger.info('Found basic task to create: %s' % self.title)
+
+        #Create Task
+        self.uc_task = self.craftUcTask(self.title, self.description)
+        self.uc_task_id = self.TheHiveConnector.createTask(self.case_id, self.uc_task)
+
+        return True
+```
+
+
+Based on this information you should be able to create new integrations and automation tasks and expand Synapse to provide more greatness backed by the community...
+
+If you have any questions. Feel free to open an issue and I will try to help you as soon as I can.
+
+Kind regards,
+
+
+Jeffrey E
