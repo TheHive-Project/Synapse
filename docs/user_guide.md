@@ -45,16 +45,18 @@ Now edit the configuration file located at ```Synapse/conf/synapse.conf```.
 
 ### [api] section
 
-The ```[api]``` section is related to the flask API settings. You can keep it as it is for ```debug```, ```host```, ```threaded``` value. You may want to change the default port ```5000```.
+The ```[api]``` section is related to the flask API and log settings. You can keep it as it is for ```debug```, ```host```, ```threaded``` value. You may want to change the default port ```5000``` and set ```dockerized``` to true if you are running Synapse in a docker container. This will print the logging to stdout.
 
 #### Example
 
 ```
-[api]
-debug:False
-host:0.0.0.0
-port:5000
-threaded:True
+api:
+  debug_mode: false
+  host: 0.0.0.0
+  port: 5000
+  threaded: true
+  log_level: INFO
+  dockerized: false
 ```
 
 ### [TheHive] section
