@@ -458,6 +458,8 @@ class QRadarConnector:
             body = response.read().decode('utf-8')
             body_json = json.loads(body, object_pairs_hook=OrderedDict)
 
+            #TO DO: Delete the Search request after it is finished receiving the data
+
             return body_json
             #looks like:
             #{'events': [{'field1': 'field1 value',
