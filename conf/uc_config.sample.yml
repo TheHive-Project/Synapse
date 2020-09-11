@@ -1,12 +1,14 @@
-configuration:
-  kb_url: <URL>
-  uc_field: rules
-  uc_regex: UC-\w+-\d+
-  uc_kb_name_regex: UC-\w+-\d+-[\w\-_ ]*
-  event_start_time: Start Time
-  event_start_time_format: "%Y-%m-%d %H:%M:%S"
-  event_id_field: Offense ID
-  mail_responder_id: <id>
-  mail_header: <header>
-  mail_footer: <footer>
-  mail_sender_name: <sender name>
+kb_url: <url>
+uc_field: rules
+uc_regex: uc-\w+-\d{3}\w{0,2}
+uc_kb_name_regex: uc-\w+-\d+-[\w\-_ ]*
+event_start_time: Start Time
+event_start_time_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+internal_contact: <customer_id>
+debug_contact: <customer_id>
+mail:
+  enabled: true
+  responder_id: <responder_id>
+  header: Dear Customer,
+  footer: Kind regards,
+  sender_name: Notifications

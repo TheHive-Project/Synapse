@@ -45,29 +45,48 @@ Now edit the configuration file located at ```Synapse/conf/synapse.conf```.
 
 ### [api] section
 
-The ```[api]``` section is related to the flask API settings. You can keep it as it is for ```debug```, ```host```, ```threaded``` value. You may want to change the default port ```5000```.
+The ```[api]``` section is related to the flask API and log settings. You can keep it as it is for ```debug```, ```host```, ```threaded``` value. You may want to change the default port ```5000``` and set ```dockerized``` to true if you are running Synapse in a docker container. This will print the logging to stdout instead of the log file.
 
 #### Example
 
 ```
-[api]
-debug:False
-host:0.0.0.0
-port:5000
-threaded:True
+api:
+  debug_mode: false
+  host: 0.0.0.0
+  port: 5000
+  threaded: true
+  log_level: INFO
+  dockerized: false
 ```
 
-### [TheHive] section
+### Automation section
+The automation section is related to (surprise, surprise...) the automation related functionality. Here you can enable/disable it entirely, or make sure it is tailored to your needs by adjusting the file path for the configuration files, start time fields used in the description for alerts and cases and more.
 
-In this section, put in TheHive's url and the API Key previously created.
+```
+Automation:
+  enabled: false
+  enable_customer_list: false
+  automation_config_dir: /path/to/automation_config
+  event_start_time: Start Time
+  #event start time related to your environment. Elastic: "%Y-%m-%dT%H:%M:%S.%fZ" QRadar: "%Y-%m-%d %H:%M:%S"
+  event_start_time_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+  internal_contact: <customer_id>
+  debug_contact: <customer_id>
+  automation_regexes: 
+    - 'uc-\w+-\d{3}\w{0,2}'
+```
+
+### Modules section
+
+In this section, put in configuration values required for each module. More information can ben found in the corresponding module guide
 
 #### Example
 
 ```
-[TheHive]
-url:http://127.0.0.1:9000
-user:synapse
-api_key:r4n0O8SvEll/VZdOD8r0hZneOWfOmth6
+TheHive:
+  url: http://127.0.0.1:9000
+  user: synapse
+  api_key: r4n0O8SvEll/VZdOD8r0hZneOWfOmth6
 ```
 
 Basic configuration for Synapse is done.   

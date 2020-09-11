@@ -2,7 +2,7 @@
 asn1crypto==0.24.0
 cached-property==1.5.1
 certifi==2018.8.24
-cffi==1.11.5
+cffi==1.13.2
 chardet==3.0.4
 click==7.0
 cryptography==2.3.1
@@ -16,7 +16,7 @@ isodate==0.6.0
 itsdangerous==0.24
 jinja2==2.10
 lxml==4.2.5
-markupsafe==1.0
+markupsafe==1.1.1
 ntlm-auth==1.2.0
 pycparser==2.19
 pygments==2.2.0

@@ -1,0 +1,13 @@
+uc-win-000a:
+  internal: true
+  automation:
+    send_notification_to_customer:
+      tasks: 
+        - Cortex.SendEmailFromAlert
+        - Slack.SendNotificationFromAlert
+        - Teams.SendNotificationFromAlert
+      title: RDP Login detected
+      short_template: |
+        Machine: {{Customer_Machine}}
+        Klant: {{Customer_Name}}
+        Tijdstip: {{Start_Time}}
