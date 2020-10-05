@@ -77,6 +77,9 @@ Creating an integration consists of understanding a few steps in the road to an 
     - Observables
     - Custom fields
 
+IMPORTANT: The automation tasks look for fields within the description field. Specifically in a table that is present there containing the alert details. Keep this in mind when creating the module so that this table is present for future use in automation. Currently custom fields are not used as they need to be predefined. So to keep things dynamic the table structure is used.
+There is no restriction on the amount of tables. There is a regex matching values based on the markdown table structure. So multiple tables will all be searched for the required value
+
 Things to know before starting:
 - Configuration can be loaded as follows: `cfg.get('<module>', '<configuration item>')`
 - 
