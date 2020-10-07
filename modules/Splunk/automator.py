@@ -22,7 +22,7 @@ class Automators(Main):
         self.TheHiveAutomators = TheHiveAutomators(cfg, use_case_config)
         self.QRadarConnector = QRadarConnector(cfg)
 
-    def parseTimeOffset(self, time, format, offset):
+    def parseTimeOffset(self, time, input_format, offset, output_format):
         self.start_time_parsed = datetime.strptime(time, format)
         self.start_time_parsed = self.start_time_parsed - timedelta(minutes=offset)
         self.logger.debug("Time with offset: %s" % self.start_time_parsed.strftime(format))
@@ -30,14 +30,14 @@ class Automators(Main):
 
     def checkSiem(self, action_config, webhook):
         #Only continue if the right webhook is triggered
-        if webhook.isImportedAlert() or webhook.isNewAlert() or webhook.isQRadarAlertUpdateFollowTrue():
+        if webhook.isImportedAlert() or webhook.isNewAlert():
             pass
         else:
             return False
         
         #Define variables and actions based on certain webhook types
         #Alerts
-        if webhook.isNewAlert() or webhook.isQRadarAlertUpdateFollowTrue():
+        if webhook.isNewAlert():
             self.alert_id = webhook.data['object']['id']
             self.alert_description = webhook.data['object']['description']
             self.supported_query_type = 'enrichment_queries'
@@ -84,12 +84,12 @@ class Automators(Main):
                         if template_var == "Start_Time":
                             self.logger.debug("Found Start Time: %s" % self.query_variables['input']['Start_Time'])
                             if 'start_time_offset' in query_config:
-                                self.query_variables['input']['Start_Time'] = self.parseTimeOffset(self.query_variables['input']['Start_Time'], self.cfg.get('Automation', 'event_start_time_format'), query_config['start_time_offset'], self.cfg.get('QRadar', 'time_format'))
+                                self.query_variables['input']['Start_Time'] = self.parseTimeOffset(self.query_variables['input']['Start_Time'], self.cfg.get('Automation', 'event_start_time_format'), query_config['start_time_offset'], self.cfg.get('Splunk', 'time_format'))
                             else:
                                 self.query_variables['input']['Start_Time'] = self.query_variables['input']['Start_Time']
                                 
                             if 'stop_time_offset' in query_config:
-                                self.query_variables['input']['Stop_Time'] = self.parseTimeOffset(self.query_variables['input']['Start_Time'], self.cfg.get('Automation', 'event_start_time_format'), query_config['stop_time_offset'], self.cfg.get('QRadar', 'time_format'))
+                                self.query_variables['input']['Stop_Time'] = self.parseTimeOffset(self.query_variables['input']['Start_Time'], self.cfg.get('Automation', 'event_start_time_format'), query_config['stop_time_offset'], self.cfg.get('Splunk', 'time_format'))
                             else:
                                 self.query_variables['input']['Stop_Time'] = datetime.now().strftime(self.cfg.get('Automation', 'event_start_time_format'))
 
@@ -105,7 +105,7 @@ class Automators(Main):
                 
                 #Perform search queries
                 try:
-                    self.query_variables[query_name]['result'] = self.QRadarConnector.aqlSearch(self.query_variables[query_name]['query'])
+                    self.query_variables[query_name]['result'] = self.SplunkConnector.query(self.query_variables[query_name]['query'])
                 except Exception as e:
                     self.logger.warning("Could not perform query", exc_info=True)
                     raise GetOutOfLoop
@@ -122,15 +122,15 @@ class Automators(Main):
                     #create a table header
                     self.table_header = "|" 
                     self.rows = "|"
-                    if len(self.query_variables[query_name]['result']['events']) != 0:
-                        for key in self.query_variables[query_name]['result']['events'][0].keys():
+                    if len(self.query_variables[query_name]['result']) != 0:
+                        for key in self.query_variables[query_name]['result'][0].keys():
                             self.table_header = self.table_header + " %s |" % key
                             self.rows = self.rows + "---|"
                         self.table_header = self.table_header + "\n" + self.rows + "\n"
                         self.uc_task_description = self.uc_task_description + self.table_header
                         
                         #Create the data table for the results
-                        for event in self.query_variables[query_name]['result']['events']:
+                        for event in self.query_variables[query_name]['result']:
                             self.table_data_row = "|" 
                             for field_key, field_value in event.items():
                                 # Escape pipe signs
@@ -152,10 +152,10 @@ class Automators(Main):
 
                     #Add results to description
                     try:
-                        if self.TheHiveAutomators.fetchValueFromDescription(webhook,query_name) != self.query_variables[query_name]['result']:
+                        if self.TheHiveAutomators.fetchValueFromDescription(webhook,query_name) != self.query_variables[query_name]['result'][0]['enrichment_result']:
                             self.regex_end_of_table = ' \|\\n\\n\\n'
                             self.end_of_table = ' |\n\n\n'
-                            self.replacement_description = '|\n | **%s**  | %s %s' % (query_name, self.query_variables[query_name]['result'], self.end_of_table)
+                            self.replacement_description = '|\n | **%s**  | %s %s' % (query_name, self.query_variables[query_name]['result'][0]['enrichment_result'], self.end_of_table)
                             self.alert_description=re.sub(self.regex_end_of_table, self.replacement_description, self.alert_description)
                             self.enriched = True
                     except Exception as e:

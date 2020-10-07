@@ -424,7 +424,7 @@ class QRadarConnector:
             :type aql_query: str
 
             :return body_json: the result of the aql query
-            :rtype offenseTypeStr: dict
+            :rtype body_json: dict
         """
         
         #body_json = collections.OrderedDict()
