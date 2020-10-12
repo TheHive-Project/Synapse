@@ -37,7 +37,7 @@ class SplunkConnector:
         os.environ['https_proxy'] = self.cfg.get('Splunk', 'https_proxy')
 
         # Retrieve base values for the connection to the Splunk API
-        self.splunk_base_url = self.cf g.get('Splunk', 'url')
+        self.splunk_base_url = self.cfg.get('Splunk', 'url')
         self.username = self.cfg.get('Splunk', 'username')
         self.password = self.cfg.get('Splunk', 'password')
         self.max_result_count = self.cfg.get('Splunk', 'max_result_count')
@@ -56,7 +56,7 @@ class SplunkConnector:
         self.logger.debug('%s.getClient starts', __name__)
 
         try:
-            logging.debug("logging into {0} as user {1}".format(self.uri, self.username))
+            logging.debug("logging into {0} as user {1}".format(self.splunk_base_url, self.username))
             
             client = splunklib.SplunkQueryObject(uri=self.splunk_base_url, username=self.username, password=self.password, max_result_count=self.max_result_count)
 
@@ -92,7 +92,7 @@ class SplunkConnector:
             if (start_time is not None or end_time is not None) and relative_time:
                     search_result = self.client.query_relative(query, relative_duration_before=start_time, relative_duration_after=end_time)
             #Use exact timestamps ('%m/%d/%Y:%H:%M:%S ex. 03/21/2020:12:00:12)
-            else if start_time is not None and end_time is not None and not relative_time:
+            elif start_time is not None and end_time is not None and not relative_time:
                 search_result = self.client.query_with_time(query, start_time, end_time)
             #When there are no timestamps       
             else:

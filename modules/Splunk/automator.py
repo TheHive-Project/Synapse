@@ -4,7 +4,7 @@ from core.modules import Main
 from datetime import datetime, timedelta
 from modules.TheHive.connector import TheHiveConnector
 from modules.TheHive.automator import Automators as TheHiveAutomators
-from modules.QRadar.connector import QRadarConnector
+from modules.Splunk.connector import SplunkConnector
 from thehive4py.models import CaseTask
 from jinja2 import Template, Environment, meta
 
@@ -14,13 +14,13 @@ class GetOutOfLoop( Exception ):
 class Automators(Main):
     def __init__(self, cfg, use_case_config):
         self.logger = logging.getLogger(__name__)
-        self.logger.info('Initiating QRadar Automators')
+        self.logger.info('Initiating Splunk Automators')
 
         self.cfg = cfg
         self.use_case_config = use_case_config
         self.TheHiveConnector = TheHiveConnector(cfg)
         self.TheHiveAutomators = TheHiveAutomators(cfg, use_case_config)
-        self.QRadarConnector = QRadarConnector(cfg)
+        self.SplunkConnector = SplunkConnector(cfg)
 
     def parseTimeOffset(self, time, input_format, offset, output_format):
         self.start_time_parsed = datetime.strptime(time, format)
@@ -92,10 +92,6 @@ class Automators(Main):
                                 self.query_variables['input']['Stop_Time'] = self.parseTimeOffset(self.query_variables['input']['Start_Time'], self.cfg.get('Automation', 'event_start_time_format'), query_config['stop_time_offset'], self.cfg.get('Splunk', 'time_format'))
                             else:
                                 self.query_variables['input']['Stop_Time'] = datetime.now().strftime(self.cfg.get('Automation', 'event_start_time_format'))
-
-                    if not self.query_variables['input']['Start_Time']:
-                        self.logger.warning("Could not find Start Time value ")
-                        raise GetOutOfLoop
 
                     self.query_variables[query_name]['query'] = self.template.render(self.query_variables['input'])
                     self.logger.debug("Rendered the following query: %s" % self.query_variables[query_name]['query'])
