@@ -14,6 +14,10 @@ from dateutil import tz
 from collections import OrderedDict
 from multiprocessing import Process, Queue
 
+module_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(module_path + "/splunklib")
+import splunklib
+
 class SplunkConnector:
     'Splunk connector'
 
@@ -24,23 +28,20 @@ class SplunkConnector:
             :param cfg: synapse configuration
             :type cfg: ConfigParser
 
-            :return: Object QRadarConnector
-            :rtype: QRadarConnector
+            :return: Object SplunkConnector
+            :rtype: SplunkConnector
         """
 
         self.logger = logging.getLogger(__name__)
         self.cfg = cfg
-
-        #Load proxy as environment variables as splunklib does not allow configuring it
-        
-        os.environ['http_proxy'] = self.cfg.get('Splunk', 'http_proxy')
-        os.environ['https_proxy'] = self.cfg.get('Splunk', 'https_proxy')
 
         # Retrieve base values for the connection to the Splunk API
         self.splunk_base_url = self.cfg.get('Splunk', 'url')
         self.username = self.cfg.get('Splunk', 'username')
         self.password = self.cfg.get('Splunk', 'password')
         self.max_result_count = self.cfg.get('Splunk', 'max_result_count')
+        self.http_proxy = self.cfg.get('Splunk', 'http_proxy')
+        self.https_proxy = self.cfg.get('Splunk', 'https_proxy')
 
         self.client = self.initiateConnection()
 
@@ -58,7 +59,7 @@ class SplunkConnector:
         try:
             logging.debug("logging into {0} as user {1}".format(self.splunk_base_url, self.username))
             
-            client = splunklib.SplunkQueryObject(uri=self.splunk_base_url, username=self.username, password=self.password, max_result_count=self.max_result_count)
+            client = splunklib.SplunkQueryObject(uri=self.splunk_base_url, username=self.username, password=self.password, max_result_count=self.max_result_count, http_proxy=self.http_proxy, https_proxy=self.https_proxy)
 
             if not client.authenticate():
                 self.logger.error("Could not authenticate to Splunk")

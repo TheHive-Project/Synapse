@@ -1,11 +1,12 @@
 
 import logging
+import re
 from core.modules import Main
 from datetime import datetime, timedelta
 from modules.TheHive.connector import TheHiveConnector
 from modules.TheHive.automator import Automators as TheHiveAutomators
 from modules.Splunk.connector import SplunkConnector
-from thehive4py.models import CaseTask
+from thehive4py.models import CaseTask, Alert
 from jinja2 import Template, Environment, meta
 
 class GetOutOfLoop( Exception ):
@@ -99,7 +100,7 @@ class Automators(Main):
                     self.logger.warning("Could not render query due to missing variables", exc_info=True)
                     raise GetOutOfLoop
                 
-                #Perform search queries
+                #Perform queries
                 try:
                     self.query_variables[query_name]['result'] = self.SplunkConnector.query(self.query_variables[query_name]['query'])
                 except Exception as e:
@@ -155,7 +156,7 @@ class Automators(Main):
                             self.alert_description=re.sub(self.regex_end_of_table, self.replacement_description, self.alert_description)
                             self.enriched = True
                     except Exception as e:
-                        self.logger.warning("Could not add results from the query to the description")
+                        self.logger.warning("Could not add results from the query to the description. Error: {}".format(e))
                         raise GetOutOfLoop
 
             except GetOutOfLoop:
