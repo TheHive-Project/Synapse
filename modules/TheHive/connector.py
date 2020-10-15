@@ -266,7 +266,7 @@ class TheHiveConnector:
             self.logger.error('Alert update failed')
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
 
-    def getAlert(self, alert_id)::
+    def getAlert(self, alert_id):
         self.logger.debug('%s.getAlert starts', __name__)
 
         response = self.theHiveApi.get_alert(self, alert_id)
