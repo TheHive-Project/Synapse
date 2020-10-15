@@ -269,7 +269,7 @@ class TheHiveConnector:
     def getAlert(self, alert_id):
         self.logger.debug('%s.getAlert starts', __name__)
 
-        response = self.theHiveApi.get_alert(self, alert_id)
+        response = self.theHiveApi.get_alert(alert_id)
 
         if response.status_code == 200:
             return response
