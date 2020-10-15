@@ -153,6 +153,7 @@ class Automators(Main):
                             self.regex_end_of_table = ' \|\\n\\n\\n'
                             self.end_of_table = ' |\n\n\n'
                             self.replacement_description = '|\n | **%s**  | %s %s' % (query_name, self.query_variables[query_name]['result'][0]['enrichment_result'], self.end_of_table)
+                            self.alert_description = self.TheHiveConnector.getAlert(self.alert_id)['description']
                             self.alert_description=re.sub(self.regex_end_of_table, self.replacement_description, self.alert_description)
                             self.enriched = True
                     except Exception as e:

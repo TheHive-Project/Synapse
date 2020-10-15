@@ -266,6 +266,17 @@ class TheHiveConnector:
             self.logger.error('Alert update failed')
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
 
+    def getAlert(self, alert_id)::
+        self.logger.debug('%s.getAlert starts', __name__)
+
+        response = self.theHiveApi.get_alert(self, alert_id)
+
+        if response.status_code == 200:
+            return response
+        else:
+            self.logger.error('Case not found')
+            raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
+    
     def findAlert(self, q):
         """
             Search for alerts in TheHive for a given query
