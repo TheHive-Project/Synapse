@@ -176,6 +176,9 @@ def qradarOffenseToHiveAlert(offense):
 
     # Setup Tags
     tags = ['QRadar', 'Offense', 'Synapse']
+    #Add the offense type as a tag
+    if 'offense_type_str' in offense:
+        tags.append("qr_offense_type:{}".format(offense['offense_type_str']))
     
     #Check if the automation ids need to be extracted
     if cfg.getboolean('QRadar', 'extract_automation_identifiers'):

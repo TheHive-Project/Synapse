@@ -28,47 +28,6 @@ class Automation():
         self.cfg = cfg
         self.report_action = report_action
         
-        #Load the config file for use case automation
-        
-    
-    def parse_hooks(self):
-
-        #Enrich the case information with missing information from the alert 
-        if self.webhook.isQRadarAlertImported() and not 'lse' in self.webhook.data['object']['tags']:
-            logger.info('Alert {} has been tagged as QRadar and is just imported. Adding custom fields'.format(self.webhook.data['rootId']))
-            # Enrich offense with information from the alert by posting the missing information through an API call
-
-            if 'case' in self.webhook.data['object']:
-                #Create a Case object
-                case = Case()
-                
-                #Add the case id to the object
-                case.id = self.webhook.data['object']['case']
-                logger.info('Updating case %s' % case.id)
-
-                #Define which fields need to get updated
-                fields = ['customFields']
-                
-                #Retrieve all required attributes from the alert and add them as custom fields to the case
-                customFields = CustomFieldHelper()
-                if self.cfg.get('QRadar', 'offense_type_field'):
-                    customFields.add_string(self.cfg.get('QRadar', 'offense_type_field'), self.webhook.data['object']['type'])
-                if self.cfg.get('QRadar', 'offense_source_field'):
-                    customFields.add_string(self.cfg.get('QRadar', 'offense_source_field'), self.webhook.data['object']['source'])
-                if self.cfg.get('QRadar', 'offense_id_field'):
-                    customFields.add_number(self.cfg.get('QRadar', 'offense_id_field'), int(self.webhook.data['object']['sourceRef']))
-                customFields.build()
-                
-                #Add custom fields to the case object
-                case.customFields = customFields.build()
-
-                #Update the case
-                self.TheHiveConnector.updateCase(case,fields)
-                self.report_action = 'updateCase'
-                
-            else:
-                logger.info('Alert has no attached case, doing nothing...')
-        
         #Close offenses in QRadar
         if self.webhook.isClosedQRadarCase() or self.webhook.isDeletedQRadarCase() or self.webhook.isQRadarAlertMarkedAsRead():
             if self.webhook.data['operation'] == 'Delete':
