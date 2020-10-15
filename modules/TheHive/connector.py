@@ -272,7 +272,7 @@ class TheHiveConnector:
         response = self.theHiveApi.get_alert(alert_id)
 
         if response.status_code == 200:
-            return response
+            return response.json()
         else:
             self.logger.error('Case not found')
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
