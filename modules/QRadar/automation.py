@@ -27,7 +27,8 @@ class Automation():
         self.webhook = webhook
         self.cfg = cfg
         self.report_action = report_action
-        
+    
+    def parse_hooks(self):
         #Close offenses in QRadar
         if self.webhook.isClosedQRadarCase() or self.webhook.isDeletedQRadarCase() or self.webhook.isQRadarAlertMarkedAsRead():
             if self.webhook.data['operation'] == 'Delete':
