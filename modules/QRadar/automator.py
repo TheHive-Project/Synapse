@@ -153,10 +153,10 @@ class Automators(Main):
 
                     #Add results to description
                     try:
-                        if self.TheHiveAutomators.fetchValueFromDescription(webhook,query_name) != self.query_variables[query_name]['result']:
+                        if self.TheHiveAutomators.fetchValueFromDescription(webhook,query_name) != self.query_variables[query_name]['result']['events'][0]['enrichment_result']:
                             self.regex_end_of_table = ' \|\\n\\n\\n'
                             self.end_of_table = ' |\n\n\n'
-                            self.replacement_description = '|\n | **%s**  | %s %s' % (query_name, self.query_variables[query_name]['result'], self.end_of_table)
+                            self.replacement_description = '|\n | **%s**  | %s %s' % (query_name, self.query_variables[query_name]['result']['events'][0]['enrichment_result'], self.end_of_table)
                             self.alert_description=re.sub(self.regex_end_of_table, self.replacement_description, self.alert_description)
                             self.enriched = True
                     except Exception as e:
