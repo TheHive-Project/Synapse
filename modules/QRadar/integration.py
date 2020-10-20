@@ -227,6 +227,15 @@ def qradarOffenseToHiveAlert(offense):
 
     artifacts = []
     for artifact in offense['artifacts']:
+        
+        #Add automation tagging and mitre tagging to observables
+        if len(tags_extracted) > 0:
+            artifact['tags'].extend(tags_extracted)
+        if 'mitre_tactics' in offense:
+            artifact['tags'].extend(offense['mitre_tactics'])
+        if 'mitre_techniques' in offense:
+            artifact['tags'].extend(offense['mitre_techniques'])
+        
         if artifact['dataType'] in defaultObservableDatatype:
             hiveArtifact = theHiveConnector.craftAlertArtifact(dataType=artifact['dataType'], data=artifact['data'], message=artifact['message'], tags=artifact['tags'])
         else:
