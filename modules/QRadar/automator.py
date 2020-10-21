@@ -157,21 +157,17 @@ class Automators(Main):
                             self.regex_end_of_table = ' \|\\n\\n\\n'
                             self.end_of_table = ' |\n\n\n'
                             self.replacement_description = '|\n | **%s**  | %s %s' % (query_name, self.query_variables[query_name]['result']['events'][0]['enrichment_result'], self.end_of_table)
-                            self.alert_description = self.TheHiveConnector.getAlert(self.alert_id)['description']
-                            self.alert_description = re.sub(self.regex_end_of_table, self.replacement_description, self.alert_description)
+                            self.th_alert_description = self.TheHiveConnector.getAlert(self.alert_id)['description']
+                            self.alert_description = re.sub(self.regex_end_of_table, self.replacement_description, self.th_alert_description)
                             self.enriched = True
+                            #Update Alert with the new description field
+                            self.updated_alert = Alert
+                            self.updated_alert.description = self.alert_description
+                            self.TheHiveConnector.updateAlert(self.alert_id, self.updated_alert, ["description"])
                     except Exception as e:
                         self.logger.warning("Could not add results from the query to the description. Error: {}".format(e))
                         raise GetOutOfLoop
 
             except GetOutOfLoop:
                 pass
-        
-        #Only enrichment queries need to update the alert out of the loop. The search queries will create a task within the loop
-        if self.enriched:
-            #Update Alert with the new description field
-            self.updated_alert = Alert
-            self.updated_alert.description = self.alert_description
-            self.TheHiveConnector.updateAlert(self.alert_id, self.updated_alert, ["description"])
-                
         return True

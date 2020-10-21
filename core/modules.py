@@ -22,8 +22,9 @@ class Main():
             value = re.search(self.value_regex, webhook.data['object']['description']).group(1)
             self.logger.debug("Found value for template variable {}: {}".format(variable, value))
             return value
-        except:
+        except Exception as e:
             self.logger.warning("Could not find value for variable {}".format(variable))
+            self.logger.debug("The following error has occurred: {}".format(e))
             return None
     
     def checkCustomerId(self):
