@@ -33,11 +33,32 @@ class AzureSentinelConnector:
         }
         try:
             self.response = requests.post(self.url, self.data, headers=self.headers)
-            self.logger.debug("Retrieved token: {}".format(response.json()["access_token"]))
+            self.logger.debug("Retrieved token: {}".format(self.response.json()["access_token"]))
             return self.response.json()["access_token"]
         except Exception as e:
             self.logger.error("Could not get Bearer token from Azure Sentinel: {}".format(e))
 
+    def formatDate(self, sentinelTimeStamp):
+        #Example: 2020-10-22T12:55:27.9576603Z
+        #Define timezones
+        current_timezone = tz.gettz('UTC')
+        
+        #Retrieve timezone from config or use local time (None)
+        configured_timezone = self.cfg.get('AzureSentinel', 'timezone', fallback=None)
+        new_timezone = tz.gettz(configured_timezone)
+
+        #Parse timestamp received from Sentinel
+        formatted_time = datetime.strptime(sentinelTimeStamp, self.cfg.get('AzureSentinel', 'time_format', fallback=None))
+        utc_formatted_time = formatted_time.replace(tzinfo=current_timezone)
+
+        #Convert to configured timezone
+        ntz_formatted_time = formatted_time.astimezone(new_timezone)
+
+        #Create a string from time object
+        string_formatted_time = ntz_formatted_time.strftime('%Y-%m-%d %H:%M:%S')
+
+        return string_formatted_time
+    
     def getIncidents(self):
         self.url = 'https://management.azure.com/subscriptions/{}/resourceGroups/{}/providers/Microsoft.OperationalInsights/workspaces/{}/providers/Microsoft.SecurityInsights/incidents?api-version=2020-01-01'.format(self.subscription_id, self.resource_group, self.workspace)
 

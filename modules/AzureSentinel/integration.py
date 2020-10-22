@@ -6,7 +6,7 @@ from modules.TheHive.connector import TheHiveConnector
 
 cfg = getConf()
 
-azureSentinelConnector = azureSentinelConnector(cfg)
+azureSentinelConnector = AzureSentinelConnector(cfg)
 theHiveConnector = TheHiveConnector(cfg)
 
 #Get logger
@@ -113,7 +113,7 @@ def allIncidents2Alert(status):
     report['incidents'] = list()
 
     try:
-        incidentsList = AzureSentinelConnector.getIncidents()
+        incidentsList = azureSentinelConnector.getIncidents()
         
         #each incidents in the list is represented as a dict
         #we enrich this dict with additional details
