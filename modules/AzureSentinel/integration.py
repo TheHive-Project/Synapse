@@ -1,7 +1,16 @@
+import json
 import logging
 from core.functions import getConf
 from modules.AzureSentinel.connector import AzureSentinelConnector
 from modules.TheHive.connector import TheHiveConnector
+
+cfg = getConf()
+
+azureSentinelConnector = azureSentinelConnector(cfg)
+theHiveConnector = TheHiveConnector(cfg)
+
+#Get logger
+logger = logging.getLogger(__name__)
 
 def craftAlertDescription(incident):
     """
@@ -86,8 +95,8 @@ def validateRequest(request):
             else:
                 return json.dumps(workflowReport), 500
         else:
-            logger.error('Missing <timerange> key/value')
-            return json.dumps({'sucess':False, 'message':"timerange key missing in request"}), 500
+            logger.error('Missing type or type is not supported')
+            return json.dumps({'sucess':False, 'message':"Missing type or type is not supported"}), 500
     else:
         logger.error('Not json request')
         return json.dumps({'sucess':False, 'message':"Request didn't contain valid JSON"}), 400

@@ -18,8 +18,10 @@ class AzureSentinelConnector:
 
         self.logger = logging.getLogger(__name__)
         self.cfg = cfg
-
-        self.bearer_token = self.getBearerToken(self.cfg['AzureSentinel', 'auth_id'], self.cfg['AzureSentinel', 'api_key'])
+        self.subscription_id = self.cfg.get('AzureSentinel', 'subscription_id')
+        self.resource_group = self.cfg.get('AzureSentinel', 'resource_group')
+        self.workspace = self.cfg.get('AzureSentinel', 'workspace')
+        self.bearer_token = self.getBearerToken(self.cfg.get('AzureSentinel', 'auth_id'), self.cfg.get('AzureSentinel', 'client_id'), self.cfg.get('AzureSentinel', 'api_key'))
 
     def getBearerToken(self, auth_id, client_id, api_key):
         self.url = 'https://login.microsoftonline.com/{}/oauth2/token'.format(auth_id)
@@ -31,13 +33,13 @@ class AzureSentinelConnector:
         }
         try:
             self.response = requests.post(self.url, self.data, headers=self.headers)
-            self.logger.debug("Retrieved token: {}".format(r.json()["access_token"]))
+            self.logger.debug("Retrieved token: {}".format(response.json()["access_token"]))
             return self.response.json()["access_token"]
         except Exception as e:
             self.logger.error("Could not get Bearer token from Azure Sentinel: {}".format(e))
 
-    def getIncidents(self, subscription_id, resource_group, workspace):
-        self.url = 'https://management.azure.com/subscriptions/{}/resourceGroups/{}/providers/Microsoft.OperationalInsights/workspaces/{}/providers/Microsoft.SecurityInsights/incidents?api-version=2020-01-01'.format(subscription_id, resource_group, workspace)
+    def getIncidents(self):
+        self.url = 'https://management.azure.com/subscriptions/{}/resourceGroups/{}/providers/Microsoft.OperationalInsights/workspaces/{}/providers/Microsoft.SecurityInsights/incidents?api-version=2020-01-01'.format(self.subscription_id, self.resource_group, self.workspace)
 
         # Adding empty header as parameters are being sent in payload
         self.headers = {
