@@ -62,7 +62,7 @@ class AzureSentinelConnector:
             #Create a string from time object
             string_formatted_time = ntz_formatted_time.strftime('%Y-%m-%d %H:%M:%S')
 
-        else if target == "alert_timestamp":
+        elif target == "alert_timestamp":
             #Create a string from time object
             string_formatted_time = ntz_formatted_time.timestamp()
 
