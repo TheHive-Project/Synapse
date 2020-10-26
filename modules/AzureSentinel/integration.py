@@ -32,11 +32,11 @@ def craftAlertDescription(incident):
         '#### Summary\n\n' +
         '|                         |               |\n' +
         '| ----------------------- | ------------- |\n' +
-        '| **Start Time**          | ' + str(azureSentinelConnector.formatDate(incident['properties']['createdTimeUtc'])) + ' |\n' +
+        '| **Start Time**          | ' + str(azureSentinelConnector.formatDate("description", incident['properties']['createdTimeUtc'])) + ' |\n' +
         '| **incident ID**          | ' + str(incident['properties']['incidentNumber']) + ' |\n' +
         '| **Description**         | ' + str(incident['properties']['description'].replace('\n', '')) + ' |\n' +
         '| **incident Type**        | ' + str(incident['type']) + ' |\n' +
-        '| **incident Source**      | ' + str(incident['additionalData']['alertProductNames']) + ' |\n' +
+        '| **incident Source**      | ' + str(incident['properties']['additionalData']['alertProductNames']) + ' |\n' +
         '\n\n\n\n')
 
     return description
@@ -73,7 +73,7 @@ def sentinelIncidentToHiveAlert(incident):
         "{}, {}".format(incident['properties']['incidentNumber'], incident['properties']['title']),
         craftAlertDescription(incident),
         getHiveSeverity(incident),
-        incident['properties']['createdTimeUtc'],
+        azureSentinelConnector.formatDate("alert_timestamp", incident['properties']['createdTimeUtc']),
         tags,
         2,
         'New',

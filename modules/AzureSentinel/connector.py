@@ -1,6 +1,9 @@
 import logging
 import requests
 import json
+import time
+from datetime import datetime, timezone
+from dateutil import tz
 
 class AzureSentinelConnector:
     'AzureSentinelConnector connector'
@@ -38,8 +41,8 @@ class AzureSentinelConnector:
         except Exception as e:
             self.logger.error("Could not get Bearer token from Azure Sentinel: {}".format(e))
 
-    def formatDate(self, sentinelTimeStamp):
-        #Example: 2020-10-22T12:55:27.9576603Z
+    def formatDate(self, target, sentinelTimeStamp):
+        #Example: 2020-10-22T12:55:27.9576603Z << can also be six milliseconds. Cropping the timestamp therefore...
         #Define timezones
         current_timezone = tz.gettz('UTC')
         
@@ -47,20 +50,26 @@ class AzureSentinelConnector:
         configured_timezone = self.cfg.get('AzureSentinel', 'timezone', fallback=None)
         new_timezone = tz.gettz(configured_timezone)
 
-        #Parse timestamp received from Sentinel
-        formatted_time = datetime.strptime(sentinelTimeStamp, self.cfg.get('AzureSentinel', 'time_format', fallback=None))
+        #Parse timestamp received from Sentinel cropping to six milliseconds as 7 is not supported
+        formatted_time = datetime.strptime(sentinelTimeStamp[0:26], "%Y-%m-%dT%H:%M:%S.%f")
         utc_formatted_time = formatted_time.replace(tzinfo=current_timezone)
 
         #Convert to configured timezone
         ntz_formatted_time = formatted_time.astimezone(new_timezone)
 
-        #Create a string from time object
-        string_formatted_time = ntz_formatted_time.strftime('%Y-%m-%d %H:%M:%S')
+        if target == "description":
+
+            #Create a string from time object
+            string_formatted_time = ntz_formatted_time.strftime('%Y-%m-%d %H:%M:%S')
+
+        else if target == "alert_timestamp":
+            #Create a string from time object
+            string_formatted_time = ntz_formatted_time.timestamp()
 
         return string_formatted_time
     
     def getIncidents(self):
-        self.url = 'https://management.azure.com/subscriptions/{}/resourceGroups/{}/providers/Microsoft.OperationalInsights/workspaces/{}/providers/Microsoft.SecurityInsights/incidents?api-version=2020-01-01'.format(self.subscription_id, self.resource_group, self.workspace)
+        self.url = "https://management.azure.com/subscriptions/{}/resourceGroups/{}/providers/Microsoft.OperationalInsights/workspaces/{}/providers/Microsoft.SecurityInsights/incidents?api-version=2020-01-01&%24filter=(properties%2Fstatus%20eq%20'\\''New'\\''%20or%20properties%2Fstatus%20eq%20'\\''Active'\\'')&%24orderby=properties%2FcreatedTimeUtc%20asc".format(self.subscription_id, self.resource_group, self.workspace)
 
         # Adding empty header as parameters are being sent in payload
         self.headers = {
