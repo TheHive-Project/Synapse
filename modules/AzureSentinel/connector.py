@@ -24,11 +24,15 @@ class AzureSentinelConnector:
         self.subscription_id = self.cfg.get('AzureSentinel', 'subscription_id')
         self.resource_group = self.cfg.get('AzureSentinel', 'resource_group')
         self.workspace = self.cfg.get('AzureSentinel', 'workspace')
-        self.bearer_token = self.getBearerToken(self.cfg.get('AzureSentinel', 'auth_id'), self.cfg.get('AzureSentinel', 'client_id'), self.cfg.get('AzureSentinel', 'api_key'))
+        self.tenant_id = self.cfg.get('AzureSentinel', 'tenant_id'
+        self.client_id = self.cfg.get('AzureSentinel', 'client_id')
+        self.client_secret = self.cfg.get('AzureSentinel', 'client_secret')
+        
+        self.bearer_token = self.getBearerToken()
 
-    def getBearerToken(self, auth_id, client_id, api_key):
-        self.url = 'https://login.microsoftonline.com/{}/oauth2/token'.format(auth_id)
-        self.data= 'grant_type=client_credentials&client_id={}&client_secret={}&resource=https%3A%2F%2Fmanagement.azure.com&undefined='.format(client_id, api_key)
+    def getBearerToken(self):
+        self.url = 'https://login.microsoftonline.com/{}/oauth2/token'.format(self.tenant_id)
+        self.data= 'grant_type=client_credentials&client_id={}&client_secret={}&resource=https%3A%2F%2Fmanagement.azure.com&undefined='.format(self.client_id, self.client_secret)
         # Adding empty header as parameters are being sent in payload
         self.headers = {
             "Content-Type": "application/x-www-form-urlencoded",
@@ -69,6 +73,9 @@ class AzureSentinelConnector:
         return string_formatted_time
     
     def getIncidents(self):
+        #Variable required for handling regeneration of the Bearer token
+        self.bearer_token_regenerated = False
+
         self.url = 'https://management.azure.com/subscriptions/{}/resourceGroups/{}/providers/Microsoft.OperationalInsights/workspaces/{}/providers/Microsoft.SecurityInsights/incidents?api-version=2020-01-01&%24filter=(properties%2Fstatus%20eq%20\'New\'%20or%20properties%2Fstatus%20eq%20\'Active\')&%24orderby=properties%2FcreatedTimeUtc%20asc'.format(self.subscription_id, self.resource_group, self.workspace)
 
         # Adding empty header as parameters are being sent in payload
@@ -80,4 +87,11 @@ class AzureSentinelConnector:
             self.response = requests.get(self.url, headers=self.headers)
             return self.response.json()["value"]
         except Exception as e:
+            #Supporting regeneration of the token automatically. Will try once and will fail after
+            if self.response.status_code = 401 and not self.bearer_token_regenerated:
+                self.logger.info("Bearer token expired. Generating a new one")
+                self.bearer_token = self.getBearerToken()
+                self.bearer_token_regenerated = True
+                self.getIncidents()
+
             self.logger.error("Could not retrieve incidents from Azure Sentinel: {}".format(e))
