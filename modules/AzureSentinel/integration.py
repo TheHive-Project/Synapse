@@ -119,8 +119,6 @@ def allIncidents2Alert(status):
         #each incidents in the list is represented as a dict
         #we enrich this dict with additional details
         for incident in incidentsList:
-            if not incident['properties']['status'] == 'Active':
-                continue
 
             #Prepare new alert
             incident_report = dict()
