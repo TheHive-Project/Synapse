@@ -24,6 +24,7 @@ def craftAlertDescription(incident):
 
     #Add url to incident
     url = ('[%s](%s)' % (str(incident['properties']['incidentNumber']), str(incident['properties']['incidentUrl'])))
+    description += '#### Incident: \n - ' + url + '\n\n'
 
     #Format associated rules
     rule_names_formatted = "#### Rules triggered: \n"
@@ -31,17 +32,30 @@ def craftAlertDescription(incident):
     if len(rules) > 0:
         for rule in rules:
             rule_info = azureSentinelConnector.getRule(rule)
-            if 'displayName' in rule_info:
-                rule_name = rule['displayName']
-                rule_url = "https://management.azure.com{}".format(rule)
-                rule_names_formatted += "- [%s](%s) \n" % (rule_name, rule_url)
-            else:
-                continue
+            logger.debug('Received the following rule information: {}'.format(rule_info))
+            rule_name = rule_info['properties']['displayName']
+            rule_url = "https://management.azure.com{}".format(rule)
+            rule_names_formatted += "- %s \n" % (rule_name)
 
     #Add rules overview to description
     description += rule_names_formatted + '\n\n'
 
-    description += '#### Incident: \n - ' + url + '\n\n'
+    #Add mitre Tactic information
+    #https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json
+
+    # mitre_ta_links_formatted = "#### MITRE Tactics: \n"
+    # if 'mitre_tactics' in offense and offense['mitre_tactics']:
+    #     for tactic in offense['mitre_tactics']:
+    #         mitre_ta_links_formatted += "- [%s](%s/%s) \n" % (tactic, 'https://attack.mitre.org/tactics/', tactic)
+        
+    #     #Add associated documentation
+    #     description += mitre_ta_links_formatted + '\n\n'
+
+    # #Add mitre Technique information
+    # mitre_t_links_formatted = "#### MITRE Techniques: \n"
+    # if 'mitre_techniques' in offense and offense['mitre_techniques']:
+    #     for technique in offense['mitre_techniques']:
+    #         mitre_t_links_formatted += "- [%s](%s/%s) \n" % (technique, 'https://attack.mitre.org/techniques/', technique)
 
     #Add incident details table
     description += (
@@ -63,11 +77,11 @@ def sentinelIncidentToHiveAlert(incident):
     def getHiveSeverity(incident):
         #severity in TheHive is either low, medium or high
         #while severity in Sentinel is from Low to High
-        if incident['properties']['severity'] < "Low":
+        if incident['properties']['severity'] == "Low":
             return 1
-        elif incident['properties']['severity'] < "Medium":
+        elif incident['properties']['severity'] == "Medium":
             return 2
-        elif incident['properties']['severity'] < "High":
+        elif incident['properties']['severity'] == "High":
             return 3
 
         return 1

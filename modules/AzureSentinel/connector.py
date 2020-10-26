@@ -77,7 +77,10 @@ class AzureSentinelConnector:
         #Variable required for handling regeneration of the Bearer token
         self.bearer_token_regenerated = False
 
-        self.url = self.base_url + '/incidents?api-version=2020-01-01&%24filter=(properties%2Fstatus%20eq%20\'New\'%20or%20properties%2Fstatus%20eq%20\'Active\')&%24orderby=properties%2FcreatedTimeUtc%20asc'
+        #Empty array for incidents
+        self.incidents = []
+
+        self.url = self.base_url + '/incidents?api-version=2020-01-01&%24filter=(properties%2Fstatus%20eq%20\'New\'%20or%20properties%2Fstatus%20eq%20\'Active\')&%24orderby=properties%2FcreatedTimeUtc%20desc'
 
         # Adding empty header as parameters are being sent in payload
         self.headers = {
@@ -86,10 +89,16 @@ class AzureSentinelConnector:
         }
         try:
             self.response = requests.get(self.url, headers=self.headers)
-            return self.response.json()["value"]
+            self.incidents.extend(self.response.json()["value"])
+            #Lazy loop to grab all incidents
+            while 'nextLink' in self.response.json():
+                self.url = self.response.json()['nextLink']
+                self.response = requests.get(self.url, headers=self.headers)
+                self.incidents.extend(self.response.json()["value"])
+            return self.incidents
         except Exception as e:
             #Supporting regeneration of the token automatically. Will try once and will fail after
-            if self.response.status_code = 401 and not self.bearer_token_regenerated:
+            if self.response.status_code == 401 and not self.bearer_token_regenerated:
                 self.logger.info("Bearer token expired. Generating a new one")
                 self.bearer_token = self.getBearerToken()
                 self.bearer_token_regenerated = True
@@ -101,7 +110,7 @@ class AzureSentinelConnector:
         #Variable required for handling regeneration of the Bearer token
         self.bearer_token_regenerated = False
 
-        self.url = 'https://management.azure.com{}'.format(uri)
+        self.url = 'https://management.azure.com{}?api-version={}'.format(uri, "2020-01-01")
 
         # Adding empty header as parameters are being sent in payload
         self.headers = {
@@ -113,7 +122,7 @@ class AzureSentinelConnector:
             return self.response.json()
         except Exception as e:
             #Supporting regeneration of the token automatically. Will try once and will fail after
-            if self.response.status_code = 401 and not self.bearer_token_regenerated:
+            if self.response.status_code == 401 and not self.bearer_token_regenerated:
                 self.logger.info("Bearer token expired. Generating a new one")
                 self.bearer_token = self.getBearerToken()
                 self.bearer_token_regenerated = True
