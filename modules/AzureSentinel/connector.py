@@ -69,7 +69,7 @@ class AzureSentinelConnector:
         return string_formatted_time
     
     def getIncidents(self):
-        self.url = "https://management.azure.com/subscriptions/{}/resourceGroups/{}/providers/Microsoft.OperationalInsights/workspaces/{}/providers/Microsoft.SecurityInsights/incidents?api-version=2020-01-01&%24filter=(properties%2Fstatus%20eq%20'\\''New'\\''%20or%20properties%2Fstatus%20eq%20'\\''Active'\\'')&%24orderby=properties%2FcreatedTimeUtc%20asc".format(self.subscription_id, self.resource_group, self.workspace)
+        self.url = 'https://management.azure.com/subscriptions/{}/resourceGroups/{}/providers/Microsoft.OperationalInsights/workspaces/{}/providers/Microsoft.SecurityInsights/incidents?api-version=2020-01-01&%24filter=(properties%2Fstatus%20eq%20\'New\'%20or%20properties%2Fstatus%20eq%20\'Active\')&%24orderby=properties%2FcreatedTimeUtc%20asc'.format(self.subscription_id, self.resource_group, self.workspace)
 
         # Adding empty header as parameters are being sent in payload
         self.headers = {
