@@ -24,7 +24,7 @@ class AzureSentinelConnector:
         self.subscription_id = self.cfg.get('AzureSentinel', 'subscription_id')
         self.resource_group = self.cfg.get('AzureSentinel', 'resource_group')
         self.workspace = self.cfg.get('AzureSentinel', 'workspace')
-        self.tenant_id = self.cfg.get('AzureSentinel', 'tenant_id'
+        self.tenant_id = self.cfg.get('AzureSentinel', 'tenant_id')
         self.client_id = self.cfg.get('AzureSentinel', 'client_id')
         self.client_secret = self.cfg.get('AzureSentinel', 'client_secret')
         self.base_url = 'https://management.azure.com/subscriptions/{}/resourceGroups/{}/providers/Microsoft.OperationalInsights/workspaces/{}/providers/Microsoft.SecurityInsights'.format(self.subscription_id, self.resource_group, self.workspace)
