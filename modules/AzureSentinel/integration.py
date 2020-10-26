@@ -37,6 +37,7 @@ def craftAlertDescription(incident):
         '| **Description**         | ' + str(incident['properties']['description'].replace('\n', '')) + ' |\n' +
         '| **incident Type**        | ' + str(incident['type']) + ' |\n' +
         '| **incident Source**      | ' + str(incident['properties']['additionalData']['alertProductNames']) + ' |\n' +
+        '| **incident Status**      | ' + str(incident['properties']['status']) + ' |\n' +
         '\n\n\n\n')
 
     return description
