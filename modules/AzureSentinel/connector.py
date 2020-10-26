@@ -27,6 +27,7 @@ class AzureSentinelConnector:
         self.tenant_id = self.cfg.get('AzureSentinel', 'tenant_id'
         self.client_id = self.cfg.get('AzureSentinel', 'client_id')
         self.client_secret = self.cfg.get('AzureSentinel', 'client_secret')
+        self.base_url = 'https://management.azure.com/subscriptions/{}/resourceGroups/{}/providers/Microsoft.OperationalInsights/workspaces/{}/providers/Microsoft.SecurityInsights'.format(self.subscription_id, self.resource_group, self.workspace)
         
         self.bearer_token = self.getBearerToken()
 
@@ -76,7 +77,7 @@ class AzureSentinelConnector:
         #Variable required for handling regeneration of the Bearer token
         self.bearer_token_regenerated = False
 
-        self.url = 'https://management.azure.com/subscriptions/{}/resourceGroups/{}/providers/Microsoft.OperationalInsights/workspaces/{}/providers/Microsoft.SecurityInsights/incidents?api-version=2020-01-01&%24filter=(properties%2Fstatus%20eq%20\'New\'%20or%20properties%2Fstatus%20eq%20\'Active\')&%24orderby=properties%2FcreatedTimeUtc%20asc'.format(self.subscription_id, self.resource_group, self.workspace)
+        self.url = self.base_url + '/incidents?api-version=2020-01-01&%24filter=(properties%2Fstatus%20eq%20\'New\'%20or%20properties%2Fstatus%20eq%20\'Active\')&%24orderby=properties%2FcreatedTimeUtc%20asc'
 
         # Adding empty header as parameters are being sent in payload
         self.headers = {
@@ -95,3 +96,27 @@ class AzureSentinelConnector:
                 self.getIncidents()
 
             self.logger.error("Could not retrieve incidents from Azure Sentinel: {}".format(e))
+
+    def getRule(self, uri):
+        #Variable required for handling regeneration of the Bearer token
+        self.bearer_token_regenerated = False
+
+        self.url = 'https://management.azure.com{}'.format(uri)
+
+        # Adding empty header as parameters are being sent in payload
+        self.headers = {
+            "Authorization": "Bearer " + self.bearer_token,
+            "cache-control": "no-cache",
+        }
+        try:
+            self.response = requests.get(self.url, headers=self.headers)
+            return self.response.json()
+        except Exception as e:
+            #Supporting regeneration of the token automatically. Will try once and will fail after
+            if self.response.status_code = 401 and not self.bearer_token_regenerated:
+                self.logger.info("Bearer token expired. Generating a new one")
+                self.bearer_token = self.getBearerToken()
+                self.bearer_token_regenerated = True
+                self.getIncidents()
+
+            self.logger.error("Could not retrieve rule information from Azure Sentinel: {}".format(e))

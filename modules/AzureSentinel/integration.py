@@ -25,6 +25,22 @@ def craftAlertDescription(incident):
     #Add url to incident
     url = ('[%s](%s)' % (str(incident['properties']['incidentNumber']), str(incident['properties']['incidentUrl'])))
 
+    #Format associated rules
+    rule_names_formatted = "#### Rules triggered: \n"
+    rules = incident['properties']['relatedAnalyticRuleIds']
+    if len(rules) > 0:
+        for rule in rules:
+            rule_info = azureSentinelConnector.getRule(rule)
+            if 'displayName' in rule_info:
+                rule_name = rule['displayName']
+                rule_url = "https://management.azure.com{}".format(rule)
+                rule_names_formatted += "- [%s](%s) \n" % (rule_name, rule_url)
+            else:
+                continue
+
+    #Add rules overview to description
+    description += rule_names_formatted + '\n\n'
+
     description += '#### Incident: \n - ' + url + '\n\n'
 
     #Add incident details table
