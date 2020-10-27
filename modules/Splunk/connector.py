@@ -98,7 +98,7 @@ class SplunkConnector:
                 search_result = self.client.query_with_time(query, start_time, end_time)
             #When there are no timestamps       
             else:
-                search_result = self.client.query_relative(query)
+                search_result = self.client.query(query)
 
             if not search_result:
                 self.logger.error("The search has failed please look at the details of the error")
