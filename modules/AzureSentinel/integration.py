@@ -1,5 +1,6 @@
 import json
 import logging
+import itertools
 from core.functions import getConf
 from modules.AzureSentinel.connector import AzureSentinelConnector
 from modules.TheHive.connector import TheHiveConnector
