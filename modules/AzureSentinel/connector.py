@@ -56,7 +56,8 @@ class AzureSentinelConnector:
         new_timezone = tz.gettz(configured_timezone)
 
         #Parse timestamp received from Sentinel cropping to six milliseconds as 7 is not supported
-        formatted_time = datetime.strptime(sentinelTimeStamp[0:26], "%Y-%m-%dT%H:%M:%S.%f")
+        self.logger.debug("Cropped timestamp from: {} to: {}".format(sentinelTimeStamp, sentinelTimeStamp[0:23]))
+        formatted_time = datetime.strptime(sentinelTimeStamp[0:23], "%Y-%m-%dT%H:%M:%S.%f")
         utc_formatted_time = formatted_time.replace(tzinfo=current_timezone)
 
         #Convert to configured timezone
@@ -69,7 +70,7 @@ class AzureSentinelConnector:
 
         elif target == "alert_timestamp":
             #Create a string from time object
-            string_formatted_time = ntz_formatted_time.timestamp()
+            string_formatted_time = ntz_formatted_time.timestamp() * 1000
 
         return string_formatted_time
     
