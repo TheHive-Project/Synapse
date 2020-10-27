@@ -103,7 +103,7 @@ class Automators(Main):
                 #Perform queries
                 try:
                     self.query_variables[query_name]['result'] = self.SplunkConnector.query(self.query_variables[query_name]['query'])
-                    if len(query_variables[query_name]['result']) == 0:
+                    if len(self.query_variables[query_name]['result']) == 0:
                         self.logger.info("No results found for query")
                         continue
                 except Exception as e:
