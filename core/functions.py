@@ -79,6 +79,8 @@ class YamlCP:
             value = section.get(key)
             if value:
                 return value
+            elif fallback:
+                return fallback
             else:
                 return None
         else:
@@ -87,7 +89,7 @@ class YamlCP:
     @classmethod
     def getboolean(cls, section, key, **kwargs):
         fallback = kwargs.get('fallback')
-        return cls.get(section, key, fallback=fallback)
+        return bool(cls.get(section, key, fallback=fallback))
 
     @classmethod
     def sections(cls):

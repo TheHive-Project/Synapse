@@ -40,7 +40,7 @@ class SplunkConnector:
         self.username = self.cfg.get('Splunk', 'username')
         self.password = self.cfg.get('Splunk', 'password')
         self.max_result_count = self.cfg.get('Splunk', 'max_result_count')
-        self.query_timeout = self.cfg.get('Splunk', 'query_timeout')
+        self.query_timeout = self.cfg.get('Splunk', 'query_timeout', fallback="00:05:00")
         self.http_proxy = self.cfg.get('Splunk', 'http_proxy')
         self.https_proxy = self.cfg.get('Splunk', 'https_proxy')
 
