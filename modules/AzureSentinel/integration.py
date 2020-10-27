@@ -116,6 +116,54 @@ def sentinelIncidentToHiveAlert(incident):
 
     return alert
 
+#Function to check if the alert that has been created contains new/different data in comparison to the alert that is present
+def check_if_updated(current_a, new_a):
+    logger.debug("Current alert %s" % current_a)
+    logger.debug("New alert %s" % new_a)
+    for item in sorted(new_a):
+        #Skip values that are not required for the compare
+        if item is "date":
+            continue
+        #Artifacts require special attention as these are all separate objects in an array for a new alert. The current alert is a array of dicts
+        if item is "artifacts":
+            #If the array is of different size an update is required
+            if not len(current_a[item]) == len(new_a[item]):
+                logger.info("Length mismatch detected: old length:%s, new length: %s" % (len(current_a[item]),len(new_a[item])))
+                return True
+            
+            #loop through the newly created alert array to extract the artifacts and add them so a separate variable
+            for i in range(len(new_a[item])):
+                vars_current_artifacts = current_a[item][i]
+                vars_new_artifacts = vars(new_a[item][i])
+                
+                #For each artifact loop through the attributes to check for differences
+                for attribute in vars_new_artifacts:
+                    if vars_current_artifacts[attribute] != vars_new_artifacts[attribute]:
+                        logger.debug("Change detected for %s, new value: %s" % (vars_current_artifacts[attribute],vars_new_artifacts[attribute]))
+                        logger.debug("old: %s, new: %s" % (vars_current_artifacts,vars_new_artifacts))
+                        return True
+            
+            
+            #loop through the newly created alert array to extract the artifacts and add them so a separate variable
+            #diff = list(itertools.filterfalse(lambda x: x in vars(new_a['artifacts']), current_a['artifacts']))
+            #if len(diff) > 0:
+            #    logger.debug("Found diff in artifacts: %s" % diff)
+            #    return True
+            
+        if item is "tags":
+            #loop through the newly created alert array to extract the tags and add them so a separate variable
+            diff = list(itertools.filterfalse(lambda x: x in new_a['tags'], current_a['tags']))
+            diff = diff + list(itertools.filterfalse(lambda x: x in current_a['tags'], new_a['tags']))
+            if len(diff) > 0:
+                logger.debug("Found diff in tags: %s" % diff)
+                return True
+         
+        #Match other items of the new alert to the current alert (string based)
+        #if str(current_a[item]) != str(new_a[item]):
+            #logger.debug("Change detected for %s, new value: %s" % (item,str(new_a[item])))
+            #return True
+    return False
+
 def validateRequest(request):
     if request.is_json:
         content = request.get_json()
@@ -186,23 +234,23 @@ def allIncidents2Alert(status):
                     report['success'] = False
 
                 report['incidents'].append(incident_report)
-            # else:
-            #     logger.info('incident %s already imported as alert, checking for updates', str(incident['name']))
-            #     alert_found = results[0]
+            else:
+                logger.info('incident %s already imported as alert, checking for updates', str(incident['name']))
+                alert_found = results[0]
                 
-            #     #Check if alert is already created, but needs updating
-            #     if check_if_updated(alert_found, vars(theHiveAlert)):
-            #         logger.info("Found changes for %s, updating alert" % alert_found['id'])
+                #Check if alert is already created, but needs updating
+                if check_if_updated(alert_found, vars(theHiveAlert)):
+                    logger.info("Found changes for %s, updating alert" % alert_found['id'])
                     
-            #         #update alert
-            #         theHiveConnector.updateAlert(alert_found['id'], theHiveAlert, fields=["tags", "artifacts"])
-            #         incident_report['updated_alert_id'] = alert_found['id']
-            #         incident_report['sentinel_incident_id'] = incident['name']
-            #         incident_report['success'] = True
-            #     else:
-            #         logger.info("No changes found for %s" % alert_found['id'])
-            #         continue
-                ##########################################################
+                    #update alert
+                    theHiveConnector.updateAlert(alert_found['id'], theHiveAlert, fields=["tags", "artifacts"])
+                    incident_report['updated_alert_id'] = alert_found['id']
+                    incident_report['sentinel_incident_id'] = incident['name']
+                    incident_report['success'] = True
+                else:
+                    logger.info("No changes found for %s" % alert_found['id'])
+                    continue
+                #########################################################
 
     except Exception as e:
 
