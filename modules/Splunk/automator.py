@@ -24,10 +24,10 @@ class Automators(Main):
         self.SplunkConnector = SplunkConnector(cfg)
 
     def parseTimeOffset(self, time, input_format, offset, output_format):
-        self.start_time_parsed = datetime.strptime(time, format)
+        self.start_time_parsed = datetime.strptime(time, input_format)
         self.start_time_parsed = self.start_time_parsed - timedelta(minutes=offset)
-        self.logger.debug("Time with offset: %s" % self.start_time_parsed.strftime(format))
-        return self.start_time_parsed.strftime(format)
+        self.logger.debug("Time with offset: %s" % self.start_time_parsed.strftime(output_format))
+        return self.start_time_parsed.strftime(output_format)
 
     def checkSiem(self, action_config, webhook):
         #Only continue if the right webhook is triggered

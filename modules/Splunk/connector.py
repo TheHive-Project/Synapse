@@ -40,6 +40,7 @@ class SplunkConnector:
         self.username = self.cfg.get('Splunk', 'username')
         self.password = self.cfg.get('Splunk', 'password')
         self.max_result_count = self.cfg.get('Splunk', 'max_result_count')
+        self.query_timeout = self.cfg.get('Splunk', 'query_timeout')
         self.http_proxy = self.cfg.get('Splunk', 'http_proxy')
         self.https_proxy = self.cfg.get('Splunk', 'https_proxy')
 
@@ -59,7 +60,7 @@ class SplunkConnector:
         try:
             logging.debug("logging into {0} as user {1}".format(self.splunk_base_url, self.username))
             
-            client = splunklib.SplunkQueryObject(uri=self.splunk_base_url, username=self.username, password=self.password, max_result_count=self.max_result_count, http_proxy=self.http_proxy, https_proxy=self.https_proxy)
+            client = splunklib.SplunkQueryObject(uri=self.splunk_base_url, username=self.username, password=self.password, max_result_count=self.max_result_count, query_timeout=self.query_timeout, http_proxy=self.http_proxy, https_proxy=self.https_proxy)
 
             if not client.authenticate():
                 self.logger.error("Could not authenticate to Splunk")
@@ -97,7 +98,7 @@ class SplunkConnector:
                 search_result = self.client.query_with_time(query, start_time, end_time)
             #When there are no timestamps       
             else:
-                search_result = self.client.query(query)
+                search_result = self.client.query_relative(query)
 
             if not search_result:
                 self.logger.error("The search has failed please look at the details of the error")
