@@ -85,12 +85,13 @@ class Automators(Main):
                         if template_var == "Start_Time":
                             self.logger.debug("Found Start Time: %s" % self.query_variables['input']['Start_Time'])
                             if 'start_time_offset' in query_config:
-                                self.query_variables['input']['Start_Time'] = self.parseTimeOffset(self.query_variables['input']['Start_Time'], self.cfg.get('Automation', 'event_start_time_format'), query_config['start_time_offset'], self.cfg.get('Splunk', 'time_format'))
+                                self.start_time = self.parseTimeOffset(self.query_variables['input']['Start_Time']
+                                self.query_variables['input']['Start_Time'] = self.parseTimeOffset(self.start_time, self.cfg.get('Automation', 'event_start_time_format'), query_config['start_time_offset'], self.cfg.get('Splunk', 'time_format'))
                             else:
                                 self.query_variables['input']['Start_Time'] = self.query_variables['input']['Start_Time']
                                 
                             if 'stop_time_offset' in query_config:
-                                self.query_variables['input']['Stop_Time'] = self.parseTimeOffset(self.query_variables['input']['Start_Time'], self.cfg.get('Automation', 'event_start_time_format'), query_config['stop_time_offset'], self.cfg.get('Splunk', 'time_format'))
+                                self.query_variables['input']['Stop_Time'] = self.parseTimeOffset(self.start_time, self.cfg.get('Automation', 'event_start_time_format'), query_config['stop_time_offset'], self.cfg.get('Splunk', 'time_format'))
                             else:
                                 self.query_variables['input']['Stop_Time'] = datetime.now().strftime(self.cfg.get('Automation', 'event_start_time_format'))
 

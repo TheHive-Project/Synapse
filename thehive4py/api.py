@@ -424,7 +424,7 @@ class TheHiveApi:
             data['artifacts'] = [a.__dict__ for a in alert.artifacts]
         try:
             return requests.patch(req, headers={'Content-Type': 'application/json'}, json=data, proxies=self.proxies, auth=self.auth, verify=self.cert)
-        except requests.exceptions.RequestException:
+        except requests.exceptions.RequestException as e:
             raise AlertException("Alert update error: {}".format(e))
 
     def get_alert(self, alert_id):

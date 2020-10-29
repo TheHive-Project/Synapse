@@ -77,7 +77,7 @@ class YamlCP:
         section =  cls.config.get(section)
         if section:
             value = section.get(key)
-            if value:
+            if value is not None:
                 return value
             elif fallback:
                 return fallback
