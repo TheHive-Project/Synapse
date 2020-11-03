@@ -13,6 +13,24 @@ from core.functions import getConf, loadAutomationConfiguration
 app_dir = os.path.dirname(os.path.abspath(__file__))
 cfg = getConf()
 
+if cfg.get("api", 'log_webhooks', fallback=False):
+    #create logger
+    webhook_logger = logging.getLogger()
+    webhook_logger.setLevel(logging.getLevelName("INFO"))
+    #log format as: 2013-03-08 11:37:31,411 : : WARNING :: Testing foo
+    webhook_formatter = logging.Formatter('%(asctime)s\n%(message)s')
+    #handler writes into, limited to 1Mo in append mode
+    if not cfg.getboolean('api', 'dockerized'):
+        if not os.path.exists('logs'):
+            #create logs directory if does no exist (typically at first start)
+            os.makedirs('logs')
+        pathLog = app_dir + '/logs/synapse_received_webhooks.log'
+        webhook_file_handler = logging.handlers.RotatingFileHandler(pathLog, 'a', 1000000, 1)
+        #using the format defined earlier
+        webhook_file_handler.setFormatter(webhook_formatter)
+        #Adding the file handler
+        webhook_logger.addHandler(webhook_file_handler)
+
 #create logger
 logger = logging.getLogger()
 logger.setLevel(logging.getLevelName(cfg.get('api', 'log_level')))
@@ -59,6 +77,8 @@ def listenWebhook():
          try:
             webhook = request.get_json()
             logger.debug("Webhook: %s" % webhook)
+            if cfg.get("api", 'log_webhooks', fallback=False):
+                webhook_logger.info(webhook)
             workflowReport = manageWebhook(webhook, cfg, automation_config)
             if workflowReport['success']:
                 return jsonify(workflowReport), 200
