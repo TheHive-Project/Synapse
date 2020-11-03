@@ -2,7 +2,6 @@
 import logging
 import re
 from core.modules import Main
-from datetime import datetime, timedelta
 from modules.TheHive.connector import TheHiveConnector
 from modules.TheHive.automator import Automators as TheHiveAutomators
 from modules.QRadar.connector import QRadarConnector
