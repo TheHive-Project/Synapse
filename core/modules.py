@@ -30,7 +30,7 @@ class Main():
     def parseTimeOffset(self, time, input_format, offset, output_format):
         #Use input format when no output format is provided
         if output_format is None:
-            output_format is input_format
+            output_format = input_format
         self.start_time_parsed = datetime.strptime(time, input_format)
         self.start_time_parsed = self.start_time_parsed - timedelta(minutes=offset)
         self.logger.debug("Time with offset: %s" % self.start_time_parsed.strftime(output_format))

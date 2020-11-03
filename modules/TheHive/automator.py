@@ -123,7 +123,7 @@ class Automators(Main):
 
                         #If matched add it to new entries to use outside of the loop
                         if match:
-                            self.logger.debug("Observable {} has matched {} of blacklist. Ignoring...".format(self.observable['data'], matched_entry))
+                            self.logger.debug("Observable {} has matched {} of blacklist. Ignoring...".format(self.observable['data'], entry))
                             return
                         
 
