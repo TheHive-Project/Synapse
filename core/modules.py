@@ -26,6 +26,15 @@ class Main():
             self.logger.warning("Could not find value for variable {}".format(variable))
             self.logger.debug("The following error has occurred: {}".format(e))
             return None
+
+    def parseTimeOffset(self, time, input_format, offset, output_format):
+        #Use input format when no output format is provided
+        if output_format is None:
+            output_format is input_format
+        self.start_time_parsed = datetime.strptime(time, input_format)
+        self.start_time_parsed = self.start_time_parsed - timedelta(minutes=offset)
+        self.logger.debug("Time with offset: %s" % self.start_time_parsed.strftime(output_format))
+        return self.start_time_parsed.strftime(output_format)
     
     def checkCustomerId(self):
         if 'internal' in self.use_cases[self.rule_id] and self.use_cases[self.rule_id]['internal']:
