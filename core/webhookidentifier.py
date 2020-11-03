@@ -73,6 +73,20 @@ class Webhook:
             return True
         else:
             return False
+
+    def isNewArtifact(self):
+        """
+            Check if the webhook describes a artifact that is created
+    
+            :return: True if it is a artifact created, False if not
+            :rtype: boolean
+        """
+    
+        self.logger.debug('%s.isNewArtifact starts', __name__)
+    
+        if (self.isArtifact() and self.isNew()):
+            return True
+        return False
             
     def isCaseArtifactJob(self):
         """
