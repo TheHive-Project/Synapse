@@ -107,7 +107,7 @@ class Automators(Main):
                         #Initial values
                         blacklisted = False
                         entry = ipaddress.ip_network(entry, strict=False)
-                        observable_ip = self.observable['value']
+                        observable_ip = self.observable['data']
 
                         #Match ip with CIDR syntax
                         if entry[-3:] == "/32":
