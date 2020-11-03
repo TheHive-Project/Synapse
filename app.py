@@ -15,7 +15,7 @@ cfg = getConf()
 
 if cfg.get("api", 'log_webhooks', fallback=False):
     #create logger
-    webhook_logger = logging.getLogger()
+    webhook_logger = logging.getLogger("webhooks")
     webhook_logger.setLevel(logging.getLevelName("INFO"))
     #log format as: 2013-03-08 11:37:31,411 : : WARNING :: Testing foo
     webhook_formatter = logging.Formatter('%(asctime)s\n%(message)s')
