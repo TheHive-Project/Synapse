@@ -124,11 +124,9 @@ class Automators(Main):
 
                         #If matched add it to new entries to use outside of the loop
                         if match:
-                            blacklisted = True
-                            matched_entry = entry
-                    if blacklisted:
-                        self.logger.debug("Observable {} has matched {} of blacklist. Ignoring...".format(self.observable['value'], matched_entry))
-                        continue
+                            self.logger.debug("Observable {} has matched {} of blacklist. Ignoring...".format(self.observable['value'], matched_entry))
+                            return
+                        
 
                 #Trigger a search for the supported ioc
                 self.logger.debug('Launching analyzers for observable: {}'.format(self.observable['_id']))
