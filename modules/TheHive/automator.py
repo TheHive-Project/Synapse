@@ -2,6 +2,7 @@ import logging
 import requests
 import json
 import re
+import ipaddress
 
 from core.modules import Main
 from modules.TheHive.connector import TheHiveConnector
@@ -100,6 +101,35 @@ class Automators(Main):
             if self.observable['dataType'] in action_config['datatypes']:
                 self.supported_observable = self.observable['_id']
             
+                #Blacklist IP addresses, make sure the blacklist is present
+                if self.observable['dataType'] == "ip" and 'blacklist' in action_config and 'ip' in action_config['blacklist']:
+                    for entry in action_config['blacklist']['ip']:
+                        #Initial values
+                        blacklisted = False
+                        entry = ipaddress.ip_network(entry, strict=False)
+                        observable_ip = self.observable['value']
+
+                        #Match ip with CIDR syntax
+                        if entry[-3:] == "/32":
+                            bl_entry = ipaddress.ip_address(entry[:-3])
+                            match = observable_ip == bl_entry
+                        #Match ip without CIDR syntax
+                        elif "/" not in entry:
+                            bl_entry = ipaddress.ip_address(entry)
+                            match = observable_ip == bl_entry
+                        #Capture actual network entries
+                        else:
+                            bl_entry = ipaddress.ip_network(entry, strict=False)
+                            match = observable_ip in bl_entry
+
+                        #If matched add it to new entries to use outside of the loop
+                        if match:
+                            blacklisted = True
+                            matched_entry = entry
+                    if blacklisted:
+                        self.logger.debug("Observable {} has matched {} of blacklist. Ignoring...".format(self.observable['value'], matched_entry))
+                        continue
+
                 #Trigger a search for the supported ioc
                 self.logger.debug('Launching analyzers for observable: {}'.format(self.observable['_id']))
                 self.CortexConnector.runAnalyzer(action_config['cortex_instance'], self.supported_observable, action_config['analyzer'])
