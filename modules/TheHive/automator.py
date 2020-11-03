@@ -105,7 +105,7 @@ class Automators(Main):
                 if self.observable['dataType'] == "ip" and 'blacklist' in action_config and 'ip' in action_config['blacklist']:
                     for entry in action_config['blacklist']['ip']:
                         #Initial values
-                        blacklisted = False
+                        match = False
                         observable_ip = ipaddress.ip_address(self.observable['data'])
 
                         #Match ip with CIDR syntax
@@ -129,7 +129,7 @@ class Automators(Main):
 
                 #Trigger a search for the supported ioc
                 self.logger.debug('Launching analyzers for observable: {}'.format(self.observable['_id']))
-                self.CortexConnector.runAnalyzer(action_config['cortex_instance'], self.supported_observable, action_config['analyzer'])
+                self.TheHiveConnector.runAnalyzer(action_config['cortex_instance'], self.supported_observable, action_config['analyzer'])
                 
 
     def createTaskForFoundIOC(self, action_config, webhook):
