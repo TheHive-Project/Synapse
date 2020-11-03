@@ -106,7 +106,7 @@ class Automators(Main):
                     for entry in action_config['blacklist']['ip']:
                         #Initial values
                         blacklisted = False
-                        observable_ip = self.observable['data']
+                        observable_ip = ipaddress.ip_address(self.observable['data'])
 
                         #Match ip with CIDR syntax
                         if entry[-3:] == "/32":
@@ -123,7 +123,7 @@ class Automators(Main):
 
                         #If matched add it to new entries to use outside of the loop
                         if match:
-                            self.logger.debug("Observable {} has matched {} of blacklist. Ignoring...".format(self.observable['value'], matched_entry))
+                            self.logger.debug("Observable {} has matched {} of blacklist. Ignoring...".format(self.observable['data'], matched_entry))
                             return
                         
 
