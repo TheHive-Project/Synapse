@@ -147,7 +147,7 @@ class Automators(Main):
             if webhook.data['object']['report']['summary']['taxonomies'][0]['level'] in action_config["taxonomy_level"]:
                 self.logger.info('Job {} has configured taxonomy level, checking if a task is already present for this observable'.format(webhook.data['object']['cortexJobId']))
                 #Check if task is present for investigating the new results
-                if self.case.status != "Resolved":
+                if self.case_data['status'] != "Resolved":
                     self.logger.info('Case is not yet closed, closing case for {} now...'.format(webhook.data['object']['cortexJobId']))
                     #Close the case
                     self.TheHiveConnector.closeCase(self.caseid)
