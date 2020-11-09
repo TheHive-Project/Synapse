@@ -178,7 +178,7 @@ class Automators(Main):
                 
                 #Observable + Link
                 self.observable = webhook.data['object']['artifactId']
-                self.observable_link = self.cfg.get('Automation', 'hive_url') + "/index.html#/case/" + self.caseid + "/observables/" + webhook.data['object']['artifactId']
+                self.observable_link = self.cfg.get('Automation', 'hive_url', fallback="https://localhost") + "/index.html#/case/" + self.caseid + "/observables/" + webhook.data['object']['artifactId']
                 
                 #Task name
                 self.casetask.title = "{} {}".format(action_config['title'], self.observable)
