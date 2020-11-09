@@ -256,7 +256,7 @@ class TheHiveApi:
         }
 
         try:
-            return requests.post(req, json=data, proxies=self.proxies, auth=self.auth, verify=self.cert)[0]
+            return requests.post(req, json=data, proxies=self.proxies, auth=self.auth, verify=self.cert)
         except requests.exceptions.RequestException as e:
             raise CaseObservableException("Case observable search error: {}".format(e))
 

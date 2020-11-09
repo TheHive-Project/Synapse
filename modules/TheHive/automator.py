@@ -180,7 +180,7 @@ class Automators(Main):
                 self.observable_link = TheHive.get('url') + "/index.html#/case/" + self.caseid + "/observables/" + webhook.data['object']['artifactId']
                 
                 #Task name
-                self.casetask.title = "{} {}".format(action_config['title'] self.observable)
+                self.casetask.title = "{} {}".format(action_config['title'], self.observable)
                 
                 #Date
                 self.date_found = time.strftime("%d-%m-%Y %H:%M")
@@ -219,6 +219,6 @@ class Automators(Main):
                     
                     #Add the case task
                     self.TheHiveConnector.createTask(self.caseid,self.casetask)
-                    self.report_action = 'createTask'
-                    
-        return self.report_action
+                
+                self.report_action = 'createTask'
+                return self.report_action

@@ -48,8 +48,8 @@ class Automator():
         if 'tags' in self.webhook.data['object']:
             self.tags = self.webhook.data['object']['tags']
         #Add tagging to webhooks that are missing tags
-        else if 'artifactId' in webhook.data['object'] and self.webhook.isCaseArtifactJob:
-            self.logger.debug('Found artifact id {} for webhook {}. Retrieving tags from there'.format(self.webhook.data['details']['rootId'], self.webhook.id))
+        elif 'artifactId' in self.webhook.data['object'] and self.webhook.isCaseArtifactJob:
+            self.logger.debug('Found artifact id {} for webhook {}. Retrieving tags from there'.format(self.webhook.data['object']['artifactId'], self.webhook.id))
             self.tags = self.TheHiveConnector.getCaseObservable(self.webhook.data['object']['artifactId'])['tags']
         else:
             self.tags = []

@@ -73,7 +73,7 @@ class TheHiveConnector:
         response = self.theHiveApi.get_case_observable(artifactid)
 
         if response.status_code == 200:
-            return response
+            return response.json()[]
         else:
             self.logger.error('Artifact not found')
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
@@ -148,7 +148,7 @@ class TheHiveConnector:
             self.logger.error('Case update failed')
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
 
-    def closeCase(self, caseid)
+    def closeCase(self, caseid):
         self.logger.debug('%s.closeCase starts', __name__)
         #Create a Case object
         case = Case()
