@@ -3,11 +3,12 @@ import requests
 import json
 import re
 import ipaddress
+import time
 
 from core.modules import Main
 from modules.TheHive.connector import TheHiveConnector
 from modules.Cortex.connector import CortexConnector
-from thehive4py.models import CaseTask
+from thehive4py.models import CaseTask, Case
 
 class Automators(Main):
     def __init__(self, cfg, use_case_config):
@@ -166,7 +167,7 @@ class Automators(Main):
             self.logger.debug('Job {} has just finished'.format(webhook.data['object']['cortexJobId']))
             
             #Check if the result count higher than 0
-            if int(float(webhook.data['object']['report']['summary']['taxonomies'][0]['level'])) in action_config["taxonomy_level"]:
+            if webhook.data['object']['report']['summary']['taxonomies'][0]['level'] in action_config["taxonomy_level"]:
                 self.logger.info('Job {} has configured taxonomy level, checking if a task is already present for this observable'.format(webhook.data['object']['cortexJobId']))
                 #Retrieve case task information
                 self.response = self.TheHiveConnector.getCaseTasks(self.caseid)
@@ -177,7 +178,7 @@ class Automators(Main):
                 
                 #Observable + Link
                 self.observable = webhook.data['object']['artifactId']
-                self.observable_link = TheHive.get('url') + "/index.html#/case/" + self.caseid + "/observables/" + webhook.data['object']['artifactId']
+                self.observable_link = self.cfg.get('TheHive', 'url') + "/index.html#/case/" + self.caseid + "/observables/" + webhook.data['object']['artifactId']
                 
                 #Task name
                 self.casetask.title = "{} {}".format(action_config['title'], self.observable)
