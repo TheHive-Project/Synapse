@@ -2,6 +2,8 @@
 # -*- coding: utf8 -*-
 
 import logging
+import hashlib
+import json
 from modules.TheHive.connector import TheHiveConnector
 
 
@@ -23,6 +25,8 @@ class Webhook:
         """
 
         self.logger = logging.getLogger('workflows.' + __name__)
+        #One liner to generate a sha1 hash from the data to use as an id. Requires json to create a byte array from the dict
+        self.id = hashlib.sha1(json.dumps(webhookData).encode('utf-8')).hexdigest()
         self.data = webhookData
         self.theHiveConnector = TheHiveConnector(cfg)
         #if the webhook is related to a QRadar offense, the offenseid will be in

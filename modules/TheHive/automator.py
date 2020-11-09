@@ -132,7 +132,7 @@ class Automators(Main):
                 self.TheHiveConnector.runAnalyzer(action_config['cortex_instance'], self.supported_observable, action_config['analyzer'])
                 
 
-    def createTaskForFoundIOC(self, action_config, webhook):
+    def closeCaseForTaxonomyInAnalyzerResults(self, action_config, webhook):
         #If the Job result contains a successful search with minimum of 1 hit, create a task to investigate the results
         if webhook.isCaseArtifactJob() and webhook.isSuccess():
             #Case ID
@@ -143,8 +143,31 @@ class Automators(Main):
             self.logger.debug('Job {} has just finished'.format(webhook.data['object']['cortexJobId']))
             
             #Check if the result count higher than 0
-            if int(float(webhook.data['object']['report']['summary']['taxonomies'][0]['value'])) > 0:
-                self.logger.info('Job {} contains hits, checking if a task is already present for this observable'.format(webhook.data['object']['cortexJobId']))
+            if int(float(webhook.data['object']['report']['summary']['taxonomies'][0]['level'])) in action_config["taxonomy_level"]:
+                self.logger.info('Job {} has configured taxonomy level, checking if a task is already present for this observable'.format(webhook.data['object']['cortexJobId']))
+                #Check if task is present for investigating the new results
+                if self.case.status != "Resolved":
+                    self.logger.info('Case is not yet closed, closing case for {} now...'.format(webhook.data['object']['cortexJobId']))
+                    #Close the case
+                    self.TheHiveConnector.closeCase(self.caseid)
+        
+        self.report_action = 'closeCase'
+                    
+        return self.report_action
+
+    def createTaskForTaxonomyinAnalyzerResults(self, action_config, webhook):
+        #If the Job result contains a successful search with minimum of 1 hit, create a task to investigate the results
+        if webhook.isCaseArtifactJob() and webhook.isSuccess():
+            #Case ID
+            self.caseid = webhook.data['rootId']
+            #Load Case information
+            self.case_data = self.TheHiveConnector.getCase(self.caseid)
+            
+            self.logger.debug('Job {} has just finished'.format(webhook.data['object']['cortexJobId']))
+            
+            #Check if the result count higher than 0
+            if int(float(webhook.data['object']['report']['summary']['taxonomies'][0]['level'])) in action_config["taxonomy_level"]:
+                self.logger.info('Job {} has configured taxonomy level, checking if a task is already present for this observable'.format(webhook.data['object']['cortexJobId']))
                 #Retrieve case task information
                 self.response = self.TheHiveConnector.getCaseTasks(self.caseid)
                 self.case_tasks = self.response.json()
@@ -157,7 +180,7 @@ class Automators(Main):
                 self.observable_link = TheHive.get('url') + "/index.html#/case/" + self.caseid + "/observables/" + webhook.data['object']['artifactId']
                 
                 #Task name
-                self.casetask.title = "Investigate found IOC with id: {}".format(self.observable)
+                self.casetask.title = "{} {}".format(action_config['title'] self.observable)
                 
                 #Date
                 self.date_found = time.strftime("%d-%m-%Y %H:%M")
@@ -172,8 +195,8 @@ class Automators(Main):
                 if not self.case_task_found:
                     self.logger.info('No task found, creating task for observable found in job {}'.format(webhook.data['object']['cortexJobId']))
                     #Add description
-                    self.casetask.description = "The following ioc is hit in the environment. Investigate the results and act accordingly:\n\n"
-                    self.casetask.description = self.casetask.description + "{} is seen on {}\n".format(self.observable_link, self.date_found)
+                    self.casetask.description = action['description']
+                    self.casetask.description = self.casetask.description + "\n\n {} is seen on {}\n".format(self.observable_link, self.date_found)
                     
                     #Check if case is closed
                     if self.case_data['status'] == "Resolved":
