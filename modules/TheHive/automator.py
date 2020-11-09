@@ -144,7 +144,7 @@ class Automators(Main):
             self.logger.debug('Job {} has just finished'.format(webhook.data['object']['cortexJobId']))
             
             #Check if the result count higher than 0
-            if int(float(webhook.data['object']['report']['summary']['taxonomies'][0]['level'])) in action_config["taxonomy_level"]:
+            if webhook.data['object']['report']['summary']['taxonomies'][0]['level'] in action_config["taxonomy_level"]:
                 self.logger.info('Job {} has configured taxonomy level, checking if a task is already present for this observable'.format(webhook.data['object']['cortexJobId']))
                 #Check if task is present for investigating the new results
                 if self.case.status != "Resolved":
@@ -196,7 +196,7 @@ class Automators(Main):
                 if not self.case_task_found:
                     self.logger.info('No task found, creating task for observable found in job {}'.format(webhook.data['object']['cortexJobId']))
                     #Add description
-                    self.casetask.description = action['description']
+                    self.casetask.description = action_config['description']
                     self.casetask.description = self.casetask.description + "\n\n {} is seen on {}\n".format(self.observable_link, self.date_found)
                     
                     #Check if case is closed
