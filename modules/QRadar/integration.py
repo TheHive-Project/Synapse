@@ -96,19 +96,23 @@ def enrichOffense(offense):
 
     # Parse offense types to add the offense source as an observable when a valid type is used
     for offense_type, extraction_config in cfg.get('QRadar', 'observables_in_offense_type', fallback={}).items():
-        if not isinstance(extraction_config, list) and enriched['offense_type_str'] == extraction_config:
-            observable_type = extraction_config
-            artifacts.append({'data': enriched['offense_source'], 'dataType': observable_type, 'message': 'QRadar Offense source', 'tags': ['QRadar']})
+        if enriched['offense_type_str'] == offense_type:
+            if isinstance(extraction_config, str):
+                observable_type = extraction_config
+                artifacts.append({'data': enriched['offense_source'], 'dataType': observable_type, 'message': 'QRadar Offense source', 'tags': ['QRadar']})
+            elif isinstance(extraction_config, list):
+                for extraction in extraction_config:
+                    regex = re.compile(extraction['regex'])
+                    matches = regex.findall(str(enriched['offense_source']))
+                    if len(matches) > 0:
+                        # if isinstance(found_observable, tuple): << Fix later loop through matches as well
+                        for match_group, observable_type in extraction['match_groups'].items():
+                            try:
+                                artifacts.append({'data': matches[0][match_group], 'dataType': observable_type, 'message': 'QRadar Offense Type based observable', 'tags': ['QRadar', 'offense_type']})
+                            except Exception as e:
+                                logger.warning("Could not find match group {} in {}".format(match_group, enriched['offense_type_str']))
         else:
-            for extraction in extraction_config:
-                regex = re.compile(extraction['regex'])
-                matches = regex.findall(str(enriched['offense_type_str']))
-                if len(matches) > 0:
-                for match_group, observable_type in extraction['match_groups'].items():
-                    try:
-                        artifacts.append({'data': matches[match_group], 'dataType': observable_type, 'message': 'QRadar Offense Type based observable', 'tags': ['QRadar', 'offense_type']})
-                    except as e:
-                        self.logger.warning("Could not find match group {} in {}".format(match_group, enriched['offense_type_str']))
+            logger.error("Configuration for observables_in_offense_type is wrongly formatted. Please fix this to enable this functionality")
 
     # Add all the observables
     enriched['artifacts'] = artifacts
