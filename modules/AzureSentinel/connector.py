@@ -155,18 +155,10 @@ class AzureSentinelConnector:
             self.logger.error('Failed to update incident %s', incidentId, exc_info=True)
             raise
     
-    def closeIncident(self, incidentId):
+    def closeIncident(self, incidentId, classification, classification_comment):
         # Variable required for handling regeneration of the Bearer token
         self.bearer_token_regenerated = False
         self.url = self.base_url + '/incidents/{}?api-version=2020-01-01'.format(incidentId)
-
-        # Translation table for case statusses
-        self.closure_status = {
-            "Indeterminate": "Undetermined",
-            "FalsePositive": "FalsePositive",
-            "TruePositive": "TruePositive",
-            "Other": "BenignPositive"
-        }
 
         # Adding empty header as parameters are being sent in payload
         self.headers = {
@@ -185,8 +177,8 @@ class AzureSentinelConnector:
                         "title": "{}".format(self.incident['properties']['title']),
                         "status": "Closed",
                         "severity": "Medium",
-                        "classification": self.closure_status[self.incident['details']['resolutionStatus']],
-                        "classificationComment": "Closed by Synapse with summary: {}".format(self.incident['details']['summary'])
+                        "classification": classification,
+                        "classificationComment": classification_comment
                     }
                 }
                 self.response = requests.put(self.url, headers=self.headers, json=self.data)

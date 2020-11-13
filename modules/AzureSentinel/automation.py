@@ -43,10 +43,23 @@ class Automation():
         if self.webhook.isClosedAzureSentinelCase() or self.webhook.isDeletedAzureSentinelCase():
             if self.webhook.data['operation'] == 'Delete':
                 self.case_id = self.webhook.data['objectId']
+                self.classification = "Undetermined"
+                self.classification_comment = "Closed by Synapse with summary: Deleted within The Hive"
             else:
                 self.case_id = self.webhook.data['object']['id']
+
+                # Translation table for case statusses
+                self.closure_status = {
+                    "Indeterminate": "Undetermined",
+                    "FalsePositive": "FalsePositive",
+                    "TruePositive": "TruePositive",
+                    "Other": "BenignPositive"
+                }
+                self.classification = self.closure_status[self.incident['details']['resolutionStatus']]
+                self.classification_comment = "Closed by Synapse with summary: {}".format(self.incident['details']['summary'])
+            
             logger.info('Incident {} needs to be be marked as Closed'.format(self.case_id))
-            self.AzureSentinelConnector.closeIncident(self.webhook.incidentId)
+            self.AzureSentinelConnector.closeIncident(self.webhook.incidentId, self.classification, self.classification_comment)
             self.report_action = 'closeIncident'
 
         return self.report_action
