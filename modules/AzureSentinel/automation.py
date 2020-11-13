@@ -32,12 +32,12 @@ class Automation():
         # Update incident status to active when imported as Alert
         if self.webhook.isAzureSentinelAlertImported():
             self.incidentId = self.webhook.data['object']['sourceRef']
-            logger.info('Incident {} needs to be updated to status Active'.format(self.case_id))
+            logger.info('Incident {} needs to be updated to status Active'.format(self.incidentId))
             self.AzureSentinelConnector.updateIncidentStatusToActive(self.incidentId)
             self.report_action = 'updateIncident'
 
         # Close incidents in Azure Sentinel
-        if self.webhook.isClosedAzureSentinelCase() or self.webhook.isDeletedAzureSentinelCase():
+        if self.webhook.isClosedAzureSentinelCase() or self.webhook.isDeletedAzureSentinelCase() or self.webhook.isAzureSentinelAlertMarkedAsRead():
             if self.webhook.data['operation'] == 'Delete':
                 self.case_id = self.webhook.data['objectId']
                 self.classification = "Undetermined"
@@ -54,7 +54,7 @@ class Automation():
                 }
                 self.classification = self.closure_status[self.webhook.data['details']['resolutionStatus']]
                 self.classification_comment = "Closed by Synapse with summary: {}".format(self.webhook.data['details']['summary'])
-            
+
             logger.info('Incident {} needs to be be marked as Closed'.format(self.case_id))
             self.AzureSentinelConnector.closeIncident(self.webhook.incidentId, self.classification, self.classification_comment)
             self.report_action = 'closeIncident'

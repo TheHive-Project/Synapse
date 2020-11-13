@@ -536,6 +536,25 @@ class Webhook:
         else:
             return False
 
+    def isAzureSentinelAlertMarkedAsRead(self):
+        """
+            Check if the webhook describes a AzureSentinel alert marked as read
+            "store" the incidentId in the webhook attribute "incidentId"
+
+            :return: True if it is a AzureSentinel alert marked as read, False if not
+            :rtype: boolean
+        """
+
+        self.logger.debug('%s.isAzureSentinelAlertMarkedAsRead starts', __name__)
+
+        if (self.isAlert() and self.isMarkedAsRead()):
+            # the value 'AzureSentinel_Offenses' is hardcoded at creation by
+            # workflow AzureSentinel2alert
+            if self.data['object']['source'] == 'Azure_Sentinel_incidents':
+                self.incidentId = self.data['object']['sourceRef']
+                return True
+        return False
+
     def isAzureSentinelAlertImported(self):
         """
             Check if the webhook describes an Imported AzureSentinel alert
