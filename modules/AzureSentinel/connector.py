@@ -230,7 +230,6 @@ class AzureSentinelConnector:
                 self.incidents.extend(self.response.json()["value"])
                 if (self.response.status_code == 200):
                     self.logger.debug('Incidents successsfully retrieved')
-                    return True
                 elif self.response.status_code == 401:
                     raise ConnectionRefusedError(self.response.content)
                 else:
