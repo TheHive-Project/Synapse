@@ -228,16 +228,15 @@ class AzureSentinelConnector:
                 self.url = self.response.json()['nextLink']
                 self.response = requests.get(self.url, headers=self.headers)
                 self.incidents.extend(self.response.json()["value"])
-
-                if (self.response.code == 200):
+                if (self.response.status_code == 200):
                     self.logger.debug('Incidents successsfully retrieved')
                     return True
-                elif self.response.code == 401:
+                elif self.response.status_code == 401:
                     raise ConnectionRefusedError(self.response.content)
                 else:
                     raise ValueError(self.response.content)
         except ValueError as e:
-            self.logger.error('AzureSentinel returned http %s', str(self.response.code))
+            self.logger.error('AzureSentinel returned http %s', str(self.response.status_code))
         except ConnectionRefusedError as e:
             # Supporting regeneration of the token automatically. Will try once and will fail after
             if not self.bearer_token_regenerated:
