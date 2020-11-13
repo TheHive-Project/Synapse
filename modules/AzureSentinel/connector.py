@@ -172,7 +172,7 @@ class AzureSentinelConnector:
                 return True
             else:
                 self.data = {
-                    "etag": "\"{}\"".format(self.incident['etag']),
+                    "etag": "{}".format(self.incident['etag']),
                     "properties": {
                         "title": "{}".format(self.incident['properties']['title']),
                         "status": "Closed",
