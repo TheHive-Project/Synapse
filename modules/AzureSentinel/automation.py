@@ -42,6 +42,10 @@ class Automation():
                 self.case_id = self.webhook.data['objectId']
                 self.classification = "Undetermined"
                 self.classification_comment = "Closed by Synapse with summary: Deleted within The Hive"
+
+            elif self.webhook.isAzureSentinelAlertMarkedAsRead():
+                self.classification = "Undetermined"
+                self.classification_comment = "Closed by Synapse with summary: Marked as Read within The Hive"
             else:
                 self.case_id = self.webhook.data['object']['id']
 

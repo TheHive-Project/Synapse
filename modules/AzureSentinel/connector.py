@@ -184,7 +184,9 @@ class AzureSentinelConnector:
                 # True Positive requires classificationReason. Currently there is only one option
                 if classification == "TruePositive":
                     self.data['properties']['classificationReason'] = "SuspiciousActivity"
-                
+                elif classification == "FalsePositive":
+                    self.data['properties']['classificationReason'] = "IncorrectAlertLogic"
+
                 self.response = requests.put(self.url, headers=self.headers, json=self.data)
                 if (self.response.status_code == 200):
                     self.logger.info('Incident %s successsfully closed', incidentId)
