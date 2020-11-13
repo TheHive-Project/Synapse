@@ -55,8 +55,8 @@ class Automation():
                     "TruePositive": "TruePositive",
                     "Other": "BenignPositive"
                 }
-                self.classification = self.closure_status[self.incident['details']['resolutionStatus']]
-                self.classification_comment = "Closed by Synapse with summary: {}".format(self.incident['details']['summary'])
+                self.classification = self.closure_status[self.webhook['details']['resolutionStatus']]
+                self.classification_comment = "Closed by Synapse with summary: {}".format(self.webhook['details']['summary'])
             
             logger.info('Incident {} needs to be be marked as Closed'.format(self.case_id))
             self.AzureSentinelConnector.closeIncident(self.webhook.incidentId, self.classification, self.classification_comment)
