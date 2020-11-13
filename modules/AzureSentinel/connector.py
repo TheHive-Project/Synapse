@@ -122,24 +122,28 @@ class AzureSentinelConnector:
         }
         try:
             self.incident = requests.get(self.url, headers=self.headers).json()
-            self.data = {
-                "etag": "\"{}\"".format(self.incident['etag']),
-                "properties": {
-                    "title": "{}".format(self.incident['properties']['title']),
-                    "status": "Closed",
-                    "severity": "Medium",
-                    "classification": "Undetermined",
-                    "classificationComment": "Closed by Synapse"
-                }
-            }
-            self.response = requests.put(self.url, headers=self.headers, json=self.data)
-            if (self.response.code == 200):
-                self.logger.info('Incident %s successsfully closed', incidentId)
+            if self.incident['properties']['status'] == "Closed":
+                self.logger.info("Incident {} is already closed".format(incidentId))
                 return True
-            elif self.response.code == 401:
-                raise ConnectionRefusedError(self.response.content)
             else:
-                raise ValueError(self.response.content)
+                self.data = {
+                    "etag": "\"{}\"".format(self.incident['etag']),
+                    "properties": {
+                        "title": "{}".format(self.incident['properties']['title']),
+                        "status": "Closed",
+                        "severity": "Medium",
+                        "classification": "Undetermined",
+                        "classificationComment": "Closed by Synapse"
+                    }
+                }
+                self.response = requests.put(self.url, headers=self.headers, json=self.data)
+                if (self.response.code == 200):
+                    self.logger.info('Incident %s successsfully closed', incidentId)
+                    return True
+                elif self.response.code == 401:
+                    raise ConnectionRefusedError(self.response.content)
+                else:
+                    raise ValueError(self.response.content)
         except ValueError as e:
             self.logger.error('AzureSentinel returned http %s', str(self.response.code))
         except ConnectionRefusedError as e:
