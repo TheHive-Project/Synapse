@@ -29,6 +29,16 @@ class Automation():
         self.report_action = report_action
 
     def parse_hooks(self):
+        # Update incident status to active when imported as Alert
+        if self.webhook.isAzureSentinelAlertImported():
+            if self.webhook.data['operation'] == 'Delete':
+                self.case_id = self.webhook.data['objectId']
+            else:
+                self.case_id = self.webhook.data['object']['id']
+            logger.info('Incident {} needs to be be marked as Closed'.format(self.case_id))
+            self.AzureSentinelConnector.closeIncident(self.webhook.incidentId)
+            self.report_action = 'closeIncident'
+
         # Close incidents in Azure Sentinel
         if self.webhook.isClosedAzureSentinelCase() or self.webhook.isDeletedAzureSentinelCase():
             if self.webhook.data['operation'] == 'Delete':

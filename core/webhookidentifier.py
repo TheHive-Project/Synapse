@@ -536,6 +536,21 @@ class Webhook:
         else:
             return False
 
+    def isAzureSentinelAlertImported(self):
+        """
+            Check if the webhook describes an Imported AzureSentinel alert
+    
+            :return: True if it is a AzureSentinel alert is imported, False if not
+            :rtype: boolean
+        """
+    
+        self.logger.debug('%s.isAzureSentinelAlertImported starts', __name__)
+    
+        if (self.isImportedAlert() and self.isAzureSentinel()):
+            return True
+        else:
+            return False
+
     def fromAzureSentinel(self, esCaseId):
         """
             For a given esCaseId, search if the case has been opened from

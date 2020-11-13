@@ -13,7 +13,7 @@ from core.functions import getConf, loadAutomationConfiguration
 app_dir = os.path.dirname(os.path.abspath(__file__))
 cfg = getConf()
 
-if cfg.get("api", 'log_webhooks', fallback=False):
+if cfg.getboolean("Automation", 'log_webhooks', fallback=False):
     #create logger
     webhook_logger = logging.getLogger("webhooks")
     webhook_logger.setLevel(logging.getLevelName("INFO"))

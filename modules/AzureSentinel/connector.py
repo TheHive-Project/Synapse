@@ -110,10 +110,59 @@ class AzureSentinelConnector:
 
             self.logger.error("Could not retrieve incident from Azure Sentinel: {}".format(e))
 
+    def updateIncidentStatusToActive(self, incidentId):
+        # Variable required for handling regeneration of the Bearer token
+        self.bearer_token_regenerated = False
+        self.url = self.base_url + '/incidents/{}?api-version=2020-01-01'.format(incidentId)
+
+        # Adding empty header as parameters are being sent in payload
+        self.headers = {
+            "Authorization": "Bearer " + self.bearer_token,
+            "cache-control": "no-cache",
+        }
+        try:
+            self.incident = requests.get(self.url, headers=self.headers).json()
+            self.data = {
+                "etag": "\"{}\"".format(self.incident['etag']),
+                "properties": {
+                    "title": self.incident['properties']['title'],
+                    "status": "Active",
+                    "severity": self.incident['properties']['severity'],
+                }
+            }
+            self.response = requests.put(self.url, headers=self.headers, json=self.data)
+            if (self.response.code == 200):
+                self.logger.info('Incident %s successsfully closed', incidentId)
+                return True
+            elif self.response.code == 401:
+                raise ConnectionRefusedError(self.response.content)
+            else:
+                raise ValueError(self.response.content)
+        except ValueError as e:
+            self.logger.error('AzureSentinel returned http %s', str(self.response.code))
+        except ConnectionRefusedError as e:
+            # Supporting regeneration of the token automatically. Will try once and will fail after
+            if not self.bearer_token_regenerated:
+                self.logger.info("Bearer token expired. Generating a new one")
+                self.bearer_token = self.getBearerToken()
+                self.bearer_token_regenerated = True
+                self.getIncident()
+        except Exception as e:
+            self.logger.error('Failed to close incident %s', incidentId, exc_info=True)
+            raise
+    
     def closeIncident(self, incidentId):
         # Variable required for handling regeneration of the Bearer token
         self.bearer_token_regenerated = False
         self.url = self.base_url + '/incidents/{}?api-version=2020-01-01'.format(incidentId)
+
+        # Translation table for case statusses
+        self.closure_status = {
+            "Indeterminate": "Undetermined",
+            "FalsePositive": "FalsePositive",
+            "TruePositive": "TruePositive",
+            "Other": "BenignPositive"
+        }
 
         # Adding empty header as parameters are being sent in payload
         self.headers = {
@@ -132,8 +181,8 @@ class AzureSentinelConnector:
                         "title": "{}".format(self.incident['properties']['title']),
                         "status": "Closed",
                         "severity": "Medium",
-                        "classification": "Undetermined",
-                        "classificationComment": "Closed by Synapse"
+                        "classification": self.closure_status[self.incident['details']['resolutionStatus']],
+                        "classificationComment": "Closed by Synapse with summary: {}".format(self.incident['details']['summary'])
                     }
                 }
                 self.response = requests.put(self.url, headers=self.headers, json=self.data)
