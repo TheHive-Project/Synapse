@@ -122,22 +122,26 @@ class AzureSentinelConnector:
         }
         try:
             self.incident = requests.get(self.url, headers=self.headers).json()
-            self.data = {
-                "etag": "\"{}\"".format(self.incident['etag']),
-                "properties": {
-                    "title": self.incident['properties']['title'],
-                    "status": "Active",
-                    "severity": self.incident['properties']['severity'],
-                }
-            }
-            self.response = requests.put(self.url, headers=self.headers, json=self.data)
-            if (self.response.code == 200):
-                self.logger.info('Incident %s successsfully closed', incidentId)
+            if self.incident['properties']['status'] == "Active":
+                self.logger.info("Incident {} is already marked as Active".format(incidentId))
                 return True
-            elif self.response.code == 401:
-                raise ConnectionRefusedError(self.response.content)
             else:
-                raise ValueError(self.response.content)
+                self.data = {
+                    "etag": "\"{}\"".format(self.incident['etag']),
+                    "properties": {
+                        "title": self.incident['properties']['title'],
+                        "status": "Active",
+                        "severity": self.incident['properties']['severity'],
+                    }
+                }
+                self.response = requests.put(self.url, headers=self.headers, json=self.data)
+                if (self.response.code == 200):
+                    self.logger.info('Incident %s successsfully updated', incidentId)
+                    return True
+                elif self.response.code == 401:
+                    raise ConnectionRefusedError(self.response.content)
+                else:
+                    raise ValueError(self.response.content)
         except ValueError as e:
             self.logger.error('AzureSentinel returned http %s', str(self.response.code))
         except ConnectionRefusedError as e:
@@ -148,7 +152,7 @@ class AzureSentinelConnector:
                 self.bearer_token_regenerated = True
                 self.getIncident()
         except Exception as e:
-            self.logger.error('Failed to close incident %s', incidentId, exc_info=True)
+            self.logger.error('Failed to update incident %s', incidentId, exc_info=True)
             raise
     
     def closeIncident(self, incidentId):
