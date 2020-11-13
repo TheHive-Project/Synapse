@@ -28,12 +28,12 @@ class AzureSentinelConnector:
         self.client_id = self.cfg.get('AzureSentinel', 'client_id')
         self.client_secret = self.cfg.get('AzureSentinel', 'client_secret')
         self.base_url = 'https://management.azure.com/subscriptions/{}/resourceGroups/{}/providers/Microsoft.OperationalInsights/workspaces/{}/providers/Microsoft.SecurityInsights'.format(self.subscription_id, self.resource_group, self.workspace)
-        
+
         self.bearer_token = self.getBearerToken()
 
     def getBearerToken(self):
         self.url = 'https://login.microsoftonline.com/{}/oauth2/token'.format(self.tenant_id)
-        self.data= 'grant_type=client_credentials&client_id={}&client_secret={}&resource=https%3A%2F%2Fmanagement.azure.com&undefined='.format(self.client_id, self.client_secret)
+        self.data = 'grant_type=client_credentials&client_id={}&client_secret={}&resource=https%3A%2F%2Fmanagement.azure.com&undefined='.format(self.client_id, self.client_secret)
         # Adding empty header as parameters are being sent in payload
         self.headers = {
             "Content-Type": "application/x-www-form-urlencoded",
@@ -87,15 +87,26 @@ class AzureSentinelConnector:
         try:
             self.response = requests.get(self.url, headers=self.headers)
             self.incident = self.response.json()
-            return self.incident
 
-        except Exception as e:
+            if (self.response.code == 200):
+                self.logger.debug('Incident %s successsfully retrieved', incidentId)
+                return self.incident
+            elif self.response.code == 401:
+                raise ConnectionRefusedError(self.response.content)
+            else:
+                raise ValueError(self.response.content)
+        except ValueError as e:
+            self.logger.error('AzureSentinel returned http %s', str(self.response.code))
+        except ConnectionRefusedError as e:
             # Supporting regeneration of the token automatically. Will try once and will fail after
-            if self.response.status_code == 401 and not self.bearer_token_regenerated:
+            if not self.bearer_token_regenerated:
                 self.logger.info("Bearer token expired. Generating a new one")
                 self.bearer_token = self.getBearerToken()
                 self.bearer_token_regenerated = True
                 self.getIncident()
+        except Exception as e:
+            self.logger.error('Failed to retrieve incident %s', incidentId, exc_info=True)
+            raise
 
             self.logger.error("Could not retrieve incident from Azure Sentinel: {}".format(e))
 
@@ -114,26 +125,39 @@ class AzureSentinelConnector:
             self.data = {
                 "etag": "\"{}\"".format(self.incident['etag']),
                 "properties": {
-                    "status": "Closed"
+                    "title": "{}".format(self.incident['properties']['title']),
+                    "status": "Closed",
+                    "severity": "Medium",
+                    "classification": "Undetermined",
+                    "classificationComment": "Closed by Synapse"
                 }
             }
-            self.response = requests.put(self.url, headers=self.headers, data=self.data)
-
-        except Exception as e:
+            self.response = requests.put(self.url, headers=self.headers, json=self.data)
+            if (self.response.code == 200):
+                self.logger.info('Incident %s successsfully closed', incidentId)
+                return True
+            elif self.response.code == 401:
+                raise ConnectionRefusedError(self.response.content)
+            else:
+                raise ValueError(self.response.content)
+        except ValueError as e:
+            self.logger.error('AzureSentinel returned http %s', str(self.response.code))
+        except ConnectionRefusedError as e:
             # Supporting regeneration of the token automatically. Will try once and will fail after
-            if self.response.status_code == 401 and not self.bearer_token_regenerated:
+            if not self.bearer_token_regenerated:
                 self.logger.info("Bearer token expired. Generating a new one")
                 self.bearer_token = self.getBearerToken()
                 self.bearer_token_regenerated = True
                 self.getIncident()
-
-            self.logger.error("Could not retrieve incident from Azure Sentinel: {}".format(e))
+        except Exception as e:
+            self.logger.error('Failed to close incident %s', incidentId, exc_info=True)
+            raise
 
     def getIncidents(self):
-        #Variable required for handling regeneration of the Bearer token
+        # Variable required for handling regeneration of the Bearer token
         self.bearer_token_regenerated = False
 
-        #Empty array for incidents
+        # Empty array for incidents
         self.incidents = []
 
         self.url = self.base_url + '/incidents?api-version=2020-01-01&%24filter=(properties%2Fstatus%20eq%20\'New\'%20or%20properties%2Fstatus%20eq%20\'Active\')&%24orderby=properties%2FcreatedTimeUtc%20desc'
@@ -146,21 +170,33 @@ class AzureSentinelConnector:
         try:
             self.response = requests.get(self.url, headers=self.headers)
             self.incidents.extend(self.response.json()["value"])
-            #Lazy loop to grab all incidents
+            # Lazy loop to grab all incidents
             while 'nextLink' in self.response.json():
                 self.url = self.response.json()['nextLink']
                 self.response = requests.get(self.url, headers=self.headers)
                 self.incidents.extend(self.response.json()["value"])
-            return self.incidents
-        except Exception as e:
-            #Supporting regeneration of the token automatically. Will try once and will fail after
-            if self.response.status_code == 401 and not self.bearer_token_regenerated:
+
+                if (self.response.code == 200):
+                    self.logger.debug('Incidents successsfully retrieved')
+                    return True
+                elif self.response.code == 401:
+                    raise ConnectionRefusedError(self.response.content)
+                else:
+                    raise ValueError(self.response.content)
+        except ValueError as e:
+            self.logger.error('AzureSentinel returned http %s', str(self.response.code))
+        except ConnectionRefusedError as e:
+            # Supporting regeneration of the token automatically. Will try once and will fail after
+            if not self.bearer_token_regenerated:
                 self.logger.info("Bearer token expired. Generating a new one")
                 self.bearer_token = self.getBearerToken()
                 self.bearer_token_regenerated = True
-                self.getIncidents()
+                self.getIncident()
+        except Exception as e:
+            self.logger.error('Failed to retrieve incidents', exc_info=True)
+            raise
 
-            self.logger.error("Could not retrieve incidents from Azure Sentinel: {}".format(e))
+        return self.incidents
 
     def getRule(self, uri):
         #Variable required for handling regeneration of the Bearer token
