@@ -488,7 +488,7 @@ class Webhook:
                 return False
     
         except Exception as e:
-            self.logger.error('%s.isClosedQRadarCase failed', __name__, exc_info=True)
+            self.logger.error('%s.isDeletedQRadarCase failed', __name__, exc_info=True)
             raise
 
     def fromQRadar(self, esCaseId):
@@ -520,7 +520,141 @@ class Webhook:
                 return False
         else:
             return False
-            
+
+    def isAzureSentinel(self):
+        """
+            Check if the webhook describes a AzureSentinel Incident
+
+            :return: True if it is a AzureSentinel Incident, False if not
+            :rtype: boolean
+        """
+
+        self.logger.debug('%s.isAzureSentinel starts', __name__)
+
+        if ('tags' in self.data['details'] and 'AzureSentinel' in self.data['details']['tags']) or ('tags' in self.data['object'] and 'AzureSentinel' in self.data['object']['tags']):
+            return True
+        else:
+            return False
+
+    def fromAzureSentinel(self, esCaseId):
+        """
+            For a given esCaseId, search if the case has been opened from
+            a AzureSentinel incident, if so adds the incidentId attribute to this object
+
+            :param esCaseId: elasticsearch case id
+            :type esCaseId: str
+
+            :return: True if it is a AzureSentinel case, false if not
+            :rtype: bool
+        """
+
+        query = dict()
+        query['case'] = esCaseId
+        results = self.theHiveConnector.findAlert(query)
+
+        if len(results) == 1:
+            # should only have one hit
+            if results[0]['source'] == 'Azure_Sentinel_incidents':
+                # case opened from incident
+                # and from AzureSentinel
+                self.incidentId = results[0]['sourceRef']
+                return True
+            else:
+                # case opened from an alert but
+                # not from AzureSentinel
+                return False
+        else:
+            return False
+
+    def isClosedAzureSentinelCase(self):
+        """
+            Check if the webhook describes a closing AzureSentinel case,
+            if the case has been opened from a AzureSentinel alert
+            returns True
+            "store" the incidentId in the webhook attribute "incidentId"
+            If the case is merged, it is not considered to be closed (even if it is
+            from TheHive perspective), as a result, a merged AzureSentinel case will not close
+            an incident.
+            However a case created from merged case, where one of the merged case is
+            related to AzureSentinel, will close the linked AzureSentinel incident.
+
+            :return: True if it is a AzureSentinel alert marked as read, False if not
+            :rtype: boolean
+        """
+
+        self.logger.debug('%s.isClosedAzureSentinelCase starts', __name__)
+
+        try:
+            if self.isCase() and self.isClosed() and not self.isMergedInto():
+                # searching in alerts if the case comes from a AzureSentinel alert
+                esCaseId = self.data['objectId']
+                if self.fromAzureSentinel(esCaseId):
+                    return True
+                else:
+                    # at this point, the case was not opened from a AzureSentinel alert
+                    # however, it could be a case created from merged cases
+                    # if one of the merged case is related to AzureSentinel alert
+                    # then we consider the case as being from AzureSentinel
+                    if self.isFromMergedCases():
+                        for esCaseId in self.data['object']['mergeFrom']:
+                            if self.fromAzureSentinel(esCaseId):
+                                return True
+                        # went through all merged case and none where from AzureSentinel
+                        return False
+                    else:
+                        # not a AzureSentinel case
+                        return False
+            else:
+                # not a case or have not been closed when
+                # when the webhook has been issued
+                # (might be open or already closed)
+                return False
+
+        except Exception as e:
+            self.logger.error('%s.isClosedAzureSentinelCase failed', __name__, exc_info=True)
+            raise
+
+    def isDeletedAzureSentinelCase(self):
+        """
+            Check if the webhook describes deleting a AzureSentinel case,
+
+            "store" the offenseId in the webhook attribute "offenseId"
+
+            :return: True if it is deleting a AzureSentinel case, False if not
+            :rtype: boolean
+        """
+
+        self.logger.debug('%s.isDeletedAzureSentinelCase starts', __name__)
+
+        try:
+            if self.isCase() and self.isDeleted():
+                # searching in alerts if the case comes from a AzureSentinel alert
+                esCaseId = self.data['objectId']
+                if self.fromAzureSentinel(esCaseId):
+                    return True
+                else:
+                    # at this point, the case was not opened from a AzureSentinel alert
+                    # however, it could be a case created from merged cases
+                    # if one of the merged case is related to AzureSentinel alert
+                    # then we consider the case as being from AzureSentinel
+                    if self.isFromMergedCases():
+                        for esCaseId in self.data['object']['mergeFrom']:
+                            if self.fromAzureSentinel(esCaseId):
+                                return True
+                        # went through all merged case and none where from AzureSentinel
+                        return False
+                    else:
+                        # not a AzureSentinel case
+                        return False
+            else:
+                # not a case or have not been deleted when
+                # when the webhook has been issued
+                return False
+
+        except Exception as e:
+            self.logger.error('%s.isDeletedAzureSentinelCase failed', __name__, exc_info=True)
+            raise
+
     def isMisp(self):
         """
             Check if the webhook describes a MISP alert that is created

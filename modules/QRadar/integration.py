@@ -111,8 +111,8 @@ def enrichOffense(offense):
                                 artifacts.append({'data': matches[0][match_group], 'dataType': observable_type, 'message': 'QRadar Offense Type based observable', 'tags': ['QRadar', 'offense_type']})
                             except Exception as e:
                                 logger.warning("Could not find match group {} in {}".format(match_group, enriched['offense_type_str']))
-        else:
-            logger.error("Configuration for observables_in_offense_type is wrongly formatted. Please fix this to enable this functionality")
+            else:
+                logger.error("Configuration for observables_in_offense_type is wrongly formatted. Please fix this to enable this functionality")
 
     # Add all the observables
     enriched['artifacts'] = artifacts
@@ -134,10 +134,10 @@ def check_if_updated(current_a, new_a):
     logger.debug("New alert %s" % new_a)
     for item in sorted(new_a):
         # Skip values that are not required for the compare
-        if item is "date":
+        if item == "date":
             continue
         # Artifacts require special attention as these are all separate objects in an array for a new alert. The current alert is a array of dicts
-        if item is "artifacts":
+        if item == "artifacts":
             # If the array is of different size an update is required
             if not len(current_a[item]) == len(new_a[item]):
                 logger.info("Length mismatch detected: old length:%s, new length: %s" % (len(current_a[item]), len(new_a[item])))
@@ -161,7 +161,7 @@ def check_if_updated(current_a, new_a):
             #     logger.debug("Found diff in artifacts: %s" % diff)
             #     return True
 
-        if item is "tags":
+        if item == "tags":
             # loop through the newly created alert array to extract the tags and add them so a separate variable
             diff = list(itertools.filterfalse(lambda x: x in new_a['tags'], current_a['tags']))
             diff = diff + list(itertools.filterfalse(lambda x: x in current_a['tags'], new_a['tags']))

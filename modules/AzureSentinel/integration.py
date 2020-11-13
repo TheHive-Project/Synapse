@@ -92,7 +92,7 @@ def sentinelIncidentToHiveAlert(incident):
     #
 
     # Setup Tags
-    tags = ['Sentinel', 'incident', 'Synapse']
+    tags = ['AzureSentinel', 'incident', 'Synapse']
 
     #Skip for now
     artifacts = []

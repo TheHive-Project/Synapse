@@ -73,7 +73,62 @@ class AzureSentinelConnector:
             string_formatted_time = ntz_formatted_time.timestamp() * 1000
 
         return string_formatted_time
-    
+
+    def getIncident(self, incidentId):
+        # Variable required for handling regeneration of the Bearer token
+        self.bearer_token_regenerated = False
+        self.url = self.base_url + '/incidents/{}?api-version=2020-01-01'.format(incidentId)
+
+        # Adding empty header as parameters are being sent in payload
+        self.headers = {
+            "Authorization": "Bearer " + self.bearer_token,
+            "cache-control": "no-cache",
+        }
+        try:
+            self.response = requests.get(self.url, headers=self.headers)
+            self.incident = self.response.json()
+            return self.incident
+
+        except Exception as e:
+            # Supporting regeneration of the token automatically. Will try once and will fail after
+            if self.response.status_code == 401 and not self.bearer_token_regenerated:
+                self.logger.info("Bearer token expired. Generating a new one")
+                self.bearer_token = self.getBearerToken()
+                self.bearer_token_regenerated = True
+                self.getIncident()
+
+            self.logger.error("Could not retrieve incident from Azure Sentinel: {}".format(e))
+
+    def closeIncident(self, incidentId):
+        # Variable required for handling regeneration of the Bearer token
+        self.bearer_token_regenerated = False
+        self.url = self.base_url + '/incidents/{}?api-version=2020-01-01'.format(incidentId)
+
+        # Adding empty header as parameters are being sent in payload
+        self.headers = {
+            "Authorization": "Bearer " + self.bearer_token,
+            "cache-control": "no-cache",
+        }
+        try:
+            self.incident = requests.get(self.url, headers=self.headers).json()
+            self.data = {
+                "etag": "\"{}\"".format(self.incident['etag']),
+                "properties": {
+                    "status": "Closed"
+                }
+            }
+            self.response = requests.put(self.url, headers=self.headers, data=self.data)
+
+        except Exception as e:
+            # Supporting regeneration of the token automatically. Will try once and will fail after
+            if self.response.status_code == 401 and not self.bearer_token_regenerated:
+                self.logger.info("Bearer token expired. Generating a new one")
+                self.bearer_token = self.getBearerToken()
+                self.bearer_token_regenerated = True
+                self.getIncident()
+
+            self.logger.error("Could not retrieve incident from Azure Sentinel: {}".format(e))
+
     def getIncidents(self):
         #Variable required for handling regeneration of the Bearer token
         self.bearer_token_regenerated = False
