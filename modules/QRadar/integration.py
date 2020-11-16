@@ -321,11 +321,14 @@ def allOffense2Alert(timerange):
         # each offenses in the list is represented as a dict
         # we enrich this dict with additional details
         for offense in offensesList:
+            matched = False
             # Filter based on regexes in configuration
-            for offense_exclusion_regexes in cfg.get('QRadar', 'offense_exclusion_regexes', fallback=[]):
-                regex = re.compile(offense_exclusion_regexes)
+            for offense_exclusion_regex in cfg.get('QRadar', 'offense_exclusion_regexes', fallback=[]):
+                regex = re.compile(offense_exclusion_regex)
                 if regex.match(offense['description']):
-                    continue
+                    matched = True
+            if matched:
+                continue
 
             # Prepare new alert
             offense_report = dict()
