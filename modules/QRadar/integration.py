@@ -324,8 +324,10 @@ def allOffense2Alert(timerange):
             matched = False
             # Filter based on regexes in configuration
             for offense_exclusion_regex in cfg.get('QRadar', 'offense_exclusion_regexes', fallback=[]):
+                logger.debug("Offense exclusion regex found '{}'. Matching against offense {}".format(offense_exclusion_regex, offense['id']))
                 regex = re.compile(offense_exclusion_regex)
                 if regex.match(offense['description']):
+                    logger.debug("Found exclusion match for offense {} and regex {}".format(offense['id'], offense_exclusion_regex))
                     matched = True
             if matched:
                 continue
