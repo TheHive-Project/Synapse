@@ -99,7 +99,7 @@ for cfg_section in cfg.sections():
     if cfg_section in ['api', 'Automation']:
         continue
     endpoint = cfg.get(cfg_section, 'synapse_endpoint', fallback=False)
-    if endpoint:
+    if endpoint and cfg.getbool(endpoint, 'enabled'):
         logger.info("Enabling integration for {}: {}".format(cfg_section, endpoint))
         modules[endpoint] = cfg_section
 
@@ -111,7 +111,7 @@ def endpoint(integration):
         response = integration.validateRequest(request)
         return response
     except KeyError as e:
-        logger.warning('Integration module not found: {}'.format(integration))
+        logger.warning('Integration module not found or disabled: {}'.format(integration))
 
 @app.route('/version', methods=['GET'])
 def getSynapseVersion():
