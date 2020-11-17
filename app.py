@@ -112,6 +112,7 @@ def endpoint(integration):
         return response
     except KeyError as e:
         logger.warning('Integration module not found or disabled: {}'.format(integration))
+        return "ERROR: Integration module not found or disabled", 404
 
 @app.route('/version', methods=['GET'])
 def getSynapseVersion():
