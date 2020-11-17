@@ -66,6 +66,17 @@ logger.info("Loaded the following automation identifiers: {}".format(automation_
 from core.loader import moduleLoader
 loaded_modules = moduleLoader("integration")
 
+# loop through all configured sections and create a mapping for the endpoints
+modules = {}
+for cfg_section in cfg.sections():
+    # Skip non module config
+    if cfg_section in ['api', 'Automation']:
+        continue
+    endpoint = cfg.get(cfg_section, 'synapse_endpoint', fallback=False)
+    if endpoint and cfg.getboolean(cfg_section, 'enabled'):
+        logger.info("Enabling integration for {}: {}".format(cfg_section, endpoint))
+        modules[endpoint] = cfg_section
+
 app = Flask(__name__)
 
 @app.before_first_request
@@ -91,17 +102,6 @@ def listenWebhook():
 
     else:
         return jsonify({'success': False, 'message': 'Not JSON'}), 400
-
-# loop through all configured sections and create a mapping for the endpoints
-modules = {}
-for cfg_section in cfg.sections():
-    # Skip non module config
-    if cfg_section in ['api', 'Automation']:
-        continue
-    endpoint = cfg.get(cfg_section, 'synapse_endpoint', fallback=False)
-    if endpoint and cfg.getboolean(endpoint, 'enabled'):
-        logger.info("Enabling integration for {}: {}".format(cfg_section, endpoint))
-        modules[endpoint] = cfg_section
 
 # Use a dynamic route to receive integration based request and send them to the appropriate module found through the configuration
 @app.route('/integration/<integration>', methods=['GET', 'POST', 'PUT'])
