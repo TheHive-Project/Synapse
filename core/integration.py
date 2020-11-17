@@ -6,7 +6,7 @@ from datetime import datetime, timezone, timedelta
 from jinja2 import Template, Environment, meta
 
 class Main():
-    def __init__(self, cfg, use_case_config):
+    def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.cfg = getConf()
 

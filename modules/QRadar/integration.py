@@ -15,8 +15,8 @@ from time import sleep
 
 class Integration(Main):
 
-    def init(self):
-        super().__init__
+    def __init__(self):
+        super().__init__()
         self.qradarConnector = QRadarConnector(self.cfg)
         self.theHiveConnector = TheHiveConnector(self.cfg)
 
@@ -100,7 +100,7 @@ class Integration(Main):
 
     def qradarOffenseToHiveAlert(self, offense):
 
-        def getHiveSeverity(self, offense):
+        def getHiveSeverity(offense):
             # severity in TheHive is either low, medium or high
             # while severity in QRadar is from 1 to 10
             # low will be [1;4] => 1
@@ -195,7 +195,7 @@ class Integration(Main):
         self.alert = self.theHiveConnector.craftAlert(
             "{}, {}".format(offense['id'], offense['description']),
             self.craftAlertDescription(offense),
-            self.getHiveSeverity(offense),
+            getHiveSeverity(offense),
             offense['start_time'],
             self.tags,
             2,
@@ -212,7 +212,7 @@ class Integration(Main):
         if request.is_json:
             self.content = request.get_json()
             if 'timerange' in self.content:
-                workflowReport = self.allOffense2Alert(self.content['timerange'])
+                self.workflowReport = self.allOffense2Alert(self.content['timerange'])
                 if self.workflowReport['success']:
                     return json.dumps(self.workflowReport), 200
                 else:
