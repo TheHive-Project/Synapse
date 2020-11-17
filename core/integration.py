@@ -75,9 +75,9 @@ class Main():
     def checkObservableTLP(self, artifacts):
         self.artifacts = artifacts
 
-        if 'tlp_modifiers' in self.cfg.get('Automation'):
+        if self.cfg.get('Automation', 'tlp_modifiers', fallback=None):
             for artifact in self.artifacts:
-                for tlp, tlp_config in self.cfg.get('Automation'):
+                for tlp, tlp_config in self.cfg.get('Automation', 'tlp_modifiers').items():
 
                     self.tlp_table = {
                         "white": 0,
@@ -88,7 +88,7 @@ class Main():
 
                     self.tlp_int = self.tlp_table['tlp']
 
-                    for observable_type, observable_type_config in tlp_config:
+                    for observable_type, observable_type_config in tlp_config.items():
                         if observable_type == 'ip':
                             for entry in observable_type_config['tlp_modifiers']['ip']:
                                 # Initial values
