@@ -56,6 +56,10 @@ class Integration(Main):
         #     for technique in offense['mitre_techniques']:
         #         mitre_t_links_formatted += "- [%s](%s/%s) \n" % (technique, 'https://attack.mitre.org/techniques/', technique)
 
+        # Add a custom description when the incident does not contain any
+        if 'description' not in incident['properties']:
+            incident['properties']['description'] = "N/A"
+
         # Add incident details table
         self.description += (
             '#### Summary\n\n' +
