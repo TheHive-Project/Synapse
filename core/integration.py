@@ -73,7 +73,7 @@ class Main():
         return False
 
     def checkObservableTLP(self, artifacts):
-        self.artifacts = artifacts
+        self.artifacts = []
 
         if self.cfg.get('Automation', 'tlp_modifiers', fallback=None):
             for artifact in self.artifacts:
@@ -86,11 +86,11 @@ class Main():
                         "red": 3
                     }
 
-                    self.tlp_int = self.tlp_table['tlp']
+                    self.tlp_int = self.tlp_table[tlp]
 
                     for observable_type, observable_type_config in tlp_config.items():
                         if observable_type == 'ip':
-                            for entry in observable_type_config['tlp_modifiers']['ip']:
+                            for entry in observable_type_config:
                                 # Initial values
                                 self.match = False
                                 observable_ip = ipaddress.ip_address(artifact['data'])
@@ -111,13 +111,16 @@ class Main():
                                 # If matched add it to new entries to use outside of the loop
                                 if self.match:
                                     self.logger.debug("Observable {} has matched {} through {} of the TLP modifiers list. Adjusting TLP...".format(artifact['data'], tlp, entry))
-                                    self.artifacts[artifact]['tlp'] = self.tlp_value
+                                    artifact['tlp'] = self.tlp_int
                         else:
-                            for extraction_regex in observable_type_config['tlp_modifiers'][observable_type]:
+                            for extraction_regex in observable_type_config:
                                 self.regex = re.compile(extraction_regex)
                                 if self.regex.match(artifact['data']):
                                     self.logger.debug("Observable {} has matched {} through {} of the TLP modifiers list. Adjusting TLP...".format(artifact['data'], tlp, entry))
-                                    self.artifacts[artifact]['tlp'] = self.tlp_int
+                                    artifact['tlp'] = self.tlp_int
+               
+                # Add artifact to an array again
+                self.artifacts.append(artifact)
 
             return self.artifacts
         else:
