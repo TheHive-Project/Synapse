@@ -184,7 +184,7 @@ class Integration(Main):
                             self.incident_report['message'] = errorMessage
                         else:
                             self.incident_report['message'] = str(e) + ": Couldn't raise alert in TheHive"
-                        self.incident_report['incident_id'] = incident['name'] 
+                        self.incident_report['incident_id'] = incident['name']
                         # Set overall success if any fails
                         self.report['success'] = False
 
