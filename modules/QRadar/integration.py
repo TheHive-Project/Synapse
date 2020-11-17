@@ -262,10 +262,10 @@ class Integration(Main):
                 self.theHiveAlert = self.qradarOffenseToHiveAlert(self.enrichedOffense)
 
                 # searching if the offense has already been converted to alert
-                q = dict()
-                q['sourceRef'] = str(offense['id'])
+                self.query = dict()
+                self.query['sourceRef'] = str(offense['id'])
                 self.logger.info('Looking for offense %s in TheHive alerts', str(offense['id']))
-                self.results = self.theHiveConnector.findAlert(q)
+                self.results = self.theHiveConnector.findAlert(self.query)
                 if len(self.results) == 0:
                     self.logger.info('Offense %s not found in TheHive alerts, creating it', str(offense['id']))
 
