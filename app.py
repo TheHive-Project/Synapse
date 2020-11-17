@@ -99,7 +99,7 @@ for cfg_section in cfg.sections():
     if cfg_section in ['api', 'Automation']:
         continue
     endpoint = cfg.get(cfg_section, 'synapse_endpoint', fallback=False)
-    if endpoint and cfg.getbool(endpoint, 'enabled'):
+    if endpoint and cfg.getboolean(endpoint, 'enabled'):
         logger.info("Enabling integration for {}: {}".format(cfg_section, endpoint))
         modules[endpoint] = cfg_section
 
