@@ -62,11 +62,22 @@ class TheHiveConnector:
         response = self.theHiveApi.get_case(caseid)
 
         if response.status_code == 200:
-            return response
+            return response.json()
         else:
             self.logger.error('Case not found')
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
             
+    def getCaseObservable(self, artifactid):
+        self.logger.debug('%s.getCaseObservable starts', __name__)
+
+        response = self.theHiveApi.get_case_observable(artifactid)
+
+        if response.status_code == 200:
+            return response.json()[0]
+        else:
+            self.logger.error('Artifact not found')
+            raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
+
     def getCaseObservables(self, caseid):
         self.logger.debug('%s.getCaseObservables starts', __name__)
 
@@ -136,6 +147,16 @@ class TheHiveConnector:
         else:
             self.logger.error('Case update failed')
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
+
+    def closeCase(self, caseid):
+        self.logger.debug('%s.closeCase starts', __name__)
+        #Create a Case object
+        case = Case()
+        case.id = caseid
+        fields = ['status']
+        case.status = "Resolved"
+        #Update the case
+        self.updateCase(case,fields)
 
     def assignCase(self, case, assignee):
         self.logger.debug('%s.assignCase starts', __name__)
@@ -266,6 +287,17 @@ class TheHiveConnector:
             self.logger.error('Alert update failed')
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
 
+    def getAlert(self, alert_id):
+        self.logger.debug('%s.getAlert starts', __name__)
+
+        response = self.theHiveApi.get_alert(alert_id)
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            self.logger.error('Case not found')
+            raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
+    
     def findAlert(self, q):
         """
             Search for alerts in TheHive for a given query

@@ -20,13 +20,12 @@ class Automator():
         """
         self.logger = logging.getLogger(__name__)
         self.logger.info('Initiating Siem Integration')
-
+        
         self.cfg = cfg
         self.app_dir = os.path.dirname(os.path.abspath(__file__)) + "/.."
         self.automation_config = automation_config
         self.TheHiveConnector = TheHiveConnector(cfg)
         self.webhook = webhook
-        self.root_id = self.webhook.data['rootId']
 
         if cfg.getboolean('Automation','enable_customer_list', fallback=False):
             self.logger.info('Loading Customer configuration')
@@ -45,11 +44,16 @@ class Automator():
         self.logger.info('Start parsing use cases for the SIEM based alerts/cases')
         self.ucTaskId = False
         self.report_action = 'None'
-        try:
+        
+        if 'tags' in self.webhook.data['object']:
             self.tags = self.webhook.data['object']['tags']
-        except:
+        #Add tagging to webhooks that are missing tags
+        elif 'artifactId' in self.webhook.data['object'] and self.webhook.isCaseArtifactJob:
+            self.logger.debug('Found artifact id {} for webhook {}. Retrieving tags from there'.format(self.webhook.data['object']['artifactId'], self.webhook.id))
+            self.tags = self.TheHiveConnector.getCaseObservable(self.webhook.data['object']['artifactId'])['tags']
+        else:
             self.tags = []
-            self.logger.warning("no tags found for webhook {}".format(self.webhook.data['rootId']))
+            self.logger.warning("no tags found for webhook {}".format(self.webhook.id))
         self.automation_regexes = self.cfg.get('Automation', 'automation_regexes', fallback=None)
         if not self.automation_regexes:
             self.logger.error("Could not find any regexes to find tags for automation")

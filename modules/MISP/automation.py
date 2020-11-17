@@ -167,7 +167,7 @@ class Automation():
                 
                 #Observable + Link
                 observable = self.webhook.data['object']['artifactId']
-                observable_link = TheHive.get('url') + "/index.html#/case/" + caseid + "/observables/" + self.webhook.data['object']['artifactId']
+                observable_link = TheHive.get('url') + "/index.html#!/case/" + caseid + "/observables/" + self.webhook.data['object']['artifactId']
                 
                 #Task name
                 casetask.title = "Investigate found IOC with id: {}".format(observable)
