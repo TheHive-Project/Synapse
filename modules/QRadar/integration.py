@@ -85,6 +85,9 @@ class Integration(Main):
                 else:
                     self.logger.error("Configuration for observables_in_offense_type is wrongly formatted. Please fix this to enable this functionality")
 
+        # Match observables against the TLP list
+        self.checkObservableTLP(self.artifacts)
+
         # Add all the observables
         self.enriched['artifacts'] = self.artifacts
 
