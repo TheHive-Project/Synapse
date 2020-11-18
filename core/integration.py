@@ -76,7 +76,7 @@ class Main():
         self.artifacts = []
 
         if self.cfg.get('Automation', 'tlp_modifiers', fallback=None):
-            self.logger.debug("tlp_modifiers found. Checking for matches")
+            self.logger.debug(" TLP modifiers found. Checking for matches")
             for artifact in artifacts:
                 for tlp, tlp_config in self.cfg.get('Automation', 'tlp_modifiers').items():
 
@@ -90,7 +90,7 @@ class Main():
                     self.tlp_int = self.tlp_table[tlp]
 
                     for observable_type, observable_type_config in tlp_config.items():
-                        if observable_type == 'ip':
+                        if observable_type == 'ip' and artifact['dataType'] == 'ip':
                             for entry in observable_type_config:
                                 # Initial values
                                 self.match = False
@@ -116,7 +116,7 @@ class Main():
                         else:
                             for extraction_regex in observable_type_config:
                                 self.regex = re.compile(extraction_regex)
-                                if self.regex.match(artifact['data']):
+                                if self.regex.search(artifact['data']):
                                     self.logger.debug("Observable {} has matched {} through {} of the TLP modifiers list. Adjusting TLP...".format(artifact['data'], tlp, entry))
                                     artifact['tlp'] = self.tlp_int
 
