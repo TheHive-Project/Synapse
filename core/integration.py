@@ -1,3 +1,4 @@
+import ipaddress
 import itertools
 import logging
 import re
@@ -70,3 +71,61 @@ class Main():
                 # self.logger.debug("Change detected for %s, new value: %s" % (item,str(new_a[item])))
                 # return True
         return False
+
+    def checkObservableTLP(self, artifacts):
+        self.artifacts = []
+
+        if self.cfg.get('Automation', 'tlp_modifiers', fallback=None):
+            self.logger.debug("tlp_modifiers found. Checking for matches")
+            for artifact in artifacts:
+                for tlp, tlp_config in self.cfg.get('Automation', 'tlp_modifiers').items():
+
+                    self.tlp_table = {
+                        "white": 0,
+                        "green": 1,
+                        "amber": 2,
+                        "red": 3
+                    }
+
+                    self.tlp_int = self.tlp_table[tlp]
+
+                    for observable_type, observable_type_config in tlp_config.items():
+                        if observable_type == 'ip':
+                            for entry in observable_type_config:
+                                # Initial values
+                                self.match = False
+                                observable_ip = ipaddress.ip_address(artifact['data'])
+
+                                # Match ip with CIDR syntax
+                                if entry[-3:] == "/32":
+                                    self.tlp_list_entry = ipaddress.ip_address(entry[:-3])
+                                    self.match = observable_ip == self.tlp_list_entry
+                                # Match ip without CIDR syntax
+                                elif "/" not in entry:
+                                    self.tlp_list_entry = ipaddress.ip_address(entry)
+                                    self.match = observable_ip == self.tlp_list_entry
+                                # Capture actual network entries
+                                else:
+                                    self.tlp_list_entry = ipaddress.ip_network(entry, strict=False)
+                                    self.match = observable_ip in self.tlp_list_entry
+
+                                # If matched add it to new entries to use outside of the loop
+                                if self.match:
+                                    self.logger.debug("Observable {} has matched {} through {} of the TLP modifiers list. Adjusting TLP...".format(artifact['data'], tlp, entry))
+                                    artifact['tlp'] = self.tlp_int
+                        else:
+                            for extraction_regex in observable_type_config:
+                                self.regex = re.compile(extraction_regex)
+                                if self.regex.match(artifact['data']):
+                                    self.logger.debug("Observable {} has matched {} through {} of the TLP modifiers list. Adjusting TLP...".format(artifact['data'], tlp, entry))
+                                    artifact['tlp'] = self.tlp_int
+
+                # Set default TLP for artifact when no TLP tag is present
+                if 'tlp' not in artifact:
+                    artifact['tlp'] = self.cfg.get('Automation', 'default_observable_tlp')
+                # Add artifact to an array again
+                self.artifacts.append(artifact)
+
+            return self.artifacts
+        else:
+            return artifacts

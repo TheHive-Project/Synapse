@@ -85,6 +85,9 @@ class Integration(Main):
                 else:
                     self.logger.error("Configuration for observables_in_offense_type is wrongly formatted. Please fix this to enable this functionality")
 
+        # Match observables against the TLP list
+        self.artifacts = self.checkObservableTLP(self.artifacts)
+
         # Add all the observables
         self.enriched['artifacts'] = self.artifacts
 
@@ -181,7 +184,7 @@ class Integration(Main):
                 artifact['tags'].extend(offense['mitre_techniques'])
 
             if artifact['dataType'] in self.defaultObservableDatatype:
-                self.hiveArtifact = self.theHiveConnector.craftAlertArtifact(dataType=artifact['dataType'], data=artifact['data'], message=artifact['message'], tags=artifact['tags'])
+                self.hiveArtifact = self.theHiveConnector.craftAlertArtifact(dataType=artifact['dataType'], data=artifact['data'], message=artifact['message'], tags=artifact['tags'], tlp=artifact['tlp'])
             else:
                 artifact_tags = list()
                 artifact_tags.append('type:' + artifact['dataType'])
