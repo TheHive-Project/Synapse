@@ -113,11 +113,11 @@ class Main():
                                 if self.match:
                                     self.logger.debug("Observable {} has matched {} through {} of the TLP modifiers list. Adjusting TLP...".format(artifact['data'], tlp, entry))
                                     artifact['tlp'] = self.tlp_int
-                        else:
+                        elif artifact['dataType'] == observable_type:
                             for extraction_regex in observable_type_config:
                                 self.regex = re.compile(extraction_regex)
                                 if self.regex.search(artifact['data']):
-                                    self.logger.debug("Observable {} has matched {} through {} of the TLP modifiers list. Adjusting TLP...".format(artifact['data'], tlp, extraction_regex))
+                                    self.logger.debug("Observable {} with type {} has matched {} through {} of the TLP modifiers list. Adjusting TLP...".format(artifact['data'], observable_type, tlp, extraction_regex))
                                     artifact['tlp'] = self.tlp_int
 
                 # Set default TLP for artifact when no TLP tag is present
