@@ -192,7 +192,7 @@ class TheHiveConnector:
     def craftAlertArtifact(self, **attributes):
         self.logger.debug('%s.craftAlertArtifact starts', __name__)
 
-        alertArtifact = AlertArtifact(dataType=attributes["dataType"], message=attributes["message"], data=attributes["data"], tags=attributes['tags'])
+        alertArtifact = AlertArtifact(dataType=attributes["dataType"], message=attributes["message"], data=attributes["data"], tags=attributes['tags'], tlp=attributes['tlp'])
 
         return alertArtifact
 

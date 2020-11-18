@@ -76,7 +76,8 @@ class Main():
         self.artifacts = []
 
         if self.cfg.get('Automation', 'tlp_modifiers', fallback=None):
-            for artifact in self.artifacts:
+            self.logger.debug("tlp_modifiers found. Checking for matches")
+            for artifact in artifacts:
                 for tlp, tlp_config in self.cfg.get('Automation', 'tlp_modifiers').items():
 
                     self.tlp_table = {
@@ -118,7 +119,10 @@ class Main():
                                 if self.regex.match(artifact['data']):
                                     self.logger.debug("Observable {} has matched {} through {} of the TLP modifiers list. Adjusting TLP...".format(artifact['data'], tlp, entry))
                                     artifact['tlp'] = self.tlp_int
-               
+
+                # Set default TLP for artifact when no TLP tag is present
+                if 'tlp' not in artifact:
+                    artifact['tlp'] = self.cfg.get('Automation', 'default_observable_tlp')
                 # Add artifact to an array again
                 self.artifacts.append(artifact)
 
