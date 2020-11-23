@@ -31,7 +31,7 @@ class Integration(Main):
 
         # Add the offense source explicitly
         if self.enriched['offense_type_str'] == 'Username':
-            self.artifacts.append({'data': offense['offense_source'], 'dataType': 'username', 'message': 'Offense Source'})
+            self.artifacts.append({'data': offense['offense_source'], 'dataType': 'username', 'message': 'Offense Source', 'tags': ['QRadar']})
 
         # Add the local and remote sources
         # scrIps contains offense source IPs
@@ -186,9 +186,8 @@ class Integration(Main):
             if artifact['dataType'] in self.defaultObservableDatatype:
                 self.hiveArtifact = self.theHiveConnector.craftAlertArtifact(dataType=artifact['dataType'], data=artifact['data'], message=artifact['message'], tags=artifact['tags'], tlp=artifact['tlp'])
             else:
-                artifact_tags = list()
-                artifact_tags.append('type:' + artifact['dataType'])
-                self.hiveArtifact = self.theHiveConnector.craftAlertArtifact(dataType='other', data=artifact['data'], message=artifact['message'], tags=self.tags)
+                artifact['tags'].append('type:' + artifact['dataType'])
+                self.hiveArtifact = self.theHiveConnector.craftAlertArtifact(dataType='other', data=artifact['data'], message=artifact['message'], tags=artifact['tags'])
             self.artifacts.append(self.hiveArtifact)
 
         # Retrieve the configured case_template
