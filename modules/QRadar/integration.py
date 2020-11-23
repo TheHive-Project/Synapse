@@ -187,7 +187,7 @@ class Integration(Main):
                 self.hiveArtifact = self.theHiveConnector.craftAlertArtifact(dataType=artifact['dataType'], data=artifact['data'], message=artifact['message'], tags=artifact['tags'], tlp=artifact['tlp'])
             else:
                 artifact['tags'].append('type:' + artifact['dataType'])
-                self.hiveArtifact = self.theHiveConnector.craftAlertArtifact(dataType='other', data=artifact['data'], message=artifact['message'], tags=artifact['tags'])
+                self.hiveArtifact = self.theHiveConnector.craftAlertArtifact(dataType='other', data=artifact['data'], message=artifact['message'], tags=artifact['tags'], tlp=artifact['tlp'])
             self.artifacts.append(self.hiveArtifact)
 
         # Retrieve the configured case_template
