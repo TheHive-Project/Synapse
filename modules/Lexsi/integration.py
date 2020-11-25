@@ -73,6 +73,8 @@ class Integration(Main):
                     try:
 
                         self.theHiveEsAlertId = self.theHiveConnector.createAlert(self.theHiveAlert)['id']
+                        self.theHiveConnector.createCaseFromAlert(self.theHiveEsAlertId, self.CaseTemplate)
+
 
                         # Mark the alert as read
                         self.theHiveConnector.markAlertAsRead(self.theHiveEsAlertId)
@@ -236,18 +238,10 @@ class Integration(Main):
             self.logger.info("AlertID for element {}: {}".format(element, self.get_id[0]['id']))
 
             try:
-                # promote the alert to the case and close the case
-                self.logger.info("promoting AlertID {} to a case".format(self.get_id[0]['id']))
-                self.case_model = self.theHiveConnector.promoteAlertToCase(self.get_id[0]['id'])
-                self.logger.info("CaseID:{}".format(self.case_model['id']))
-
                 # Resolve the case
-                self.logger.info("Preparing the reslove the case")
+                self.logger.info("Preparing to resolve the case")
                 self.theHiveConnector.closeCase(self.case_model['id'])
 
-                # delete the alert
-                self.logger.info("Deleting Alert with AlertID {}".format(self.get_id[0]['id']))
-                self.alert_model = self.theHiveConnector.deleteAlert(self.get_id[0]['id'])
             except Exception as e:
                 self.logger.debug(e)
                 continue

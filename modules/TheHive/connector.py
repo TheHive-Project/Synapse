@@ -257,6 +257,7 @@ class TheHiveConnector:
             date=date,
             tags=tags,
             tlp=tlp,
+            status=status,
             type=type,
             source=source,
             sourceRef=sourceRef,
