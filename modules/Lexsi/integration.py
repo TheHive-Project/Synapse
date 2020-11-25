@@ -230,13 +230,13 @@ class Integration(Main):
             self.query = dict()
             self.query['sourceRef'] = str(element)
             self.logger.info('Looking for incident %s in TheHive alerts', str(element))
-            self.get_id = self.theHiveConnector.findAlert(self.query)
-            self.logger.info("AlertID for element {}: {}".format(element, self.get_id[0]['id']))
+            self.case_id = self.theHiveConnector.findAlert(self.query)[0]['case']
+            self.logger.info("AlertID for element {}: {}".format(element, self.case_id))
 
             try:
                 # Resolve the case
                 self.logger.info("Preparing to resolve the case")
-                self.theHiveConnector.closeCase(self.case_model['id'])
+                self.theHiveConnector.closeCase(self.case_id)
 
             except Exception as e:
                 self.logger.debug(e)
