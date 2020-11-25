@@ -73,11 +73,7 @@ class Integration(Main):
                     try:
 
                         self.theHiveEsAlertId = self.theHiveConnector.createAlert(self.theHiveAlert)['id']
-                        self.theHiveConnector.createCaseFromAlert(self.theHiveEsAlertId, self.CaseTemplate)
-
-
-                        # Mark the alert as read
-                        self.theHiveConnector.markAlertAsRead(self.theHiveEsAlertId)
+                        self.theHiveConnector.promoteCaseToAlert(self.theHiveEsAlertId)
 
                         self.incident_report['raised_alert_id'] = self.theHiveEsAlertId
                         self.incident_report['lexsi_incident_id'] = incident['incident']

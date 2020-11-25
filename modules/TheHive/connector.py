@@ -124,10 +124,10 @@ class TheHiveConnector:
             self.logger.error('Case creation failed')
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
             
-    def createCaseFromAlert(self, alert_id, casetemplate):
+    def promoteCaseToAlert(self, alert_id):
         self.logger.debug('%s.createCaseFromAlert starts', __name__)
 
-        response = self.theHiveApi.create_case_from_alert(alert_id, casetemplate)
+        response = self.theHiveApi.promote_alert_to_case(alert_id)
 
         if response.status_code == 201:
             esCaseId =  response.json()['id']
@@ -286,6 +286,18 @@ class TheHiveConnector:
             return response.json()
         else:
             self.logger.error('Alert update failed')
+            raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
+
+    def markAlertAsRead(self, alert_id):
+        
+        self.logger.debug('%s.markAlertAsRead starts', __name__)
+
+        response = self.theHiveApi.mark_alert_as_read(alert_id)
+
+        if int(response.status_code) in {200,201,202,203,204,205}:
+            return response.json()
+        else:
+            self.logger.error('Could not set alert as read')
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
 
     def getAlert(self, alert_id):
