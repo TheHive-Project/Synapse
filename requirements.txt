@@ -15,7 +15,7 @@ idna==2.7
 isodate==0.6.0
 itsdangerous==0.24
 jinja2==2.10
-lxml==4.2.5
+lxml==4.6.2
 markupsafe==1.0
 ntlm-auth==1.2.0
 pycparser==2.19
