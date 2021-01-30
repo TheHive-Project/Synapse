@@ -1,0 +1,41 @@
+#!/usr/bin/with-contenv bash
+CONFIG_FILE=${CONFIG_FILE:-"synapse.conf"}
+LOG_FILE="$myWORKDIR/logs/synapse.log"
+
+echo "${0##*/} || Write config file..."
+cat << EOF > $CONFIG_FILE
+[api]
+debug:${DEBUG:-False}
+host:${HOST:-"0.0.0.0"}
+port:${PORT:-5000}
+threaded:${API_THREADED:-True}
+
+[TheHive]
+url:${TH_URL:-http://thehive:9001}
+user:${TH_USER:-synapse}
+api_key:${TH_API_KEY}
+
+[EWS]
+#ip or domain to EWS server
+server:${EWS_HOST}
+#According to exchangelib doc:
+#"username is usually in WINDOMAIN\username format
+#some servers also accept usernames in PrimarySMTPAddress
+#('myusername@example.com') format (Office365 requires it)
+username:${EWS_USERNAME}
+password:${EWS_PASSWORD}
+auth_type:${EWS_AUTH_TYPE:-"NTLM"}
+smtp_address:${EWS_SMTP_ADDRESS}
+folder_name:${EWS_FOLDER_NAME:-"TheHive"}
+
+[QRadar]
+#ip or domain to QRadar
+server:${QRADAR_SERVER}
+auth_token:${QRADAR_AUTH_TOKEN}
+cert_filepath:${QRADAR_CERT_FILEPATH:-"/home/dc/qradar.crt"}
+api_version:${QRADAR_API_VERSION:"0.8"}
+
+EOF
+
+echo "${0##*/} || Change permission for configuration file..." && chmod 644 "$CONFIG_FILE"
+echo "${0##*/} || Fix permissions in ${myWORKDIR}..." && chown -r abc. ${myWORKDIR}

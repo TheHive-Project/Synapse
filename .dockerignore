@@ -1,0 +1,11 @@
+LICENSE
+README.md
+.gitignore
+.github
+.git
+make.sh
+Makefile
+docs
+example*
+Dockerfile
+.dockerignore
