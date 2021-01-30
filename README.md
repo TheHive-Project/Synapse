@@ -5,6 +5,14 @@ It leverages TheHive API to automate case and alert creation.
 
 Case creation from email or alert creation from SIEM event are casual usecase for Synapse.   
 
+<!-- ToC start -->
+# Table of Contents
+   1. [How to use](#how-to-use)
+   1. [Running in Docker](#running-in-docker)
+   1. [Roadmap](#roadmap)
+   1. [Special thanks](#special-thanks)
+<!-- ToC end -->
+
 ## Big Picture
 
 Most of the time, a usecase implies several actions and conditions.  
