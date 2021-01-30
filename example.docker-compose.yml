@@ -1,0 +1,8 @@
+version: "2"
+services:
+  synapse:
+    image: synapse
+    build:
+      context: .
+    environment: 
+    - DEBUG=True

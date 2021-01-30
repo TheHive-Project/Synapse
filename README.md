@@ -5,6 +5,14 @@ It leverages TheHive API to automate case and alert creation.
 
 Case creation from email or alert creation from SIEM event are casual usecase for Synapse.   
 
+<!-- ToC start -->
+# Table of Contents
+   1. [How to use](#how-to-use)
+   1. [Running in Docker](#running-in-docker)
+   1. [Roadmap](#roadmap)
+   1. [Special thanks](#special-thanks)
+<!-- ToC end -->
+
 ## Big Picture
 
 Most of the time, a usecase implies several actions and conditions.  
@@ -30,6 +38,14 @@ Have a look at the detailed [user guide](docs/user_guide.md), but in short:
    3. Execute: ```python3 app.py```
 
 While all OS running python3 can be used for Synapse, we recommend the use of Ubuntu.   
+
+## Running in Docker
+
+   1. Build Image: ```docker build -t synapse .```
+   2. Run Container: ```docker run -d --name synapse -p 5000:5000 synapse```
+   
+   You can also mount the config file for easier adjustments
+   ```docker run -d --name synapse -v ${pwd}/conf/synapse.conf:/opt/synapse/conf/synapse.conf -p 5000:5000 synapse```
 
 ## Roadmap
 
