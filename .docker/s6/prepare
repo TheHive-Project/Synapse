@@ -1,5 +1,5 @@
 #!/usr/bin/with-contenv bash
-CONFIG_FILE=${CONFIG_FILE:-"synapse.conf"}
+CONFIG_FILE=${CONFIG_FILE:-"$myWORKDIR/conf/synapse.conf"}
 LOG_FILE="$myWORKDIR/logs/synapse.log"
 
 echo "${0##*/} || Write config file..."
@@ -11,7 +11,7 @@ port:${PORT:-5000}
 threaded:${API_THREADED:-True}
 
 [TheHive]
-url:${TH_URL:-http://thehive:9001}
+url:${TH_URL:-http://thehive:9000}
 user:${TH_USER:-synapse}
 api_key:${TH_API_KEY}
 
@@ -32,7 +32,7 @@ folder_name:${EWS_FOLDER_NAME:-"TheHive"}
 #ip or domain to QRadar
 server:${QRADAR_SERVER}
 auth_token:${QRADAR_AUTH_TOKEN}
-cert_filepath:${QRADAR_CERT_FILEPATH:-"/home/dc/qradar.crt"}
+cert_filepath:${QRADAR_CERT_FILEPATH:-"/opt/synapse/qradar.crt"}
 api_version:${QRADAR_API_VERSION:"0.8"}
 
 EOF

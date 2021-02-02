@@ -40,7 +40,7 @@ COPY .docker/s6/prepare /etc/cont-init.d/00-synapse-prepare
 COPY .docker/s6/run /etc/services.d/synapse/run
 
 ENTRYPOINT ["/init"]
-HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 CMD curl --fail http://127.0.0.1:5000 || exit 1
+HEALTHCHECK --interval=60s --timeout=30s --start-period=60s --retries=3 CMD curl --fail http://127.0.0.1:5000/version || exit 1
 
 # Expose the default port 5000
 EXPOSE 5000
