@@ -9,6 +9,7 @@ from workflows.common.common import getConf
 from workflows.Ews2Case import connectEws
 from workflows.QRadar2Alert import allOffense2Alert
 from workflows.ManageWebhooks import manageWebhook
+from sys import stdout
 
 app_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -19,17 +20,23 @@ if not logger.handlers:
     #log format as: 2013-03-08 11:37:31,411 : : WARNING :: Testing foo
     formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
     #handler writes into, limited to 1Mo in append mode
-    if not os.path.exists('logs'):
-        #create logs directory if does no exist (typically at first start)
-        os.makedirs('logs')
-    pathLog = app_dir + '/logs/synapse.log'
-    file_handler = logging.handlers.RotatingFileHandler(pathLog, 'a', 1000000, 1)
-    #level debug
-    file_handler.setLevel(logging.DEBUG)
-    #using the format defined earlier
-    file_handler.setFormatter(formatter)
-    #Adding the file handler
-    logger.addHandler(file_handler)
+    if not os.path.exists('/.dockerenv'):
+        pathLogFolder = app_dir + '/logs'
+        pathLog = pathLogFolder + '/synapse.log'
+        if not os.path.exists(pathLogFolder):
+            #create logs directory if does no exist (typically at first start)
+            os.makedirs(pathLogFolder)
+        file_handler = logging.handlers.RotatingFileHandler(pathLog, 'a', 1000000, 1)
+        #level debug
+        file_handler.setLevel(logging.DEBUG)
+        #using the format defined earlier
+        file_handler.setFormatter(formatter)
+        #Adding the file handler
+        logger.addHandler(file_handler)
+    else:
+        consoleHandler = logging.StreamHandler(stdout) #set streamhandler to stdout
+        #consoleHandler.setFormatter(formatter)
+        logger.addHandler(consoleHandler)
 
 app = Flask(__name__)
 

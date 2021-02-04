@@ -7,6 +7,22 @@ Currently, Synapse supports the following alert sources:
 - Microsoft O365
 - IBM QRadar  
 
+<!-- ToC start -->
+# Table of Contents
+
+1. [Overview](#overview)
+1. [Using Synapse](#using-synapse)
+1. [Running in Docker](#running-in-docker)
+1. [License](#license)
+1. [Updates](#updates)
+1. [Contributing](#contributing)
+1. [Support](#support)
+1. [Community Discussions](#community-discussions)
+1. [Website](#website)
+1. [Roadmap](#roadmap)
+1. [Special Thanks](#special-thanks)
+<!-- ToC end -->
+
 # Overview
 
 Most of the time, transforming a security event or a notification about a suspicious email requires several actions and conditions.  Synapse gathers those into workflows.   
@@ -30,6 +46,14 @@ The [user guide](docs/user_guide.md) should contain all the information you need
    3. Execute: ```python3 app.py```
 
 While all operating systems running Python 3 can be used for Synapse, we recommend the use of Ubuntu.   
+
+# Running in Docker
+
+   1. Build Image: ```docker build -t synapse .```
+   2. Run Container: ```docker run -d --name synapse -p 5000:5000 synapse```
+   
+   You can also mount the config file for easier adjustments
+   ```docker run -d --name synapse -v ${pwd}/conf/synapse.conf:/opt/synapse/conf/synapse.conf -p 5000:5000 synapse```
 
 # License
 Synapse is an open source and free software released under the 
@@ -59,7 +83,7 @@ We have set up a Google forum at <https://groups.google.com/a/thehive-project.or
    * Closing QRadar offense after closing TheHive case or alert
    * Scheduler to periodically execute workflows
 
-## Special Thanks
+# Special Thanks
 
 Kudos to [Erik Cederstrand](https://github.com/ecederstrand) for his amazing work on Exchangelib. 
 

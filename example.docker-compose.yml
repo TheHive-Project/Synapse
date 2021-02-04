@@ -1,0 +1,29 @@
+version: "2"
+services:
+  synapse:
+    image: synapse
+    build:
+      context: .
+    # healthcheck:
+    #   test: [ "CMD", "curl", "--fail", "http://127.0.0.1:5000/ews2case" ]
+    #   timeout: 30s
+    #   interval: 60s
+    #   retries: 3
+    #   start_period: 20s  
+    environment: 
+    - DEBUG=${TH_SYNAPSE_DEBUG:-True}
+    - TH_URL=${TH_SYNAPSE_TH_URL:-http://thehive:9000}
+    - TH_USER=${TH_SYNAPSE_TH_USER:-synapse}
+    - TH_API_KEY=${TH_SYNAPSE_TH_API_KEY}
+    - EWS_HOST=${TH_SYNAPSE_EWS_HOST}
+    - EWS_USERNAME=${TH_SYNAPSE_EWS_USERNAME}
+    - EWS_PASSWORD=${TH_SYNAPSE_EWS_PASSWORD}
+    - EWS_AUTH_TYPE=${TH_SYNAPSE_EWS_AUTH_TYPE:-NTLM}
+    - EWS_SMTP_ADDRESS=${TH_SYNAPSE_EWS_SMTP_ADDRESS}
+    - EWS_FOLDER_NAME=${TH_SYNAPSE_EWS_FOLDER_NAME}
+    - QRADAR_SERVER=${TH_SYNAPSE_QRADAR_SERVER}
+    - QRADAR_AUTH_TOKEN=${TH_SYNAPSE_QRADAR_AUTH_TOKEN}
+    - QRADAR_CERT_FILEPATH=${TH_SYNAPSE_QRADAR_CERT_FILEPATH:-"/opt/synapse/qradar.crt"}
+    - QRADAR_API_VERSION=${TH_SYNAPSE_QRADAR_API_VERSION:"0.8"}
+    volumes: 
+      # $QRADAR_CERT_FILE_PATH:"/opt/synapse/qradar.crt"
