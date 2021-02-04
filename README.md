@@ -9,10 +9,18 @@ Currently, Synapse supports the following alert sources:
 
 <!-- ToC start -->
 # Table of Contents
-   1. [How to use](#how-to-use)
-   1. [Running in Docker](#running-in-docker)
-   1. [Roadmap](#roadmap)
-   1. [Special thanks](#special-thanks)
+
+1. [Overview](#overview)
+1. [Using Synapse](#using-synapse)
+1. [Running in Docker](#running-in-docker)
+1. [License](#license)
+1. [Updates](#updates)
+1. [Contributing](#contributing)
+1. [Support](#support)
+1. [Community Discussions](#community-discussions)
+1. [Website](#website)
+1. [Roadmap](#roadmap)
+1. [Special Thanks](#special-thanks)
 <!-- ToC end -->
 
 # Overview
@@ -75,7 +83,7 @@ We have set up a Google forum at <https://groups.google.com/a/thehive-project.or
    * Closing QRadar offense after closing TheHive case or alert
    * Scheduler to periodically execute workflows
 
-## Special Thanks
+# Special Thanks
 
 Kudos to [Erik Cederstrand](https://github.com/ecederstrand) for his amazing work on Exchangelib. 
 
