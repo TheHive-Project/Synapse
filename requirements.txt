@@ -19,7 +19,7 @@ lxml==4.2.5
 markupsafe==1.0
 ntlm-auth==1.2.0
 pycparser==2.19
-pygments==2.2.0
+pygments==2.7.4
 python-dateutil==2.7.3
 python-magic==0.4.15
 pytz==2018.5
