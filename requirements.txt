@@ -29,5 +29,5 @@ six==1.11.0
 python-slugify==1.2.6
 thehive4py==1.5.1
 tzlocal==1.5.1
-urllib3==1.23
+urllib3==1.26.5
 werkzeug==0.14.1
