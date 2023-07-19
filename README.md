@@ -1,3 +1,10 @@
+## Synpase for TheHive5
+
+<p align="center">
+  <img src="https://blog.strangebee.com/content/images/size/w2000/2023/07/Blog_5.2_released-1.png" 
+     height="500"/>
+</p>
+
 Synapse is a free, open source meta alert feeder that allows you to feed [TheHive](https://github.com/TheHive-Project/TheHive) from multiple alert sources at once.   
 It leverages TheHive's API to automate case and alert creation. Thanks to Synapse, you can swiftly create cases or alerts in TheHive out of email notifications or SIEM events.
 
@@ -6,6 +13,8 @@ Currently, Synapse supports the following alert sources:
 - Microsoft Exchange
 - Microsoft O365
 - IBM QRadar  
+
+> We have updated Synapse to support theHive 5.x REST API
 
 # Overview
 
@@ -29,7 +38,10 @@ The [user guide](docs/user_guide.md) should contain all the information you need
    2. Fill in the config file
    3. Execute: ```python3 app.py```
 
-While all operating systems running Python 3 can be used for Synapse, we recommend the use of Ubuntu.   
+### Test environment
+The new update was tested on:
+* Python 3.11.4
+* Ubuntu/Kali Linux /Redhat
 
 # License
 Synapse is an open source and free software released under the 
