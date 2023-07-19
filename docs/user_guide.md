@@ -14,6 +14,7 @@ This guide will go through installation and basic configuration for Synapse.
     + [Stopping the application](#stopping-the-application)
     + [Starting the application](#starting-the-application)
     + [Logs](#logs)
+    + [Crontab](#crontab)
 + [Update](#update)
 
 ## Installation
@@ -25,6 +26,16 @@ sudo apt install python3-distutils
 sudo apt install python3-pip
 sudo apt install python3-dev libkrb5-dev gcc
 sudo pip3 install -r requirements.txt
+```
+
+#### Thehive4py
+Install the new thehive4py library
+```
+git clone https://github.com/TheHive-Project/TheHive4py
+cd TheHive4py
+python3 setup.py install
+## If failed, edit setup.py version=parse_version()
+version="5"
 ```
 
 ## Configuration
@@ -69,6 +80,18 @@ url:http://127.0.0.1:9000
 user:synapse
 api_key:r4n0O8SvEll/VZdOD8r0hZneOWfOmth6
 ```
+### [Token] section
+
+Create a new secure token that will be used to invoke QRadar2Alert function
+```
+tr -dc A-Za-z0-9 </dev/urandom | head -c 32 ; echo ''
+```
+#### Example
+
+```
+[Token]
+auth_token=CHANGE_ME
+```
 
 Basic configuration for Synapse is done.   
 To configure workflows, head to the [workflows page](workflows/README.md).
@@ -79,6 +102,12 @@ To start Synapse, run:
 
 ```
 python3 app.py
+```
+Test Synapse
+```
+curl -H "Content-Type: application/json" -XPOST -d '{"timerange":10,"token":"CHANGE_ME"}'  http://127.0.0.1:5000/QRadar2alert
+# or
+bash Synapse/examples/qradar2alert_post.sh
 ```
 
 ## Deployment to Production
@@ -165,6 +194,13 @@ Regarding Synapse, if the application is located at ```/opt``` then logs are und
 
 ```
 /opt/Synapse/logs/
+```
+
+### Crontab
+You can create Crontab job to automate the alerts pulling
+```
+# Invoke QradarToAlert function every 10 min
+*/10 * * * * /bin/bash /home/Synpase/examples/qradar2alert_post.sh >> /home/Synpase/logs/synapse_curl.log 2>&1
 ```
 
 # Update
