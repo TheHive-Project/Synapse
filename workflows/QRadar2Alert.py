@@ -135,7 +135,7 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
         else:
             tags = list()
             tags.append('type:' + artifact['dataType'])
-            hiveArtifact = {'data': artifact['data'], 'dataType': 'other', 'message': artifact['message'], 'tags': artifact['tags']}
+            hiveArtifact = {'data': artifact['data'], 'dataType': 'other', 'message': artifact['message'], 'tags': tags}
         artifacts.append(hiveArtifact)
     
     
