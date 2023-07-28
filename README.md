@@ -5,6 +5,10 @@
      height="500"/>
 </p>
 
+> **_NOTE:_**  The work is in progress to update **Ews2Case**. In this wave of updates, we were interested in updating **QRadar2Alert** (pulling offenses and create alerts to Thehive5).
+
+- [x] Project in progress
+
 Synapse is a free, open source meta alert feeder that allows you to feed [TheHive](https://github.com/TheHive-Project/TheHive) from multiple alert sources at once.   
 It leverages TheHive's API to automate case and alert creation. Thanks to Synapse, you can swiftly create cases or alerts in TheHive out of email notifications or SIEM events.
 
