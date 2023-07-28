@@ -4,9 +4,23 @@
 import logging
 import json
 
-from thehive4py.api import TheHiveApi
-from thehive4py.models import Case, CaseTask, CaseTaskLog, CaseObservable, AlertArtifact, Alert
-from thehive4py.query import Eq
+from thehive4py.client import TheHiveApi
+from thehive4py.client import TheHiveApi
+from thehive4py.errors import TheHiveError
+from thehive4py.helpers import now_to_ts
+from thehive4py.query.filters import Eq
+from thehive4py.query.sort import Asc
+from thehive4py.types.alert import OutputAlert
+from thehive4py.types.case import (
+    CaseStatus,
+    ImpactStatus,
+    InputBulkUpdateCase,
+    InputUpdateCase,
+    OutputCase,
+)
+from thehive4py.types.observable import InputObservable
+from thehive4py.types.share import InputShare
+
 
 class TheHiveConnector:
     'TheHive connector'
@@ -56,39 +70,25 @@ class TheHiveConnector:
             #unknown use case
             raise ValueError('unknown use case after searching case by description')
 
-
     def craftCase(self, title, description):
         self.logger.info('%s.craftCase starts', __name__)
-
-        case = Case(title=title,
-            tlp=2,
-            tags=['Synapse'],
-            description=description,
-            )
-
-        return case
+        json_case = {'title':title,'description':description,'tags':['Synapse'],'severity':1}
+        return json_case
 
     def createCase(self, case):
         self.logger.info('%s.createCase starts', __name__)
-
-        response = self.theHiveApi.create_case(case)
-
-        if response.status_code == 201:
-            esCaseId =  response.json()['id']
-            createdCase = self.theHiveApi.case(esCaseId)
-            return createdCase
+        created_case = self.theHiveApi.case.create(case)
+        fetched_case = self.theHiveApi.case.get(created_case["_id"])
+        if created_case == fetched_case:
+            return created_case
         else:
             self.logger.error('Case creation failed')
-            raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
+            raise ValueError(json.dumps({'message':'Failed to Create a new Case !'}))
 
     def assignCase(self, case, assignee):
         self.logger.info('%s.assignCase starts', __name__)
-
-        esCaseId = case.id
-        case.owner = assignee
-        self.theHiveApi.update_case(case)
-
-        updatedCase = self.theHiveApi.case(esCaseId)
+        update_fields: InputUpdateCase = {'assignee':assignee}
+        updatedCase = self.theHiveApi.case.update(case_id=case['_id'], case=update_fields)
         return updatedCase
 
     def craftCommTask(self):
@@ -112,12 +112,6 @@ class TheHiveConnector:
             self.logger.error('Task creation failed')
             raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
 
-    def craftAlertArtifact(self, **attributes):
-        self.logger.info('%s.craftAlertArtifact starts', __name__)
-
-        alertArtifact = AlertArtifact(dataType=attributes["dataType"], message=attributes["message"], data=attributes["data"], tags=attributes['tags'])
-
-        return alertArtifact
 
     def craftTaskLog(self, textLog):
         self.logger.info('%s.craftTaskLog starts', __name__)
@@ -128,15 +122,13 @@ class TheHiveConnector:
 
     def addTaskLog(self, esTaskId, textLog):
         self.logger.info('%s.addTaskLog starts', __name__)
-
-        response = self.theHiveApi.create_task_log(esTaskId, textLog)
-
-        if response.status_code == 201:
-            esCreatedTaskLogId = response.json()['id']
-            return esCreatedTaskLogId
+        response = self.theHiveApi.task_log.create(task_id=esTaskId,task_log={"message": textLog})
+        fetched_log = self.theHiveApi.task_log.get(task_log_id=response["_id"])
+        if response == fetched_log:
+            return response
         else:
             self.logger.error('Task log creation failed')
-            raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
+            raise ValueError(json.dumps({'message':'Task log creation failed'}))
 
     def getTaskIdByTitle(self, esCaseId, taskTitle):
         self.logger.info('%s.getTaskIdByName starts', __name__)
@@ -173,52 +165,54 @@ class TheHiveConnector:
     def craftAlert(self, title, description, severity, date, tags, tlp, status, type, source,
         sourceRef, artifacts, caseTemplate):
         self.logger.info('%s.craftAlert starts', __name__)
+        json_alert = {
+            "type": type,
+            "source": source,
+            "sourceRef": sourceRef,
+            "title": title,
+            "description": description,
+            "severity": severity,
+            "date": date,
+            "status": "New",
+            "tags": tags,
+            "tlp": tlp,
+            "caseTemplate": caseTemplate,
+            "observables": artifacts}
 
-        alert = Alert(title=title,
-            description=description,
-            severity=severity,
-            date=date,
-            tags=tags,
-            tlp=tlp,
-            type=type,
-            source=source,
-            sourceRef=sourceRef,
-            artifacts=artifacts,
-            caseTemplate=caseTemplate)
-
-        return alert
+        return json_alert
 
     def createAlert(self, alert):
         self.logger.info('%s.createAlert starts', __name__)
+        self.logger.info(alert)
+        try:
+            response = self.theHiveApi.alert.create(alert)
+        except Exception as e:
+            if 'CreateError' in str(e):
+                self.logger.info('%s.createAlert starts failed', __name__)
+            else:
+                return response
 
-        response = self.theHiveApi.create_alert(alert)
-
-        if response.status_code == 201:
-            return response.json()
-        else:
-            self.logger.error('Alert creation failed')
-            raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
 
     def findAlert(self, q):
         """
             Search for alerts in TheHive for a given query
 
             :param q: TheHive query
-            :type q: dict
-
-            :return results: list of dict, each dict describes an alert
-            :rtype results: list
+            :return : JSON
         """
 
         self.logger.info('%s.findAlert starts', __name__)
 
-        response = self.theHiveApi.find_alerts(query=q)
-        if response.status_code == 200:
-            results = response.json()
+        response = self.theHiveApi.alert.find(q)
+        self.logger.info(q)
+        self.logger.info(response)
+        if len(response) > 0:
+            response = response[0]
+            results = response
             return results
         else:
             self.logger.error('findAlert failed')
-            raise ValueError(json.dumps(response.json(), indent=4, sort_keys=True))
+            return 0
 
     def findFirstMatchingTemplate(self, searchstring):
         self.logger.info('%s.findFirstMatchingTemplate starts', __name__)

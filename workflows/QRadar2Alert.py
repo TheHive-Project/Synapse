@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf8 -*-
 
+# Synapse that support Thehive 5.0 Rest API
+# Modified by @ihebski
 import os, sys
 import logging
 import copy
 import json
 
-from time import sleep
+from time import sleep,time
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 app_dir = current_dir + '/..'
@@ -21,7 +23,6 @@ def getEnrichedOffenses(qradarConnector, timerange):
 
     for offense in qradarConnector.getOffenses(timerange):
         enrichedOffenses.append(enrichOffense(qradarConnector, offense))
-
     return enrichedOffenses
 
 def enrichOffense(qradarConnector, offense):
@@ -122,32 +123,38 @@ def qradarOffenseToHiveAlert(theHiveConnector, offense):
                                 'uri_path',
                                 'url',
                                 'user-agent']
+    # Create data for Observable field
+    # format : "observables": [{ "dataType": "ip", "data": "127.0.0.1",'tags': ['dst'],'message': 'Local destination IP'}]
 
     artifacts = []
     for artifact in offense['artifacts']:
         if artifact['dataType'] in defaultObservableDatatype:
-            hiveArtifact = theHiveConnector.craftAlertArtifact(dataType=artifact['dataType'], data=artifact['data'], message=artifact['message'], tags=artifact['tags'])
+            # create JSON for observable field
+            hiveArtifact = {'data': artifact['data'], 'dataType': artifact['dataType'], 'message': artifact['message'], 'tags': artifact['tags']}
+
         else:
             tags = list()
             tags.append('type:' + artifact['dataType'])
-            hiveArtifact = theHiveConnector.craftAlertArtifact(dataType='other', data=artifact['data'], message=artifact['message'], tags=tags)
+            hiveArtifact = {'data': artifact['data'], 'dataType': 'other', 'message': artifact['message'], 'tags': tags}
         artifacts.append(hiveArtifact)
-
+    
+    
     # Build TheHive alert
+    # return JSON of the alert /api/v1/docs/index.html#tag/Alert/operation/Create%20Alert
+    # FUNC: craftAlert(title, description, severity, date, tags, tlp, status, type, source,sourceRef, artifacts, caseTemplate)
     alert = theHiveConnector.craftAlert(
         offense['description'],
         craftAlertDescription(offense),
         getHiveSeverity(offense),
         offense['start_time'],
         tags,
-        2,
+        1,
         'Imported',
         'internal',
         'QRadar_Offenses',
         str(offense['id']),
         artifacts,
-        '')
-
+        'Generic Template Qradar')
     return alert
 
 
@@ -180,14 +187,15 @@ def allOffense2Alert(timerange):
             q['sourceRef'] = str(offense['id'])
             logger.info('Looking for offense %s in TheHive alerts', str(offense['id']))
             results = theHiveConnector.findAlert(q)
-            if len(results) == 0:
+
+            if results == 0:
                 logger.info('Offense %s not found in TheHive alerts, creating it', str(offense['id']))
                 offense_report = dict()
                 enrichedOffense = enrichOffense(qradarConnector, offense)
                 
                 try:
                     theHiveAlert = qradarOffenseToHiveAlert(theHiveConnector, enrichedOffense)
-                    theHiveEsAlertId = theHiveConnector.createAlert(theHiveAlert)['id']
+                    theHiveEsAlertId = theHiveConnector.createAlert(theHiveAlert)
 
                     offense_report['raised_alert_id'] = theHiveEsAlertId
                     offense_report['qradar_offense_id'] = offense['id']
@@ -210,7 +218,6 @@ def allOffense2Alert(timerange):
                 logger.info('Offense %s already imported as alert', str(offense['id']))
 
     except Exception as e:
-
             logger.error('Failed to create alert from QRadar offense (retrieving offenses failed)', exc_info=True)
             report['success'] = False
             report['message'] = "%s: Failed to create alert from offense" % str(e)
@@ -250,7 +257,9 @@ def craftAlertDescription(offense):
 
     return description
 
+
 if __name__ == '__main__':
     #hardcoding timerange as 1 minute when not using the API
     timerange = 1
-    offense2Alert(timerange) 
+    offense2Alert(timerange)
+   

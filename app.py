@@ -6,7 +6,7 @@ import logging, logging.handlers
 from flask import Flask, request, jsonify
 
 from workflows.common.common import getConf
-from workflows.Ews2Case import connectEws
+#from workflows.Ews2Case import connectEws
 from workflows.QRadar2Alert import allOffense2Alert
 from workflows.ManageWebhooks import manageWebhook
 
@@ -33,6 +33,10 @@ if not logger.handlers:
 
 app = Flask(__name__)
 
+@app.route('/', methods=['GET'])
+def index():
+    return "Synapse is up and running."
+
 @app.route('/webhook', methods=['POST'])
 def listenWebhook():
     if request.is_json:
@@ -57,26 +61,35 @@ def ews2case():
     else:
         return jsonify(workflowReport), 500
 
+
 @app.route('/QRadar2alert', methods=['POST'])
 def QRadar2alert():
+    # Get token from config file conf/synpase.conf
+    Token = getConf().get('Token','auth_token')
     if request.is_json:
         content = request.get_json()
-        if 'timerange' in content:
-            workflowReport = allOffense2Alert(content['timerange'])
-            if workflowReport['success']:
-                return jsonify(workflowReport), 200
+        if content['token'] == Token:
+            if 'timerange' in content:
+                workflowReport = allOffense2Alert(content['timerange'])
+                if workflowReport['success']:
+                    return jsonify(workflowReport), 200
+                else:
+                    return jsonify(workflowReport), 500
             else:
-                return jsonify(workflowReport), 500
+                logger.error('Missing <timerange> key/value')
+                return jsonify({'sucess':False, 'message':"timerange key missing in request"}), 500
         else:
-            logger.error('Missing <timerange> key/value')
-            return jsonify({'sucess':False, 'message':"timerange key missing in request"}), 500
+            logger.error('Missing token!')
+            return jsonify({"message":"Missing a valid token !"}), 403
+
     else:
         logger.error('Not json request')
         return jsonify({'sucess':False, 'message':"Request didn't contain valid JSON"}), 400
 
+
 @app.route('/version', methods=['GET'])
 def getSynapseVersion():
-    return jsonify({'version': '1.1.1'}), 200
+    return jsonify({'version': '1.1.2'}), 200
 
 if __name__ == '__main__':
     cfg = getConf()
